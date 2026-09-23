@@ -156,6 +156,8 @@ function App() {
   if (error && !state) return <main className="boot-error"><h1>Cathedral Arcana</h1><p>{error}</p></main>
   if (!state || !manifest) return <main className="loading"><span className="loading-sigil" aria-hidden="true">✳</span><p>Opening the table</p></main>
 
+  const cardBackUrl = `/decks/cathedral/${manifest.cardBack}`
+
   return (
     <div className="app-shell">
       <div className="ambient ambient-one" aria-hidden="true" />
@@ -199,7 +201,7 @@ function App() {
             <section className="altar panel" aria-label="Cathedral deck">
               <div className="altar-arch" aria-hidden="true"><div className="glass glass-a" /><div className="glass glass-b" /><div className="glass glass-c" /></div>
               <div className="altar-stars" aria-hidden="true">✧　　　·　　✦　　　 ·　　✧</div>
-              <div className="card-back" aria-hidden="true"><span className="card-ring"><i>✳</i></span><span className="card-back-name">CATHEDRAL<br />ARCANA</span></div>
+              <div className="card-back" aria-hidden="true"><img src={cardBackUrl} alt="" /></div>
               <div className="altar-caption"><span>THE CATHEDRAL DECK</span><small>78 cards · Rider–Waite–Smith structure</small></div>
             </section>
           </div>
@@ -222,7 +224,7 @@ function App() {
           <p className="ceremony-line">The veil stirs.<br />Order becomes possibility.</p>
           <div className="shuffle-ritual" aria-hidden="true">
             <span className="shuffle-orbit orbit-one" /><span className="shuffle-orbit orbit-two" />
-            {[0, 1, 2, 3, 4].map((card) => <div className={`shuffle-card shuffle-card-${card + 1}`} key={card}><div className="mini-sigil">✳</div></div>)}
+            {[0, 1, 2, 3, 4].map((card) => <div className={`shuffle-card shuffle-card-${card + 1}`} key={card}><img src={cardBackUrl} alt="" /></div>)}
             <span className="shuffle-spark spark-a">✧</span><span className="shuffle-spark spark-b">·</span><span className="shuffle-spark spark-c">✦</span>
           </div>
           <p className="draw-count-note">A reading of <strong>{count}</strong> {count === 1 ? 'card' : 'cards'}</p>
@@ -231,7 +233,7 @@ function App() {
           <button className="text-button return-button" onClick={() => update({ stage: 'setup' })}>Return to preparation</button>
         </section>}
 
-        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} onCopy={copyReading} copied={copied} onNew={newReading} onReset={resetDeck} />}
+        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} cardBackUrl={cardBackUrl} onCopy={copyReading} copied={copied} onNew={newReading} onReset={resetDeck} />}
       </main>
       <footer className="footer"><span>Cathedral Arcana</span><span>Quiet hands. Clear questions.</span><span>YOUR TABLE, YOURS ALONE</span></footer>
       {updateReady && <div className="update-toast" role="status"><span>A new version of Cathedral Arcana is available.</span><button onClick={() => updateServiceWorker(true)}>Update</button><button className="dismiss" aria-label="Dismiss update notice" onClick={() => setUpdateReady(false)}>×</button></div>}
@@ -239,8 +241,8 @@ function App() {
   )
 }
 
-function ReadingView({ reading, spread, dealOrigin, onCopy, copied, onNew, onReset }: {
-  reading: ReadingPosition[]; spread: TarotSpread | null; dealOrigin: CardRect | null; onCopy: () => void; copied: boolean; onNew: () => void; onReset: () => void
+function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, copied, onNew, onReset }: {
+  reading: ReadingPosition[]; spread: TarotSpread | null; dealOrigin: CardRect | null; cardBackUrl: string; onCopy: () => void; copied: boolean; onNew: () => void; onReset: () => void
 }) {
   const gridRef = useRef<HTMLDivElement>(null)
   const [flightCards, setFlightCards] = useState<DealFlight[] | null>(null)
@@ -308,7 +310,7 @@ function ReadingView({ reading, spread, dealOrigin, onCopy, copied, onNew, onRes
             } as React.CSSProperties}
           >
             <div className="deal-flight-inner">
-              <div className="deal-flight-face deal-flight-back"><span>✳</span></div>
+              <div className="deal-flight-face deal-flight-back"><img src={cardBackUrl} alt="" /></div>
               <div className="deal-flight-face deal-flight-front"><img className={reading[index].card.orientation} src={`/decks/cathedral/${reading[index].card.image}`} alt="" /></div>
             </div>
           </div>
