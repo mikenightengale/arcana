@@ -223,13 +223,13 @@ function App() {
             <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed ? 'One card for each position' : 'Choose how many cards to bring to the table'}</small></span></div>
             {!parsed && <label className="count-control"><span className="visually-hidden">Cards to draw</span><button aria-label="Decrease card count" onClick={() => update({ drawCount: Math.max(1, count - 1) })} disabled={count <= 1}>−</button><input type="number" min="1" max="78" value={count} onChange={(event) => update({ drawCount: Math.min(78, Math.max(1, Number(event.target.value) || 1)) })} /><button aria-label="Increase card count" onClick={() => update({ drawCount: Math.min(78, count + 1) })} disabled={count >= 78}>+</button></label>}
           </div>
-          <a className="gallery-link" href="/gallery/crystal-geometry">Explore the Crystal Geometry deck</a>
           {error && <div className="error-message" role="alert">{error}</div>}
           <button className="primary-button" onClick={beginShuffle}>
             <span>Shuffle the deck</span><span className="button-arrow" aria-hidden="true">↗</span>
           </button>
-          <button className="text-button reset-setup" onClick={resetDeck}>Reset the deck</button>
+          <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>
           <p className="privacy-note"><span aria-hidden="true">◈</span> Your cards and readings stay on this device.</p>
+          <a className="gallery-link" href="/gallery/crystal-geometry">Explore the Crystal Geometry deck</a>
         </section>}
 
         {state.stage === 'shuffling' && <section className="shuffle-view" aria-labelledby="screen-title">
@@ -292,7 +292,8 @@ function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, copied,
     <div className="reading-grid" ref={gridRef}>
       {reading.map(({ position, card }, index) => <article className="reading-card" key={`${index}-${card.id}`}>
         <div className={`card-art-wrap ${flightCards ? 'card-art-hidden' : ''}`}><CrystalCard className="card-art" card={card} reversed={card.orientation === 'reversed'} reveal animations /></div>
-        <div className="card-copy"><span className="position-index">{String(position?.number ?? index + 1).padStart(2, '0')}</span><div className="position-text">{position?.title && <h2>{position.title}</h2>}{position?.question && <p>{position.question}</p>}<strong className="card-name">{card.name}</strong>{card.orientation === 'reversed' && <span className="card-orientation">Reversed</span>}</div></div>
+        <div className="card-copy"><span className="position-index">{String(position?.number ?? index + 1).padStart(2, '0')}</span><div className="position-text">{position?.title && <h2>{position.title}</h2>}{position?.question && <p>{position.question}</p>}</div></div>
+        <div className="card-label"><strong className="card-name">{card.name}</strong>{card.orientation === 'reversed' && <span className="card-orientation">Reversed</span>}</div>
       </article>)}
     </div>
     {flightCards && createPortal(
@@ -332,7 +333,7 @@ function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, copied,
       </div>,
       document.body,
     )}
-    <div className="reading-actions"><button className="primary-button copy-button" onClick={onCopy}><span>{copied ? 'Reading copied' : 'Copy reading'}</span><span className="button-arrow" aria-hidden="true">{copied ? '✓' : '↗'}</span></button><button className="secondary-button" onClick={onNew}>Prepare another reading</button><button className="text-button reset-button" onClick={onReset}>Reset the deck</button></div>
+    <div className="reading-actions"><button className="primary-button copy-button" onClick={onCopy}><span>{copied ? 'Reading copied' : 'Copy reading'}</span><span className="button-arrow" aria-hidden="true">{copied ? '✓' : '↗'}</span></button><button className="secondary-button" onClick={onNew}>Prepare another reading</button><button className="text-button reset-setup reading-reset-button" onClick={onReset}>Reset the Deck</button></div>
   </section>
 }
 
