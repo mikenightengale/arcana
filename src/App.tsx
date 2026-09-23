@@ -4,6 +4,8 @@ import { useRegisterSW } from 'virtual:pwa-register/react'
 import { loadState, saveState } from './persistence/db'
 import { formatReading } from './tarot/formatter'
 import { mapReading } from './tarot/mapping'
+import { CrystalCard } from './tarot/CrystalCard'
+import { DeckGallery } from './tarot/DeckGallery'
 import { parseSpread } from './tarot/parser'
 import { createShuffledDeck, drawCards, remainingCards } from './tarot/shuffle'
 import type { AppState, DeckManifest, ReadingPosition, TarotSpread } from './types/tarot'
@@ -47,7 +49,14 @@ function App() {
       if (!alive) return
       if (loadedManifest.cards.length !== 78) throw new Error('The Cathedral deck must contain exactly 78 cards.')
       setManifest(loadedManifest)
-      setState(saved ?? {
+      const canonicalCards = new Map(loadedManifest.cards.map((card) => [card.id, card]))
+      const hydrate = <T extends { id: string; orientation: 'upright' | 'reversed' }>(card: T) => ({ ...card, ...(canonicalCards.get(card.id) ?? {}), orientation: card.orientation })
+      const migrated = saved ? {
+        ...saved,
+        deck: { ...saved.deck, cards: saved.deck.cards.map(hydrate) },
+        reading: saved.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
+      } : null
+      setState(migrated ?? {
         stage: 'setup', deck: createShuffledDeck(loadedManifest.cards), spread: null,
         reading: null, drawCount: 20, sourceText: '',
       })
@@ -158,6 +167,10 @@ function App() {
 
   const cardBackUrl = `/decks/cathedral/${manifest.cardBack}`
 
+  if (window.location.pathname.startsWith('/gallery')) {
+    return <DeckGallery cards={manifest.cards} cardBackUrl={cardBackUrl} onReturn={() => { window.location.href = '/' }} />
+  }
+
   return (
     <div className="app-shell">
       <div className="ambient ambient-one" aria-hidden="true" />
@@ -202,7 +215,7 @@ function App() {
               <div className="altar-arch" aria-hidden="true"><div className="glass glass-a" /><div className="glass glass-b" /><div className="glass glass-c" /></div>
               <div className="altar-stars" aria-hidden="true">✧　　　·　　✦　　　 ·　　✧</div>
               <div className="card-back" aria-hidden="true"><img src={cardBackUrl} alt="" /></div>
-              <div className="altar-caption"><span>THE CATHEDRAL DECK</span><small>78 cards · Rider–Waite–Smith structure</small></div>
+              <div className="altar-caption"><span>CRYSTAL GEOMETRY</span><small>78 cards · Rider–Waite–Smith archetypes</small></div>
             </section>
           </div>
 
@@ -210,6 +223,7 @@ function App() {
             <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed ? 'One card for each position' : 'Choose how many cards to bring to the table'}</small></span></div>
             {!parsed && <label className="count-control"><span className="visually-hidden">Cards to draw</span><button aria-label="Decrease card count" onClick={() => update({ drawCount: Math.max(1, count - 1) })} disabled={count <= 1}>−</button><input type="number" min="1" max="78" value={count} onChange={(event) => update({ drawCount: Math.min(78, Math.max(1, Number(event.target.value) || 1)) })} /><button aria-label="Increase card count" onClick={() => update({ drawCount: Math.min(78, count + 1) })} disabled={count >= 78}>+</button></label>}
           </div>
+          <a className="gallery-link" href="/gallery/crystal-geometry">Explore the Crystal Geometry deck</a>
           {error && <div className="error-message" role="alert">{error}</div>}
           <button className="primary-button" onClick={beginShuffle}>
             <span>Shuffle the deck</span><span className="button-arrow" aria-hidden="true">↗</span>
@@ -277,8 +291,8 @@ function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, copied,
     <p className="intro">{spread?.title ? `A quiet moment with “${spread.title}”` : 'A quiet moment with the cards.'}</p>
     <div className="reading-grid" ref={gridRef}>
       {reading.map(({ position, card }, index) => <article className="reading-card" key={`${index}-${card.id}`}>
-        <div className={`card-art-wrap ${flightCards ? 'card-art-hidden' : ''}`}><img className={`card-art ${card.orientation}`} src={`/decks/cathedral/${card.image}`} alt={`${card.name}, shown ${card.orientation}`} loading={index > 5 ? 'lazy' : 'eager'} />{card.orientation === 'reversed' && <span className="orientation-badge">Reversed</span>}</div>
-        <div className="card-copy"><span className="position-index">{String(position?.number ?? index + 1).padStart(2, '0')}</span><div className="position-text">{position?.title && <h2>{position.title}</h2>}{position?.question && <p>{position.question}</p>}<strong className="card-name">{card.name}</strong><span className="card-orientation">{card.orientation}</span></div></div>
+        <div className={`card-art-wrap ${flightCards ? 'card-art-hidden' : ''}`}><CrystalCard className="card-art" card={card} reversed={card.orientation === 'reversed'} reveal animations /></div>
+        <div className="card-copy"><span className="position-index">{String(position?.number ?? index + 1).padStart(2, '0')}</span><div className="position-text">{position?.title && <h2>{position.title}</h2>}{position?.question && <p>{position.question}</p>}<strong className="card-name">{card.name}</strong>{card.orientation === 'reversed' && <span className="card-orientation">Reversed</span>}</div></div>
       </article>)}
     </div>
     {flightCards && createPortal(
@@ -311,7 +325,7 @@ function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, copied,
           >
             <div className="deal-flight-inner">
               <div className="deal-flight-face deal-flight-back"><img src={cardBackUrl} alt="" /></div>
-              <div className="deal-flight-face deal-flight-front"><img className={reading[index].card.orientation} src={`/decks/cathedral/${reading[index].card.image}`} alt="" /></div>
+              <div className="deal-flight-face deal-flight-front"><CrystalCard card={reading[index].card} reversed={reading[index].card.orientation === 'reversed'} animations={false} /></div>
             </div>
           </div>
         })}

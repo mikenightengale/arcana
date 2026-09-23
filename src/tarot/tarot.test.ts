@@ -6,7 +6,7 @@ import { createShuffledDeck, drawCards, remainingCards } from './shuffle'
 import type { DeckCard, RuntimeCard } from '../types/tarot'
 
 const cards: DeckCard[] = Array.from({ length: 78 }, (_, number) => ({
-  id: `card-${number}`, name: `Card ${number}`, arcana: number < 22 ? 'major' : 'minor', number, image: `cards/${number}.svg`,
+  id: `card-${number}`, name: `Card ${number}`, arcana: number < 22 ? 'major' : 'minor', number,
 }))
 
 describe('Cathedral deck', () => {
