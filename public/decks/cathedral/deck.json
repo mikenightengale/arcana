@@ -1,7 +1,7 @@
 {
   "id": "cathedral",
   "name": "Arcana",
-  "cardBack": "backs/cathedral-back.png",
+  "cardBack": "backs/default.svg",
   "cards": [
     {
       "id": "the-fool",
