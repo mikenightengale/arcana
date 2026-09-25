@@ -1,9 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { formatReading } from './formatter'
 import { mapReading } from './mapping'
 import { cardMeanings } from './meanings'
 import { parseSpread } from './parser'
-import { createShuffledDeck, drawCards, remainingCards } from './shuffle'
+import { createReadyDeck, drawCards, performShuffleStep, remainingCards } from './shuffle'
 import type { DeckCard, RuntimeCard } from '../types/tarot'
 import cathedralDeck from '../../public/decks/cathedral/deck.json'
 
@@ -25,27 +25,55 @@ describe('Cathedral deck', () => {
     }
   })
 
-  it('creates a 78 card shuffled deck with a fixed orientation on each card', () => {
-    vi.stubGlobal('crypto', { getRandomValues<T extends ArrayBufferView>(values: T) { new Uint32Array(values.buffer, values.byteOffset, values.byteLength / 4).fill(123); return values } })
-    const deck = createShuffledDeck(cards, 456)
+  it('creates an ordered 78 card deck without pre-shuffling or assigning reversals', () => {
+    const deck = createReadyDeck(cards, 456)
     expect(deck.cards).toHaveLength(78)
     expect(new Set(deck.cards.map((card) => card.id)).size).toBe(78)
-    expect(deck.cards.every((card) => card.orientation === 'reversed')).toBe(true)
+    expect(deck.cards.map((card) => card.id)).toEqual(cards.map((card) => card.id))
+    expect(deck.cards.every((card) => card.orientation === 'upright')).toBe(true)
     expect(deck.nextCardIndex).toBe(0)
     expect(deck.resetAt).toBe(456)
-    vi.unstubAllGlobals()
   })
 
   it('rejects malformed decks and prevents repeat draws past the remaining cards', () => {
-    expect(() => createShuffledDeck(cards.slice(0, 77))).toThrow(/78 cards/)
-    vi.stubGlobal('crypto', { getRandomValues<T extends ArrayBufferView>(values: T) { new Uint32Array(values.buffer, values.byteOffset, values.byteLength / 4).fill(0); return values } })
-    const deck = createShuffledDeck(cards)
+    expect(() => createReadyDeck(cards.slice(0, 77))).toThrow(/78 cards/)
+    const deck = createReadyDeck(cards)
     const first = drawCards(deck, 12)
     const second = drawCards(first.deck, 9)
     expect(first.cards.map((card) => card.id)).not.toEqual(second.cards.map((card) => card.id))
     expect(remainingCards(second.deck)).toBe(57)
     expect(() => drawCards(second.deck, 58)).toThrow(/Only 57 cards remain/)
-    vi.unstubAllGlobals()
+  })
+
+  it('starts in manifest order and each overhand step changes only the undrawn cards', () => {
+    const ready = createReadyDeck(cards, 789)
+    const dealt = drawCards(ready, 4)
+    const stepped = performShuffleStep(dealt.deck, () => 0)
+    expect(stepped.cards.slice(0, 4)).toEqual(dealt.deck.cards.slice(0, 4))
+    expect(stepped.cards.slice(4).map((card) => card.id)).not.toEqual(dealt.deck.cards.slice(4).map((card) => card.id))
+    expect(stepped.cards).toHaveLength(78)
+    expect(stepped.nextCardIndex).toBe(4)
+    expect(stepped.resetAt).toBe(789)
+    expect(stepped.cards.every((card) => card.name.startsWith('Card '))).toBe(true)
+  })
+
+  it('preserves all 78 unique cards through many discrete shuffle steps', () => {
+    let deck = createReadyDeck(cards)
+    for (let step = 0; step < 600; step += 1) deck = performShuffleStep(deck)
+    expect(deck.cards).toHaveLength(78)
+    expect(new Set(deck.cards.map((card) => card.id)).size).toBe(78)
+    expect(deck.cards.every((card) => card.orientation === 'upright' || card.orientation === 'reversed')).toBe(true)
+  })
+
+  it('draws the frozen order without changing it and preserves remaining-card state', () => {
+    let frozen = createReadyDeck(cards)
+    for (let step = 0; step < 40; step += 1) frozen = performShuffleStep(frozen)
+    const expected = frozen.cards.slice(0, 7)
+    const firstDraw = drawCards(frozen, 3)
+    const secondDraw = drawCards(firstDraw.deck, 4)
+    expect([...firstDraw.cards, ...secondDraw.cards]).toEqual(expected)
+    expect(secondDraw.deck.cards).toEqual(frozen.cards)
+    expect(remainingCards(secondDraw.deck)).toBe(71)
   })
 })
 

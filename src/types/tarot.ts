@@ -1,5 +1,6 @@
 export type Orientation = 'upright' | 'reversed'
 export type Stage = 'setup' | 'shuffling' | 'reading'
+export type ShuffleStatus = 'ready' | 'holding' | 'frozen'
 export type Suit = 'wands' | 'cups' | 'swords' | 'pentacles'
 export type Arcana = 'major' | 'minor'
 
@@ -57,6 +58,8 @@ export interface ReadingPosition {
 
 export interface AppState {
   stage: Stage
+  /** Optional for compatibility with browser states saved before hold-to-shuffle. */
+  shuffleStatus?: ShuffleStatus
   deck: DeckState
   spread: TarotSpread | null
   reading: ReadingPosition[] | null

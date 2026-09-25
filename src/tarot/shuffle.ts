@@ -11,19 +11,50 @@ function secureIndex(maxExclusive: number): number {
   return value[0] % maxExclusive
 }
 
-export function createShuffledDeck(cards: DeckCard[], now = Date.now()): DeckState {
+export function createReadyDeck(cards: DeckCard[], now = Date.now()): DeckState {
   if (cards.length !== 78) throw new Error(`The Cathedral deck must contain 78 cards; found ${cards.length}.`)
   const ids = new Set(cards.map((card) => card.id))
   if (ids.size !== 78) throw new Error('Every card in the deck must have a unique id.')
-  const shuffled: RuntimeCard[] = cards.map((card) => ({
-    ...card,
-    orientation: secureIndex(2) === 0 ? 'upright' : 'reversed',
-  }))
-  for (let i = shuffled.length - 1; i > 0; i -= 1) {
-    const j = secureIndex(i + 1)
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  return {
+    cards: cards.map((card) => ({ ...card, orientation: 'upright' })),
+    nextCardIndex: 0,
+    resetAt: now,
   }
-  return { cards: shuffled, nextCardIndex: 0, resetAt: now }
+}
+
+/**
+ * Performs one overhand-style packet transfer on the undrawn portion of a deck.
+ * Random choices are made only for this step; the returned deck is the complete
+ * new working state and can be frozen immediately by the caller.
+ */
+export function performShuffleStep(deck: DeckState, randomIndex = secureIndex): DeckState {
+  const firstUndrawn = deck.nextCardIndex
+  const available = deck.cards.length - firstUndrawn
+  if (available < 2) return deck
+
+  const maxPacket = Math.min(3, available - 1)
+  const packetSize = 1 + randomIndex(maxPacket)
+  const originalStart = randomIndex(available - packetSize + 1)
+  const packet = deck.cards.slice(firstUndrawn + originalStart, firstUndrawn + originalStart + packetSize)
+  const remaining = deck.cards.slice(firstUndrawn, firstUndrawn + originalStart)
+    .concat(deck.cards.slice(firstUndrawn + originalStart + packetSize))
+
+  // The destination is selected from all legal insertion points except the
+  // original one, so every visible step changes the order whenever >= 2 remain.
+  const destinationCount = remaining.length + 1
+  const destinationChoice = randomIndex(destinationCount - 1)
+  const destination = destinationChoice >= originalStart ? destinationChoice + 1 : destinationChoice
+  const orientedPacket = packet.map((card) => ({
+    ...card,
+    orientation: randomIndex(2) === 0 ? 'upright' as const : 'reversed' as const,
+  }))
+  const shuffledRemaining = remaining.slice()
+  shuffledRemaining.splice(destination, 0, ...orientedPacket)
+
+  return {
+    ...deck,
+    cards: [...deck.cards.slice(0, firstUndrawn), ...shuffledRemaining],
+  }
 }
 
 export function drawCards(deck: DeckState, count: number): { deck: DeckState; cards: RuntimeCard[] } {
