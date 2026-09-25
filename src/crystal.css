@@ -1,0 +1,42 @@
+/* Crystal Geometry procedural card fronts */
+.crystal-card { display: block; width: 100%; height: 100%; overflow: visible; background: #080d20; }
+.card-numeral { fill: #d2c5ff; font: 14px Georgia,serif; letter-spacing: 1px; }
+.card-title { fill: #f2edff; font: 11px Georgia,serif; letter-spacing: .5px; }
+.card-suit-label { fill: #b9adf4; font: 600 9.5px Inter,system-ui,sans-serif; letter-spacing: .8px; }
+.crystal-glow { filter: drop-shadow(0 0 4px var(--accent)); }
+.motion-on .crystal-glow { transform-box: fill-box; transform-origin: center; }
+.motion-on .orbiting-halo { transform-box: fill-box; transform-origin: center; animation: halo-turn 18s linear infinite; }
+.motion-on .suit-orbit { transform-box: view-box; transform-origin: 120px 193px; animation: suit-revolution 14s linear infinite; animation-delay: var(--orbit-delay,0s); }
+.motion-on .lantern-glow { transform-box: fill-box; transform-origin: center; animation: lantern-breath 3.8s ease-in-out infinite; }
+.motion-on .star-core { transform-box: fill-box; transform-origin: center; animation: star-breathe 3.4s ease-in-out infinite; }
+.motion-on .wheel-inner { transform-box: view-box; transform-origin: 120px 192px; animation: wheel-turn 18s linear infinite; }
+.motion-on .tower-shards { animation: shard-settle 900ms ease-out .12s both; }
+.motion-on .tower-flash { opacity: 0; }
+.card-reveal.motion-on .tower-flash { animation: tower-strike 1.2s ease-out 120ms both; }
+.motion-on .death-fragment { animation: fragment-drift 4.8s ease-in-out var(--fragment-delay,0s) infinite; }
+.motion-on .energy-flow { stroke-dasharray: 5 4; animation: energy-travel 2.8s linear infinite; }
+.motion-on .devil-pulse { animation: restrained-pulse 3.8s ease-in-out infinite; }
+.motion-on .lunar-mist { animation: mist-drift 5s ease-in-out infinite alternate; }
+.motion-on .sun-rays { transform-box: view-box; transform-origin: 120px 177px; animation: ray-turn 20s linear infinite; }
+.motion-on .pip-symbol { transform-box: fill-box; transform-origin: center; animation: pip-light 4.5s ease-in-out var(--pip-delay,0s) infinite; }
+.motion-on .ambient-stars circle { transform-box: fill-box; transform-origin: center; animation: star-twinkle 3.8s ease-in-out var(--twinkle-delay,0s) infinite; }
+.motion-on .card-scene { transform-box: view-box; transform-origin: 120px 197px; animation: card-drift 6s ease-in-out var(--card-phase,0s) infinite; }
+.motion-on[data-animation="star-path"] .scene-engraving,.motion-on[data-animation="crystal-bloom"] .scene-engraving { animation: engraved-breath 4.8s ease-in-out var(--card-phase,0s) infinite; }
+.motion-on[data-animation="moon-wax"] .scene-engraving,.motion-on[data-animation="solar-breath"] .scene-engraving { animation: celestial-breath 4.2s ease-in-out var(--card-phase,0s) infinite; }
+.motion-on[data-animation="slow-halo"] .orbiting-halo,.motion-on[data-animation="halo-drift"] .orbiting-halo { animation-duration: 24s; }
+.motion-on[data-animation="crystal-ascent"] .crystal-glow,.motion-on[data-animation="crystal-breath"] .crystal-glow { animation: crystal-shimmer 3.8s ease-in-out var(--card-phase,0s) infinite; }
+.motion-on[data-animation="slow-drift"] .card-scene,.motion-on[data-animation="slow-orbits"] .scene-engraving { animation-duration: 7.5s; }
+.motion-on[data-animation="edge-shimmer"] .sigil-swords path:first-child,.motion-on[data-animation="blade-shimmer"] .sigil-swords path:first-child { animation: blade-glint 3.5s ease-in-out var(--card-phase,0s) infinite; }
+.motion-on[data-animation="earth-pulse"] .sigil-pentacles circle:first-child { animation-duration: 5s; }
+.motion-on[data-animation="reflective-flow"] .sigil-cups path:nth-child(2) { animation-duration: 4s; }
+.motion-on[data-animation="ember-rise"] .sigil-wands path:first-child { animation: ember-glow 3.8s ease-in-out var(--card-phase,0s) infinite; }
+.motion-on .suit-wands .sigil-wands path:first-child { animation: ember-glow 4s ease-in-out infinite; }
+.motion-on .suit-cups .sigil-cups path:nth-child(2) { stroke-dasharray: 10 5; animation: water-current 4.2s linear infinite; }
+.motion-on .suit-swords .sigil-swords path:first-child { animation: blade-glint 3.5s ease-in-out infinite; }
+.motion-on .suit-pentacles .sigil-pentacles circle:first-child { transform-box: fill-box; transform-origin: center; animation: earth-seal 5s ease-in-out infinite; }
+.motion-on.card-reveal { animation: card-arrive 950ms cubic-bezier(.2,.8,.2,1) both; }
+.motion-off *, .motion-off *::before, .motion-off *::after { animation: none !important; }
+@supports (-moz-appearance: none) {
+  /* Avoid applying perspective transforms to the outer SVG viewport. */
+  .motion-on.card-reveal { animation-name: card-arrive-flat; }
+}
