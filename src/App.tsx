@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useRegisterSW } from 'virtual:pwa-register/react'
+import { NotificationToast, type ToastMessage, type ToastVariant } from './NotificationToast'
 import { loadState, saveState } from './persistence/db'
 import { formatReading } from './tarot/formatter'
 import { mapReading } from './tarot/mapping'
@@ -28,11 +29,16 @@ function App() {
   const [state, setState] = useState<AppState | null>(null)
   const [manifest, setManifest] = useState<DeckManifest | null>(null)
   const [error, setError] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [toast, setToast] = useState<ToastMessage | null>(null)
   const [showPreview, setShowPreview] = useState(true)
   const [updateReady, setUpdateReady] = useState(false)
   const [dealOrigin, setDealOrigin] = useState<CardRect | null>(null)
   const dealing = useRef(false)
+  const toastId = useRef(0)
+  const notify = useCallback((variant: ToastVariant, message: string) => {
+    setToast({ id: ++toastId.current, variant, message })
+  }, [])
+  const dismissToast = useCallback(() => setToast(null), [])
   const { updateServiceWorker } = useRegisterSW({
     onNeedRefresh() { setUpdateReady(true) },
   })
@@ -67,7 +73,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (state) void saveState(state).catch(() => setError('Your latest changes could not be saved in this browser.'))
+    if (state) void saveState(state).catch(() => notify('error', 'Your latest changes could not be saved in this browser.'))
   }, [state])
 
   const parsed = useMemo(() => state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText])
@@ -76,29 +82,28 @@ function App() {
 
   function update(patch: Partial<AppState>) {
     setState((current) => current ? { ...current, ...patch } : current)
-    setError('')
-    setCopied(false)
+    setToast(null)
   }
 
   function onSpreadChange(sourceText: string) {
     if (!state) return
     const spread = sourceText.trim() ? parseSpread(sourceText) : null
     setState({ ...state, sourceText, spread, drawCount: spread ? spread.positions.length : 20 })
-    setError('')
+    setToast(null)
   }
 
   function beginShuffle() {
     if (!state) return
     if (!parsed && state.sourceText.trim()) {
-      setError('We couldn’t find numbered positions with questions. Check the spread format or clear it to draw without a spread.')
+      notify('warning', 'We couldn’t find numbered positions with questions. Check the spread format or clear it to draw without a spread.')
       return
     }
     if (!Number.isInteger(count) || count < 1 || count > 78) {
-      setError('Choose a number of cards from 1 to 78.')
+      notify('warning', 'Choose a number of cards from 1 to 78.')
       return
     }
     if (count > remaining) {
-      setError(`${count} cards requested\n${remaining} cards remain\n\nReset the deck before continuing.`)
+      notify('warning', `${count} cards requested. ${remaining} cards remain. Reset the deck before continuing.`)
       return
     }
     update({ spread: parsed, stage: 'shuffling', reading: null, drawCount: count })
@@ -124,8 +129,7 @@ function App() {
 
       // Save the immutable draw before starting its visual presentation.
       await saveState(nextState)
-      setError('')
-      setCopied(false)
+      setToast(null)
       setDealOrigin(!reducedMotion && bounds ? {
         left: bounds.left,
         top: bounds.top,
@@ -134,7 +138,7 @@ function App() {
       } : null)
       setState(nextState)
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'The cards could not be drawn or saved.')
+      notify('error', reason instanceof Error ? reason.message : 'The cards could not be drawn or saved.')
     } finally {
       dealing.current = false
     }
@@ -156,9 +160,9 @@ function App() {
     if (!state?.reading) return
     try {
       await navigator.clipboard.writeText(formatReading(state.reading, state.spread))
-      setCopied(true)
+      notify('success', 'Reading copied to clipboard.')
     } catch {
-      setError('Clipboard access was unavailable. Select and copy the reading text instead.')
+      notify('error', 'Clipboard access was unavailable. Select and copy the reading text instead.')
     }
   }
 
@@ -223,7 +227,6 @@ function App() {
             <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed ? 'One card for each position' : 'Choose how many cards to bring to the table'}</small></span></div>
             {!parsed && <label className="count-control"><span className="visually-hidden">Cards to draw</span><button aria-label="Decrease card count" onClick={() => update({ drawCount: Math.max(1, count - 1) })} disabled={count <= 1}>−</button><input type="number" min="1" max="78" value={count} onChange={(event) => update({ drawCount: Math.min(78, Math.max(1, Number(event.target.value) || 1)) })} /><button aria-label="Increase card count" onClick={() => update({ drawCount: Math.min(78, count + 1) })} disabled={count >= 78}>+</button></label>}
           </div>
-          {error && <div className="error-message" role="alert">{error}</div>}
           <button className="primary-button" onClick={beginShuffle}>
             <span>Shuffle the deck</span><span className="button-arrow" aria-hidden="true">↗</span>
           </button>
@@ -242,21 +245,21 @@ function App() {
             <span className="shuffle-spark spark-a">✧</span><span className="shuffle-spark spark-b">·</span><span className="shuffle-spark spark-c">✦</span>
           </div>
           <p className="draw-count-note">A reading of <strong>{count}</strong> {count === 1 ? 'card' : 'cards'}</p>
-          {error && <div className="error-message" role="alert">{error}</div>}
           <button className="primary-button draw-button" onClick={deal}><span>Draw all cards</span><span className="button-arrow" aria-hidden="true">↗</span></button>
           <button className="text-button return-button" onClick={() => update({ stage: 'setup' })}>Return to preparation</button>
         </section>}
 
-        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} cardBackUrl={cardBackUrl} onCopy={copyReading} copied={copied} onNew={newReading} onReset={resetDeck} />}
+        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} cardBackUrl={cardBackUrl} onCopy={copyReading} onNew={newReading} onReset={resetDeck} />}
       </main>
       <footer className="footer"><span>Cathedral Arcana</span><span>Quiet hands. Clear questions.</span><span>YOUR TABLE, YOURS ALONE</span></footer>
+      {toast && <NotificationToast key={toast.id} toast={toast} onDismiss={dismissToast} />}
       {updateReady && <div className="update-toast" role="status"><span>A new version of Cathedral Arcana is available.</span><button onClick={() => updateServiceWorker(true)}>Update</button><button className="dismiss" aria-label="Dismiss update notice" onClick={() => setUpdateReady(false)}>×</button></div>}
     </div>
   )
 }
 
-function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, copied, onNew, onReset }: {
-  reading: ReadingPosition[]; spread: TarotSpread | null; dealOrigin: CardRect | null; cardBackUrl: string; onCopy: () => void; copied: boolean; onNew: () => void; onReset: () => void
+function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, onNew, onReset }: {
+  reading: ReadingPosition[]; spread: TarotSpread | null; dealOrigin: CardRect | null; cardBackUrl: string; onCopy: () => void; onNew: () => void; onReset: () => void
 }) {
   const gridRef = useRef<HTMLDivElement>(null)
   const [flightCards, setFlightCards] = useState<DealFlight[] | null>(null)
@@ -333,7 +336,7 @@ function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, copied,
       </div>,
       document.body,
     )}
-    <div className="reading-actions"><button className="primary-button copy-button" onClick={onCopy}><span>{copied ? 'Reading copied' : 'Copy reading'}</span><span className="button-arrow" aria-hidden="true">{copied ? '✓' : '↗'}</span></button><button className="secondary-button" onClick={onNew}>Prepare another reading</button><button className="text-button reset-setup reading-reset-button" onClick={onReset}>Reset the Deck</button></div>
+    <div className="reading-actions"><button className="primary-button copy-button" onClick={onCopy}><span>Copy reading</span><span className="button-arrow" aria-hidden="true">↗</span></button><button className="secondary-button" onClick={onNew}>Prepare another reading</button><button className="text-button reset-setup reading-reset-button" onClick={onReset}>Reset the Deck</button></div>
   </section>
 }
 

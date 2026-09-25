@@ -44,12 +44,25 @@ describe('spread parsing and reading output', () => {
     })
   })
 
-  it('maps questions by index and preserves them in copied Markdown', () => {
+  it('copies only numbered questions and card results for spreads', () => {
     const spread = parseSpread('# Three cards\n1. **Now**\nWhat is present?\n2. **Next**\nWhat is forming?')!
     const drawn = [0, 1].map((index) => ({ ...cards[index], orientation: index ? 'reversed' : 'upright' })) as RuntimeCard[]
     const reading = mapReading(drawn, spread)
     expect(reading[1].position?.title).toBe('Next')
-    expect(formatReading(reading, spread)).toContain('**Card:** Card 1 — Reversed')
+    expect(formatReading(reading, spread)).toBe('1. What is present?\n\nCard 0\n\n2. What is forming?\n\nCard 1 — Reversed')
+    expect(formatReading(reading, spread)).not.toMatch(/Tarot Spread|\*\*Now\*\*|\*\*Next\*\*|Position:|Card:/)
+  })
+
+  it('formats spread questions the same whether or not the spread has a title', () => {
+    const spread = parseSpread('1. What should I notice?')!
+    const reading = mapReading([{ ...cards[0], orientation: 'upright' } as RuntimeCard], spread)
+    expect(formatReading(reading, spread)).toBe('1. What should I notice?\n\nCard 0')
+  })
+
+  it('keeps open draws numbered', () => {
+    const drawn = [0, 1].map((index) => ({ ...cards[index], orientation: index ? 'reversed' : 'upright' })) as RuntimeCard[]
+    const reading = mapReading(drawn, null)
+    expect(formatReading(reading, null)).toBe('1. Card 0\n2. Card 1 — Reversed')
   })
 
   it('returns null for text without numbered positions', () => {
