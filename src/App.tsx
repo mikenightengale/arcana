@@ -155,7 +155,9 @@ function App() {
     if (shuffleMotion.current % 3 === 0 && typeof navigator.vibrate === 'function') navigator.vibrate(8)
     void saveState(next).catch(() => notify('error', 'Your latest changes could not be saved in this browser.'))
     if (remainingCards(next.deck) > 1) {
-      shuffleTimer.current = setTimeout(applyShuffleStep, 80 + Math.floor(Math.random() * 61))
+      // Give each waterfall card time to complete its movement before the next
+      // logical deck mutation begins.
+      shuffleTimer.current = setTimeout(applyShuffleStep, 300 + Math.floor(Math.random() * 61))
     } else {
       releaseShuffle()
     }
