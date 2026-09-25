@@ -37,7 +37,7 @@ export default defineConfig(({ command }) => {
       }),
       ...(command === 'build' ? [{
         name: 'github-pages-spa-fallback',
-        async closeBundle() {
+        async writeBundle() {
           await copyFile(resolve('dist/index.html'), resolve('dist/404.html'))
         },
       }] : []),
