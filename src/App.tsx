@@ -10,8 +10,9 @@ import { parseSpread } from './tarot/parser'
 import { createShuffledDeck, drawCards, remainingCards } from './tarot/shuffle'
 import type { AppState, DeckManifest } from './types/tarot'
 import { ReadingView, type CardRect } from './ReadingView'
+import { appPath, assetPath, isGalleryPath } from './paths'
 
-const manifestUrl = '/decks/cathedral/deck.json'
+const manifestUrl = appPath('decks/cathedral/deck.json')
 
 function App() {
   const [state, setState] = useState<AppState | null>(null)
@@ -156,10 +157,10 @@ function App() {
   if (error && !state) return <main className="boot-error"><h1>Arcana</h1><p>{error}</p></main>
   if (!state || !manifest) return <main className="loading"><span className="loading-sigil" aria-hidden="true">✳</span><p>Opening the table</p></main>
 
-  const cardBackUrl = `/decks/cathedral/${manifest.cardBack}`
+  const cardBackUrl = assetPath(`decks/cathedral/${manifest.cardBack}`)
 
-  if (window.location.pathname.startsWith('/gallery')) {
-    return <DeckGallery cards={manifest.cards} cardBackUrl={cardBackUrl} onReturn={() => { window.location.href = '/' }} />
+  if (isGalleryPath(window.location.pathname)) {
+    return <DeckGallery cards={manifest.cards} cardBackUrl={cardBackUrl} onReturn={() => { window.location.href = appPath() }} />
   }
 
   return (
@@ -168,7 +169,7 @@ function App() {
       <div className="ambient ambient-two" aria-hidden="true" />
       <header className="topbar">
         <a className="brand" href="#top" onClick={(event) => event.preventDefault()} aria-label="Arcana home">
-          <img className="brand-logo" src="/icons/arcana.svg" alt="" />
+          <img className="brand-logo" src={assetPath('icons/arcana.svg')} alt="" />
           <span><strong>Arcana</strong></span>
         </a>
         <nav className="steps" aria-label="Reading steps">
