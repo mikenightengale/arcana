@@ -151,8 +151,6 @@ function App() {
 
   function resetDeck() {
     if (!state || !manifest) return
-    const accepted = window.confirm('Reset the deck?\n\nAll 78 cards will return to the deck and a completely new shuffle will be created.')
-    if (!accepted) return
     update({ deck: createShuffledDeck(manifest.cards), stage: 'setup', spread: null, reading: null, drawCount: 20, sourceText: '' })
   }
 
