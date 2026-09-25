@@ -7,7 +7,19 @@ export function parseSpread(input: string): TarotSpread | null {
   let title: string | undefined
   const positions: TarotPosition[] = []
   let current: TarotPosition | undefined
-  let sawPositionHeading = false
+  let barePosition = false
+
+  const finishCurrent = () => {
+    if (!current) return
+    // A plain numbered item with no continuation is itself a question, even
+    // when it has no question mark (for example, "1. test").
+    if (barePosition && !current.question && current.title) {
+      current.question = current.title
+      delete current.title
+    }
+    positions.push(current)
+    current = undefined
+  }
 
   for (const rawLine of lines) {
     const line = rawLine.trim()
@@ -19,31 +31,30 @@ export function parseSpread(input: string): TarotSpread | null {
     }
     const numbered = line.match(/^\s*(\d+)\s*[.)]\s+(.+)$/)
     if (numbered) {
-      if (current) positions.push(current)
+      finishCurrent()
       const number = Number(numbered[1])
       const content = numbered[2].trim()
       const boldPosition = content.match(/^\*\*(.+?)\*\*\s*(?:[:—–-]\s*)?(.*)$/) || content.match(/^__(.+?)__\s*(?:[:—–-]\s*)?(.*)$/)
       const plainTitle = content.match(/^([^:—–?]+?)\s*[:—–]\s*(.+)$/)
       if (boldPosition) {
         current = { number, title: clean(boldPosition[1]), question: clean(boldPosition[2]) }
-        sawPositionHeading = true
+        barePosition = false
       } else if (plainTitle && !content.endsWith('?')) {
         current = { number, title: clean(plainTitle[1]), question: clean(plainTitle[2]) }
-        sawPositionHeading = true
+        barePosition = false
       } else {
         current = content.endsWith('?')
           ? { number, question: clean(content.replace(/^\*\*(.*?)\*\*$/, '$1')) }
           : { number, title: clean(content), question: '' }
-        sawPositionHeading = !content.endsWith('?')
+        barePosition = !content.endsWith('?')
       }
       continue
     }
     if (current) current.question = [current.question, clean(line)].filter(Boolean).join(' ')
   }
-  if (current) positions.push(current)
+  finishCurrent()
   if (!positions.length) return null
   const normalized = positions.map((position, index) => ({ ...position, number: index + 1, question: position.question.trim() }))
-  if (sawPositionHeading && normalized.some((position) => !position.title || !position.question)) return null
   if (normalized.some((position) => !position.question)) return null
   return { ...(title ? { title } : {}), positions: normalized }
 }

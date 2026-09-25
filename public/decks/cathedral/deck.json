@@ -1,161 +1,293 @@
 {
   "id": "cathedral",
-  "name": "Cathedral Arcana",
-  "cardBack": "backs/default.svg",
+  "name": "Arcana",
+  "cardBack": "backs/cathedral-back.png",
   "cards": [
     {
       "id": "the-fool",
       "name": "The Fool",
       "arcana": "major",
       "number": 0,
-      "image": "cards/00-the-fool.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "crystal-precipice",
+        "primarySymbol": "crystal-precipice",
+        "layout": "ascending",
+        "animation": "star-path"
+      }
     },
     {
       "id": "the-magician",
       "name": "The Magician",
       "arcana": "major",
       "number": 1,
-      "image": "cards/01-the-magician.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "infinity-astrolabe",
+        "primarySymbol": "infinity-astrolabe",
+        "layout": "radial",
+        "animation": "suit-orbit"
+      }
     },
     {
       "id": "the-high-priestess",
       "name": "The High Priestess",
       "arcana": "major",
       "number": 2,
-      "image": "cards/02-the-high-priestess.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "lunar-veil",
+        "primarySymbol": "lunar-veil",
+        "layout": "mirrored",
+        "animation": "moon-wax"
+      }
     },
     {
       "id": "the-empress",
       "name": "The Empress",
       "arcana": "major",
       "number": 3,
-      "image": "cards/03-the-empress.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "venus-botanical",
+        "primarySymbol": "venus-botanical",
+        "layout": "radial",
+        "animation": "crystal-bloom"
+      }
     },
     {
       "id": "the-emperor",
       "name": "The Emperor",
       "arcana": "major",
       "number": 4,
-      "image": "cards/04-the-emperor.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "crystal-foundation",
+        "primarySymbol": "crystal-foundation",
+        "layout": "gateway",
+        "animation": "solar-breath"
+      }
     },
     {
       "id": "the-hierophant",
       "name": "The Hierophant",
       "arcana": "major",
       "number": 5,
-      "image": "cards/05-the-hierophant.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "ceremonial-temple",
+        "primarySymbol": "ceremonial-temple",
+        "layout": "gateway",
+        "animation": "slow-halo"
+      }
     },
     {
       "id": "the-lovers",
       "name": "The Lovers",
       "arcana": "major",
       "number": 6,
-      "image": "cards/06-the-lovers.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "twin-crystals",
+        "primarySymbol": "twin-crystals",
+        "layout": "mirrored",
+        "animation": "star-pulse"
+      }
     },
     {
       "id": "the-chariot",
       "name": "The Chariot",
       "arcana": "major",
       "number": 7,
-      "image": "cards/07-the-chariot.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "converging-forces",
+        "primarySymbol": "converging-forces",
+        "layout": "forward",
+        "animation": "slow-drift"
+      }
     },
     {
       "id": "strength",
       "name": "Strength",
       "arcana": "major",
       "number": 8,
-      "image": "cards/08-strength.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "solar-infinity",
+        "primarySymbol": "solar-infinity",
+        "layout": "infinity",
+        "animation": "crystal-breath"
+      }
     },
     {
       "id": "the-hermit",
       "name": "The Hermit",
       "arcana": "major",
       "number": 9,
-      "image": "cards/09-the-hermit.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "lantern-mountain",
+        "primarySymbol": "lantern-mountain",
+        "layout": "solitary",
+        "animation": "lantern-glow"
+      }
     },
     {
       "id": "wheel-of-fortune",
       "name": "Wheel of Fortune",
       "arcana": "major",
       "number": 10,
-      "image": "cards/10-wheel-of-fortune.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "celestial-wheel",
+        "primarySymbol": "celestial-wheel",
+        "layout": "orbit",
+        "animation": "counter-orbit"
+      }
     },
     {
       "id": "justice",
       "name": "Justice",
       "arcana": "major",
       "number": 11,
-      "image": "cards/11-justice.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "balanced-scales",
+        "primarySymbol": "balanced-scales",
+        "layout": "bilateral",
+        "animation": "blade-shimmer"
+      }
     },
     {
       "id": "the-hanged-man",
       "name": "The Hanged Man",
       "arcana": "major",
       "number": 12,
-      "image": "cards/12-the-hanged-man.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "inverted-halo",
+        "primarySymbol": "inverted-halo",
+        "layout": "inverted",
+        "animation": "halo-drift"
+      }
     },
     {
       "id": "death",
       "name": "Death",
       "arcana": "major",
       "number": 13,
-      "image": "cards/13-death.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "fracture-regeneration",
+        "primarySymbol": "fracture-regeneration",
+        "layout": "fractured",
+        "animation": "reform-fragments"
+      }
     },
     {
       "id": "temperance",
       "name": "Temperance",
       "arcana": "major",
       "number": 14,
-      "image": "cards/14-temperance.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "vessel-exchange",
+        "primarySymbol": "vessel-exchange",
+        "layout": "flowing",
+        "animation": "energy-flow"
+      }
     },
     {
       "id": "the-devil",
       "name": "The Devil",
       "arcana": "major",
       "number": 15,
-      "image": "cards/15-the-devil.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "binding-crystal",
+        "primarySymbol": "binding-crystal",
+        "layout": "binding",
+        "animation": "violet-pulse"
+      }
     },
     {
       "id": "the-tower",
       "name": "The Tower",
       "arcana": "major",
       "number": 16,
-      "image": "cards/16-the-tower.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "lightning-tower",
+        "primarySymbol": "lightning-tower",
+        "layout": "vertical",
+        "animation": "reveal-flash"
+      }
     },
     {
       "id": "the-star",
       "name": "The Star",
       "arcana": "major",
       "number": 17,
-      "image": "cards/17-the-star.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "seven-star-water",
+        "primarySymbol": "seven-star-water",
+        "layout": "radial",
+        "animation": "star-pulse"
+      }
     },
     {
       "id": "the-moon",
       "name": "The Moon",
       "arcana": "major",
       "number": 18,
-      "image": "cards/18-the-moon.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "twin-moon-gates",
+        "primarySymbol": "twin-moon-gates",
+        "layout": "path",
+        "animation": "lunar-mist"
+      }
     },
     {
       "id": "the-sun",
       "name": "The Sun",
       "arcana": "major",
       "number": 19,
-      "image": "cards/19-the-sun.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "crystalline-solar-wheel",
+        "primarySymbol": "crystalline-solar-wheel",
+        "layout": "radial",
+        "animation": "ray-breath"
+      }
     },
     {
       "id": "judgement",
       "name": "Judgement",
       "arcana": "major",
       "number": 20,
-      "image": "cards/20-judgement.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "ascending-crystals",
+        "primarySymbol": "ascending-crystals",
+        "layout": "ascending",
+        "animation": "crystal-ascent"
+      }
     },
     {
       "id": "the-world",
       "name": "The World",
       "arcana": "major",
       "number": 21,
-      "image": "cards/21-the-world.svg"
+      "visual": {
+        "renderer": "major",
+        "composition": "integration-mandala",
+        "primarySymbol": "integration-mandala",
+        "layout": "mandala",
+        "animation": "slow-orbits"
+      }
     },
     {
       "id": "ace-of-wands",
@@ -163,7 +295,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "ace",
-      "image": "cards/wands-01-ace.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "mirrored",
+        "symbolCount": 1,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "two-of-wands",
@@ -171,7 +309,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "two",
-      "image": "cards/wands-02-two.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "ascending",
+        "symbolCount": 2,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "three-of-wands",
@@ -179,7 +323,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "three",
-      "image": "cards/wands-03-three.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "descending",
+        "symbolCount": 3,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "four-of-wands",
@@ -187,7 +337,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "four",
-      "image": "cards/wands-04-four.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "crossed",
+        "symbolCount": 4,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "five-of-wands",
@@ -195,7 +351,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "five",
-      "image": "cards/wands-05-five.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "spiral",
+        "symbolCount": 5,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "six-of-wands",
@@ -203,7 +365,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "six",
-      "image": "cards/wands-06-six.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "constellation",
+        "symbolCount": 6,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "seven-of-wands",
@@ -211,7 +379,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "seven",
-      "image": "cards/wands-07-seven.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "orbit",
+        "symbolCount": 7,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "eight-of-wands",
@@ -219,7 +393,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "eight",
-      "image": "cards/wands-08-eight.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "diagonal",
+        "symbolCount": 8,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "nine-of-wands",
@@ -227,7 +407,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "nine",
-      "image": "cards/wands-09-nine.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "path",
+        "symbolCount": 9,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "ten-of-wands",
@@ -235,7 +421,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "ten",
-      "image": "cards/wands-10-ten.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "fractured",
+        "symbolCount": 10,
+        "primarySymbol": "wands",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "page-of-wands",
@@ -243,7 +435,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "page",
-      "image": "cards/wands-11-page.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "page-heraldic-wands",
+        "primarySymbol": "wands",
+        "layout": "emerging",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "knight-of-wands",
@@ -251,7 +449,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "knight",
-      "image": "cards/wands-12-knight.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "knight-heraldic-wands",
+        "primarySymbol": "wands",
+        "layout": "diagonal",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "queen-of-wands",
@@ -259,7 +463,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "queen",
-      "image": "cards/wands-13-queen.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "queen-heraldic-wands",
+        "primarySymbol": "wands",
+        "layout": "mandala",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "king-of-wands",
@@ -267,7 +477,13 @@
       "arcana": "minor",
       "suit": "wands",
       "rank": "king",
-      "image": "cards/wands-14-king.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "king-heraldic-wands",
+        "primarySymbol": "wands",
+        "layout": "crowned-radial",
+        "animation": "ember-rise"
+      }
     },
     {
       "id": "ace-of-cups",
@@ -275,7 +491,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "ace",
-      "image": "cards/cups-01-ace.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "descending",
+        "symbolCount": 1,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "two-of-cups",
@@ -283,7 +505,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "two",
-      "image": "cards/cups-02-two.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "crossed",
+        "symbolCount": 2,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "three-of-cups",
@@ -291,7 +519,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "three",
-      "image": "cards/cups-03-three.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "spiral",
+        "symbolCount": 3,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "four-of-cups",
@@ -299,7 +533,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "four",
-      "image": "cards/cups-04-four.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "constellation",
+        "symbolCount": 4,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "five-of-cups",
@@ -307,7 +547,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "five",
-      "image": "cards/cups-05-five.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "orbit",
+        "symbolCount": 5,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "six-of-cups",
@@ -315,7 +561,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "six",
-      "image": "cards/cups-06-six.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "gateway",
+        "symbolCount": 6,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "seven-of-cups",
@@ -323,7 +575,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "seven",
-      "image": "cards/cups-07-seven.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "arc",
+        "symbolCount": 7,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "eight-of-cups",
@@ -331,7 +589,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "eight",
-      "image": "cards/cups-08-eight.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "fractured",
+        "symbolCount": 8,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "nine-of-cups",
@@ -339,7 +603,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "nine",
-      "image": "cards/cups-09-nine.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "tree",
+        "symbolCount": 9,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "ten-of-cups",
@@ -347,7 +617,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "ten",
-      "image": "cards/cups-10-ten.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "radial",
+        "symbolCount": 10,
+        "primarySymbol": "cups",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "page-of-cups",
@@ -355,7 +631,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "page",
-      "image": "cards/cups-11-page.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "page-heraldic-cups",
+        "primarySymbol": "cups",
+        "layout": "emerging",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "knight-of-cups",
@@ -363,7 +645,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "knight",
-      "image": "cards/cups-12-knight.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "knight-heraldic-cups",
+        "primarySymbol": "cups",
+        "layout": "diagonal",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "queen-of-cups",
@@ -371,7 +659,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "queen",
-      "image": "cards/cups-13-queen.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "queen-heraldic-cups",
+        "primarySymbol": "cups",
+        "layout": "mandala",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "king-of-cups",
@@ -379,7 +673,13 @@
       "arcana": "minor",
       "suit": "cups",
       "rank": "king",
-      "image": "cards/cups-14-king.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "king-heraldic-cups",
+        "primarySymbol": "cups",
+        "layout": "crowned-radial",
+        "animation": "reflective-flow"
+      }
     },
     {
       "id": "ace-of-swords",
@@ -387,7 +687,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "ace",
-      "image": "cards/swords-01-ace.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "spiral",
+        "symbolCount": 1,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "two-of-swords",
@@ -395,7 +701,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "two",
-      "image": "cards/swords-02-two.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "constellation",
+        "symbolCount": 2,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "three-of-swords",
@@ -403,7 +715,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "three",
-      "image": "cards/swords-03-three.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "crossed",
+        "symbolCount": 3,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "four-of-swords",
@@ -411,7 +729,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "four",
-      "image": "cards/swords-04-four.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "gateway",
+        "symbolCount": 4,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "five-of-swords",
@@ -419,7 +743,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "five",
-      "image": "cards/swords-05-five.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "path",
+        "symbolCount": 5,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "six-of-swords",
@@ -427,7 +757,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "six",
-      "image": "cards/swords-06-six.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "fractured",
+        "symbolCount": 6,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "seven-of-swords",
@@ -435,7 +771,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "seven",
-      "image": "cards/swords-07-seven.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "tree",
+        "symbolCount": 7,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "eight-of-swords",
@@ -443,7 +785,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "eight",
-      "image": "cards/swords-08-eight.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "radial",
+        "symbolCount": 8,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "nine-of-swords",
@@ -451,7 +799,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "nine",
-      "image": "cards/swords-09-nine.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "mirrored",
+        "symbolCount": 9,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "ten-of-swords",
@@ -459,7 +813,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "ten",
-      "image": "cards/swords-10-ten.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "ascending",
+        "symbolCount": 10,
+        "primarySymbol": "swords",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "page-of-swords",
@@ -467,7 +827,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "page",
-      "image": "cards/swords-11-page.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "page-heraldic-swords",
+        "primarySymbol": "swords",
+        "layout": "emerging",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "knight-of-swords",
@@ -475,7 +841,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "knight",
-      "image": "cards/swords-12-knight.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "knight-heraldic-swords",
+        "primarySymbol": "swords",
+        "layout": "diagonal",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "queen-of-swords",
@@ -483,7 +855,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "queen",
-      "image": "cards/swords-13-queen.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "queen-heraldic-swords",
+        "primarySymbol": "swords",
+        "layout": "mandala",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "king-of-swords",
@@ -491,7 +869,13 @@
       "arcana": "minor",
       "suit": "swords",
       "rank": "king",
-      "image": "cards/swords-14-king.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "king-heraldic-swords",
+        "primarySymbol": "swords",
+        "layout": "crowned-radial",
+        "animation": "edge-shimmer"
+      }
     },
     {
       "id": "ace-of-pentacles",
@@ -499,7 +883,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "ace",
-      "image": "cards/pentacles-01-ace.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "orbit",
+        "symbolCount": 1,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "two-of-pentacles",
@@ -507,7 +897,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "two",
-      "image": "cards/pentacles-02-two.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "gateway",
+        "symbolCount": 2,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "three-of-pentacles",
@@ -515,7 +911,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "three",
-      "image": "cards/pentacles-03-three.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "path",
+        "symbolCount": 3,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "four-of-pentacles",
@@ -523,7 +925,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "four",
-      "image": "cards/pentacles-04-four.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "fractured",
+        "symbolCount": 4,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "five-of-pentacles",
@@ -531,7 +939,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "five",
-      "image": "cards/pentacles-05-five.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "tree",
+        "symbolCount": 5,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "six-of-pentacles",
@@ -539,7 +953,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "six",
-      "image": "cards/pentacles-06-six.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "radial",
+        "symbolCount": 6,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "seven-of-pentacles",
@@ -547,7 +967,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "seven",
-      "image": "cards/pentacles-07-seven.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "mirrored",
+        "symbolCount": 7,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "eight-of-pentacles",
@@ -555,7 +981,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "eight",
-      "image": "cards/pentacles-08-eight.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "ascending",
+        "symbolCount": 8,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "nine-of-pentacles",
@@ -563,7 +995,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "nine",
-      "image": "cards/pentacles-09-nine.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "descending",
+        "symbolCount": 9,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "ten-of-pentacles",
@@ -571,7 +1009,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "ten",
-      "image": "cards/pentacles-10-ten.svg"
+      "visual": {
+        "renderer": "pip",
+        "layout": "tree",
+        "symbolCount": 10,
+        "primarySymbol": "pentacles",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "page-of-pentacles",
@@ -579,7 +1023,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "page",
-      "image": "cards/pentacles-11-page.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "page-heraldic-pentacles",
+        "primarySymbol": "pentacles",
+        "layout": "emerging",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "knight-of-pentacles",
@@ -587,7 +1037,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "knight",
-      "image": "cards/pentacles-12-knight.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "knight-heraldic-pentacles",
+        "primarySymbol": "pentacles",
+        "layout": "diagonal",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "queen-of-pentacles",
@@ -595,7 +1051,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "queen",
-      "image": "cards/pentacles-13-queen.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "queen-heraldic-pentacles",
+        "primarySymbol": "pentacles",
+        "layout": "mandala",
+        "animation": "earth-pulse"
+      }
     },
     {
       "id": "king-of-pentacles",
@@ -603,7 +1065,13 @@
       "arcana": "minor",
       "suit": "pentacles",
       "rank": "king",
-      "image": "cards/pentacles-14-king.svg"
+      "visual": {
+        "renderer": "court",
+        "composition": "king-heraldic-pentacles",
+        "primarySymbol": "pentacles",
+        "layout": "crowned-radial",
+        "animation": "earth-pulse"
+      }
     }
   ]
 }

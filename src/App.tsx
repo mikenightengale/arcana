@@ -1,9 +1,14 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useRegisterSW } from 'virtual:pwa-register/react'
+import { NotificationToast, type ToastMessage, type ToastVariant } from './NotificationToast'
 import { loadState, saveState } from './persistence/db'
 import { formatReading } from './tarot/formatter'
+import { getCardMeaning } from './tarot/meanings'
 import { mapReading } from './tarot/mapping'
+import { CrystalCard } from './tarot/CrystalCard'
+import { DeckPicker } from './tarot/DeckPicker'
+import { DeckGallery } from './tarot/DeckGallery'
 import { parseSpread } from './tarot/parser'
 import { createShuffledDeck, drawCards, remainingCards } from './tarot/shuffle'
 import type { AppState, DeckManifest, ReadingPosition, TarotSpread } from './types/tarot'
@@ -26,11 +31,16 @@ function App() {
   const [state, setState] = useState<AppState | null>(null)
   const [manifest, setManifest] = useState<DeckManifest | null>(null)
   const [error, setError] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [toast, setToast] = useState<ToastMessage | null>(null)
   const [showPreview, setShowPreview] = useState(true)
   const [updateReady, setUpdateReady] = useState(false)
   const [dealOrigin, setDealOrigin] = useState<CardRect | null>(null)
   const dealing = useRef(false)
+  const toastId = useRef(0)
+  const notify = useCallback((variant: ToastVariant, message: string) => {
+    setToast({ id: ++toastId.current, variant, message })
+  }, [])
+  const dismissToast = useCallback(() => setToast(null), [])
   const { updateServiceWorker } = useRegisterSW({
     onNeedRefresh() { setUpdateReady(true) },
   })
@@ -47,49 +57,56 @@ function App() {
       if (!alive) return
       if (loadedManifest.cards.length !== 78) throw new Error('The Cathedral deck must contain exactly 78 cards.')
       setManifest(loadedManifest)
-      setState(saved ?? {
+      const canonicalCards = new Map(loadedManifest.cards.map((card) => [card.id, card]))
+      const hydrate = <T extends { id: string; orientation: 'upright' | 'reversed' }>(card: T) => ({ ...card, ...(canonicalCards.get(card.id) ?? {}), orientation: card.orientation })
+      const migrated = saved ? {
+        ...saved,
+        deck: { ...saved.deck, cards: saved.deck.cards.map(hydrate) },
+        reading: saved.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
+      } : null
+      setState(migrated ?? {
         stage: 'setup', deck: createShuffledDeck(loadedManifest.cards), spread: null,
         reading: null, drawCount: 20, sourceText: '',
       })
     }).catch((reason: unknown) => {
-      if (alive) setError(reason instanceof Error ? reason.message : 'Cathedral Arcana could not start.')
+      if (alive) setError(reason instanceof Error ? reason.message : 'Arcana could not start.')
     })
     return () => { alive = false }
   }, [])
 
   useEffect(() => {
-    if (state) void saveState(state).catch(() => setError('Your latest changes could not be saved in this browser.'))
+    if (state) void saveState(state).catch(() => notify('error', 'Your latest changes could not be saved in this browser.'))
   }, [state])
 
   const parsed = useMemo(() => state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText])
   const count = parsed ? parsed.positions.length : (state?.drawCount ?? 20)
   const remaining = state ? remainingCards(state.deck) : 78
+  const deckStatus = remaining <= 13 ? 'critical' : remaining <= 26 ? 'low' : 'normal'
 
   function update(patch: Partial<AppState>) {
     setState((current) => current ? { ...current, ...patch } : current)
-    setError('')
-    setCopied(false)
+    setToast(null)
   }
 
   function onSpreadChange(sourceText: string) {
     if (!state) return
     const spread = sourceText.trim() ? parseSpread(sourceText) : null
     setState({ ...state, sourceText, spread, drawCount: spread ? spread.positions.length : 20 })
-    setError('')
+    setToast(null)
   }
 
   function beginShuffle() {
     if (!state) return
     if (!parsed && state.sourceText.trim()) {
-      setError('We couldn’t find numbered positions with questions. Check the spread format or clear it to draw without a spread.')
+      notify('warning', 'We couldn’t find numbered positions with questions. Check the spread format or clear it to draw without a spread.')
       return
     }
     if (!Number.isInteger(count) || count < 1 || count > 78) {
-      setError('Choose a number of cards from 1 to 78.')
+      notify('warning', 'Choose a number of cards from 1 to 78.')
       return
     }
     if (count > remaining) {
-      setError(`${count} cards requested\n${remaining} cards remain\n\nReset the deck before continuing.`)
+      notify('warning', `${count} cards requested. ${remaining} cards remain. Reset the deck before continuing.`)
       return
     }
     update({ spread: parsed, stage: 'shuffling', reading: null, drawCount: count })
@@ -115,8 +132,7 @@ function App() {
 
       // Save the immutable draw before starting its visual presentation.
       await saveState(nextState)
-      setError('')
-      setCopied(false)
+      setToast(null)
       setDealOrigin(!reducedMotion && bounds ? {
         left: bounds.left,
         top: bounds.top,
@@ -125,7 +141,7 @@ function App() {
       } : null)
       setState(nextState)
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'The cards could not be drawn or saved.')
+      notify('error', reason instanceof Error ? reason.message : 'The cards could not be drawn or saved.')
     } finally {
       dealing.current = false
     }
@@ -138,8 +154,6 @@ function App() {
 
   function resetDeck() {
     if (!state || !manifest) return
-    const accepted = window.confirm('Reset the deck?\n\nAll 78 cards will return to the deck and a completely new shuffle will be created.')
-    if (!accepted) return
     update({ deck: createShuffledDeck(manifest.cards), stage: 'setup', spread: null, reading: null, drawCount: 20, sourceText: '' })
   }
 
@@ -147,23 +161,29 @@ function App() {
     if (!state?.reading) return
     try {
       await navigator.clipboard.writeText(formatReading(state.reading, state.spread))
-      setCopied(true)
+      notify('success', 'Reading copied to clipboard.')
     } catch {
-      setError('Clipboard access was unavailable. Select and copy the reading text instead.')
+      notify('error', 'Clipboard access was unavailable. Select and copy the reading text instead.')
     }
   }
 
-  if (error && !state) return <main className="boot-error"><h1>Cathedral Arcana</h1><p>{error}</p></main>
+  if (error && !state) return <main className="boot-error"><h1>Arcana</h1><p>{error}</p></main>
   if (!state || !manifest) return <main className="loading"><span className="loading-sigil" aria-hidden="true">✳</span><p>Opening the table</p></main>
+
+  const cardBackUrl = `/decks/cathedral/${manifest.cardBack}`
+
+  if (window.location.pathname.startsWith('/gallery')) {
+    return <DeckGallery cards={manifest.cards} cardBackUrl={cardBackUrl} onReturn={() => { window.location.href = '/' }} />
+  }
 
   return (
     <div className="app-shell">
       <div className="ambient ambient-one" aria-hidden="true" />
       <div className="ambient ambient-two" aria-hidden="true" />
       <header className="topbar">
-        <a className="brand" href="#top" onClick={(event) => event.preventDefault()} aria-label="Cathedral Arcana home">
-          <span className="brand-sigil" aria-hidden="true">✳</span>
-          <span><strong>Cathedral</strong><small>ARCANA</small></span>
+        <a className="brand" href="#top" onClick={(event) => event.preventDefault()} aria-label="Arcana home">
+          <img className="brand-logo" src="/icons/arcana.svg" alt="" />
+          <span><strong>Arcana</strong></span>
         </a>
         <nav className="steps" aria-label="Reading steps">
           <span className={state.stage === 'setup' ? 'step active' : 'step'}><i>01</i> Prepare</span>
@@ -172,7 +192,10 @@ function App() {
           <span className="step-rule" />
           <span className={state.stage === 'reading' ? 'step active' : 'step'}><i>03</i> Reading</span>
         </nav>
-        <div className="deck-status"><span className="status-dot" />{remaining} <span>cards remain</span></div>
+        <div className={`deck-status deck-status-${deckStatus}`} role="status" aria-label={`${remaining} ${remaining === 1 ? 'card remains' : 'cards remain'}${deckStatus === 'critical' ? ', very low' : deckStatus === 'low' ? ', running low' : ''}`}>
+          <span className="status-dot" aria-hidden="true" />
+          {remaining} <span>{remaining === 1 ? 'card remains' : 'cards remain'}</span>
+        </div>
       </header>
 
       <main id="top" className={`main-content stage-${state.stage}`}>
@@ -196,23 +219,17 @@ function App() {
               </div>}
             </section>
 
-            <section className="altar panel" aria-label="Cathedral deck">
-              <div className="altar-arch" aria-hidden="true"><div className="glass glass-a" /><div className="glass glass-b" /><div className="glass glass-c" /></div>
-              <div className="altar-stars" aria-hidden="true">✧　　　·　　✦　　　 ·　　✧</div>
-              <div className="card-back" aria-hidden="true"><span className="card-ring"><i>✳</i></span><span className="card-back-name">CATHEDRAL<br />ARCANA</span></div>
-              <div className="altar-caption"><span>THE CATHEDRAL DECK</span><small>78 cards · Rider–Waite–Smith structure</small></div>
-            </section>
+            <DeckPicker manifest={manifest} cardBackUrl={cardBackUrl} />
           </div>
 
           <div className="draw-settings">
             <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed ? 'One card for each position' : 'Choose how many cards to bring to the table'}</small></span></div>
             {!parsed && <label className="count-control"><span className="visually-hidden">Cards to draw</span><button aria-label="Decrease card count" onClick={() => update({ drawCount: Math.max(1, count - 1) })} disabled={count <= 1}>−</button><input type="number" min="1" max="78" value={count} onChange={(event) => update({ drawCount: Math.min(78, Math.max(1, Number(event.target.value) || 1)) })} /><button aria-label="Increase card count" onClick={() => update({ drawCount: Math.min(78, count + 1) })} disabled={count >= 78}>+</button></label>}
           </div>
-          {error && <div className="error-message" role="alert">{error}</div>}
           <button className="primary-button" onClick={beginShuffle}>
             <span>Shuffle the deck</span><span className="button-arrow" aria-hidden="true">↗</span>
           </button>
-          <button className="text-button reset-setup" onClick={resetDeck}>Reset the deck</button>
+          <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>
           <p className="privacy-note"><span aria-hidden="true">◈</span> Your cards and readings stay on this device.</p>
         </section>}
 
@@ -222,25 +239,25 @@ function App() {
           <p className="ceremony-line">The veil stirs.<br />Order becomes possibility.</p>
           <div className="shuffle-ritual" aria-hidden="true">
             <span className="shuffle-orbit orbit-one" /><span className="shuffle-orbit orbit-two" />
-            {[0, 1, 2, 3, 4].map((card) => <div className={`shuffle-card shuffle-card-${card + 1}`} key={card}><div className="mini-sigil">✳</div></div>)}
+            {[0, 1, 2, 3, 4].map((card) => <div className={`shuffle-card shuffle-card-${card + 1}`} key={card}><img src={cardBackUrl} alt="" /></div>)}
             <span className="shuffle-spark spark-a">✧</span><span className="shuffle-spark spark-b">·</span><span className="shuffle-spark spark-c">✦</span>
           </div>
           <p className="draw-count-note">A reading of <strong>{count}</strong> {count === 1 ? 'card' : 'cards'}</p>
-          {error && <div className="error-message" role="alert">{error}</div>}
           <button className="primary-button draw-button" onClick={deal}><span>Draw all cards</span><span className="button-arrow" aria-hidden="true">↗</span></button>
           <button className="text-button return-button" onClick={() => update({ stage: 'setup' })}>Return to preparation</button>
         </section>}
 
-        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} onCopy={copyReading} copied={copied} onNew={newReading} onReset={resetDeck} />}
+        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} cardBackUrl={cardBackUrl} onCopy={copyReading} onNew={newReading} onReset={resetDeck} />}
       </main>
-      <footer className="footer"><span>Cathedral Arcana</span><span>Quiet hands. Clear questions.</span><span>YOUR TABLE, YOURS ALONE</span></footer>
-      {updateReady && <div className="update-toast" role="status"><span>A new version of Cathedral Arcana is available.</span><button onClick={() => updateServiceWorker(true)}>Update</button><button className="dismiss" aria-label="Dismiss update notice" onClick={() => setUpdateReady(false)}>×</button></div>}
+      <footer className="footer"><span>Arcana</span><span>Quiet hands. Clear questions.</span><span>YOUR TABLE, YOURS ALONE</span></footer>
+      {toast && <NotificationToast key={toast.id} toast={toast} onDismiss={dismissToast} />}
+      {updateReady && <div className="update-toast" role="status"><span>A new version of Arcana is available.</span><button onClick={() => updateServiceWorker(true)}>Update</button><button className="dismiss" aria-label="Dismiss update notice" onClick={() => setUpdateReady(false)}>×</button></div>}
     </div>
   )
 }
 
-function ReadingView({ reading, spread, dealOrigin, onCopy, copied, onNew, onReset }: {
-  reading: ReadingPosition[]; spread: TarotSpread | null; dealOrigin: CardRect | null; onCopy: () => void; copied: boolean; onNew: () => void; onReset: () => void
+function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, onNew, onReset }: {
+  reading: ReadingPosition[]; spread: TarotSpread | null; dealOrigin: CardRect | null; cardBackUrl: string; onCopy: () => void; onNew: () => void; onReset: () => void
 }) {
   const gridRef = useRef<HTMLDivElement>(null)
   const [flightCards, setFlightCards] = useState<DealFlight[] | null>(null)
@@ -269,14 +286,59 @@ function ReadingView({ reading, spread, dealOrigin, onCopy, copied, onNew, onRes
     }
   }, [dealOrigin, reading])
 
+  useLayoutEffect(() => {
+    const grid = gridRef.current
+    if (!grid) return
+    let copies: HTMLElement[] = []
+
+    const alignPositionRows = () => {
+      const cards = Array.from(grid.querySelectorAll<HTMLElement>('.reading-card'))
+      const rows = new Map<number, HTMLElement[]>()
+      copies = cards.map((card) => card.querySelector<HTMLElement>('.card-copy')).filter((copy): copy is HTMLElement => copy !== null)
+      copies.forEach((copy) => { copy.style.minHeight = '' })
+
+      cards.forEach((card) => {
+        const copy = card.querySelector<HTMLElement>('.card-copy')
+        if (!copy) return
+        const row = rows.get(card.offsetTop) ?? []
+        row.push(copy)
+        rows.set(card.offsetTop, row)
+      })
+
+      rows.forEach((row) => {
+        const height = Math.max(...row.map((copy) => copy.getBoundingClientRect().height))
+        row.forEach((copy) => { copy.style.minHeight = `${height}px` })
+      })
+    }
+
+    let frame = 0
+    let active = true
+    const scheduleAlignment = () => {
+      if (!active) return
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(alignPositionRows)
+    }
+    alignPositionRows()
+    window.addEventListener('resize', scheduleAlignment)
+    document.fonts?.ready.then(scheduleAlignment)
+    return () => {
+      active = false
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', scheduleAlignment)
+      copies.forEach((copy) => { copy.style.minHeight = '' })
+    }
+  }, [reading])
+
   return <section className="reading-view" aria-labelledby="screen-title">
     <div className="eyebrow"><span /> THE CARDS HAVE SPOKEN <span /></div>
     <h1 id="screen-title">Your <em>reading</em></h1>
     <p className="intro">{spread?.title ? `A quiet moment with “${spread.title}”` : 'A quiet moment with the cards.'}</p>
     <div className="reading-grid" ref={gridRef}>
       {reading.map(({ position, card }, index) => <article className="reading-card" key={`${index}-${card.id}`}>
-        <div className={`card-art-wrap ${flightCards ? 'card-art-hidden' : ''}`}><img className={`card-art ${card.orientation}`} src={`/decks/cathedral/${card.image}`} alt={`${card.name}, shown ${card.orientation}`} loading={index > 5 ? 'lazy' : 'eager'} />{card.orientation === 'reversed' && <span className="orientation-badge">Reversed</span>}</div>
-        <div className="card-copy"><span className="position-index">{String(position?.number ?? index + 1).padStart(2, '0')}</span><div className="position-text">{position?.title && <h2>{position.title}</h2>}{position?.question && <p>{position.question}</p>}<strong className="card-name">{card.name}</strong><span className="card-orientation">{card.orientation}</span></div></div>
+        <div className={`card-art-wrap ${flightCards ? 'card-art-hidden' : ''}`}><CrystalCard className="card-art" card={card} reversed={card.orientation === 'reversed'} reveal animations showLabels={false} /></div>
+        <div className="card-copy"><span className="position-index">{String(position?.number ?? index + 1).padStart(2, '0')}</span><div className="position-text">{position?.title && <h2>{position.title}</h2>}{position?.question && <p>{position.question}</p>}</div></div>
+        <div className="card-label"><strong className="card-name">{card.name}</strong>{card.orientation === 'reversed' && <span className="card-orientation">Reversed</span>}</div>
+        <p className="card-meaning">{getCardMeaning(card.id, card.orientation) ?? 'A meaning guide is not available for this card.'}</p>
       </article>)}
     </div>
     {flightCards && createPortal(
@@ -308,15 +370,15 @@ function ReadingView({ reading, spread, dealOrigin, onCopy, copied, onNew, onRes
             } as React.CSSProperties}
           >
             <div className="deal-flight-inner">
-              <div className="deal-flight-face deal-flight-back"><span>✳</span></div>
-              <div className="deal-flight-face deal-flight-front"><img className={reading[index].card.orientation} src={`/decks/cathedral/${reading[index].card.image}`} alt="" /></div>
+              <div className="deal-flight-face deal-flight-back"><img src={cardBackUrl} alt="" /></div>
+              <div className="deal-flight-face deal-flight-front"><CrystalCard card={reading[index].card} reversed={reading[index].card.orientation === 'reversed'} animations={false} showLabels={false} /></div>
             </div>
           </div>
         })}
       </div>,
       document.body,
     )}
-    <div className="reading-actions"><button className="primary-button copy-button" onClick={onCopy}><span>{copied ? 'Reading copied' : 'Copy reading'}</span><span className="button-arrow" aria-hidden="true">{copied ? '✓' : '↗'}</span></button><button className="secondary-button" onClick={onNew}>Prepare another reading</button><button className="text-button reset-button" onClick={onReset}>Reset the deck</button></div>
+    <div className="reading-actions"><button className="primary-button copy-button" onClick={onCopy}><span>Copy reading</span><span className="button-arrow" aria-hidden="true">↗</span></button><button className="secondary-button" onClick={onNew}>Prepare another reading</button><button className="text-button reset-setup reading-reset-button" onClick={onReset}>Reset the Deck</button></div>
   </section>
 }
 

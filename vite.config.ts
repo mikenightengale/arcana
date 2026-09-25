@@ -7,16 +7,16 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icons/cathedral.svg', 'decks/cathedral/**/*.svg', 'decks/cathedral/deck.json'],
+      includeAssets: ['icons/arcana.svg', 'decks/cathedral/**/*.svg', 'decks/cathedral/deck.json'],
       manifest: {
-        name: 'Cathedral Arcana',
+        name: 'Arcana',
         short_name: 'Arcana',
         description: 'A quiet, private tarot table for your own cards and questions.',
         theme_color: '#100c14',
         background_color: '#100c14',
         display: 'standalone',
         orientation: 'any',
-        icons: [{ src: '/icons/cathedral.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
+        icons: [{ src: '/icons/arcana.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,json,woff2}'],

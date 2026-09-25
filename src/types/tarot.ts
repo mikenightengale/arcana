@@ -3,6 +3,15 @@ export type Stage = 'setup' | 'shuffling' | 'reading'
 export type Suit = 'wands' | 'cups' | 'swords' | 'pentacles'
 export type Arcana = 'major' | 'minor'
 
+export interface CardVisual {
+  renderer: 'major' | 'pip' | 'court'
+  composition?: string
+  primarySymbol?: string
+  layout: string
+  animation?: string
+  symbolCount?: number
+}
+
 export interface DeckCard {
   id: string
   name: string
@@ -10,7 +19,7 @@ export interface DeckCard {
   number?: number
   suit?: Suit
   rank?: string
-  image: string
+  visual?: CardVisual
 }
 
 export interface DeckManifest {
