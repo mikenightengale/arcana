@@ -31,3 +31,7 @@ npm run build
 ```
 
 The Vite dev server serves the PWA directly. IndexedDB belongs to the browser installation, so restarting the dev server does not reset the deck.
+
+## GitHub Pages deployment
+
+The production site is served at `https://mikenightengale.github.io/arcana/`. Pushes to `feature/cards` run the GitHub Actions Pages deployment workflow; set the repository's Pages publishing source to **GitHub Actions**. Readings and deck state remain local in browser IndexedDB. For local development, run `npm run dev`.
