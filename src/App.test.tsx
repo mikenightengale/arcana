@@ -22,7 +22,7 @@ const readingCard: RuntimeCard = { ...cards[0], orientation: 'reversed' }
 const state: AppState = {
   stage: 'reading',
   deck: { cards: cards.map((card, index) => ({ ...card, orientation: index % 2 ? 'upright' : 'reversed' })), nextCardIndex: 1, resetAt: 1 },
-  spread: { title: 'A title that must not be copied', positions: [position] },
+  spread: { title: 'A title that must be copied', positions: [position] },
   reading: [{ position, card: readingCard }],
   drawCount: 1,
   sourceText: '',
@@ -49,7 +49,7 @@ describe('reading copy notifications', () => {
     fireEvent.click(copyButton)
     await waitFor(() => expect(mocks.writeText).toHaveBeenCalledTimes(1))
     expect(await screen.findByText('Reading copied to clipboard.')).toBeInTheDocument()
-    expect(mocks.writeText).toHaveBeenLastCalledWith('1. What should I notice?\nCard 0 — Reversed')
+    expect(mocks.writeText).toHaveBeenLastCalledWith('A title that must be copied\n\n1. What should I notice?\nCard 0 — Reversed')
 
     fireEvent.click(copyButton)
     await waitFor(() => expect(mocks.writeText).toHaveBeenCalledTimes(2))
