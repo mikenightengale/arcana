@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CrystalCard } from './CrystalCard'
 import type { DeckCard } from '../types/tarot'
+import { appPath, assetPath } from '../paths'
 
 export function DeckGallery({ cards, cardBackUrl, onReturn }: { cards: DeckCard[]; cardBackUrl: string; onReturn: () => void }) {
   const [animations, setAnimations] = useState(true)
@@ -16,7 +17,7 @@ export function DeckGallery({ cards, cardBackUrl, onReturn }: { cards: DeckCard[
   }, [enlarged])
 
   return <div className="app-shell gallery-shell">
-    <header className="gallery-header"><a className="brand" href="/" onClick={(event) => { event.preventDefault(); onReturn() }} aria-label="Arcana home"><img className="brand-logo" src="/icons/arcana.svg" alt="" /><span><strong>Arcana</strong></span></a><div className="gallery-heading"><span className="eyebrow"><span/> THE CRYSTAL GEOMETRY DECK <span/></span><h1>Forms of the <em>arcana</em></h1><p>All 78 cards, rendered in crystalline geometry.</p></div><button className="text-button gallery-return" onClick={onReturn}>Return to the table</button></header>
+    <header className="gallery-header"><a className="brand" href={appPath()} onClick={(event) => { event.preventDefault(); onReturn() }} aria-label="Arcana home"><img className="brand-logo" src={assetPath('icons/arcana.svg')} alt="" /><span><strong>Arcana</strong></span></a><div className="gallery-heading"><span className="eyebrow"><span/> THE CRYSTAL GEOMETRY DECK <span/></span><h1>Forms of the <em>arcana</em></h1><p>All 78 cards, rendered in crystalline geometry.</p></div><button className="text-button gallery-return" onClick={onReturn}>Return to the table</button></header>
     <main className="gallery-main">
       <div className="gallery-toolbar" aria-label="Gallery controls">
         <button className={animations ? 'gallery-control selected' : 'gallery-control'} aria-pressed={animations} onClick={() => setAnimations((value) => !value)}><span className="control-orb">✧</span>Motion <strong>{animations ? 'On' : 'Off'}</strong></button>
