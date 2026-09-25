@@ -68,7 +68,7 @@ function App() {
         reading: null, drawCount: 20, sourceText: '',
       })
     }).catch((reason: unknown) => {
-      if (alive) setError(reason instanceof Error ? reason.message : 'Cathedral Arcana could not start.')
+      if (alive) setError(reason instanceof Error ? reason.message : 'Arcana could not start.')
     })
     return () => { alive = false }
   }, [])
@@ -165,7 +165,7 @@ function App() {
     }
   }
 
-  if (error && !state) return <main className="boot-error"><h1>Cathedral Arcana</h1><p>{error}</p></main>
+  if (error && !state) return <main className="boot-error"><h1>Arcana</h1><p>{error}</p></main>
   if (!state || !manifest) return <main className="loading"><span className="loading-sigil" aria-hidden="true">✳</span><p>Opening the table</p></main>
 
   const cardBackUrl = `/decks/cathedral/${manifest.cardBack}`
@@ -179,9 +179,9 @@ function App() {
       <div className="ambient ambient-one" aria-hidden="true" />
       <div className="ambient ambient-two" aria-hidden="true" />
       <header className="topbar">
-        <a className="brand" href="#top" onClick={(event) => event.preventDefault()} aria-label="Cathedral Arcana home">
+        <a className="brand" href="#top" onClick={(event) => event.preventDefault()} aria-label="Arcana home">
           <span className="brand-sigil" aria-hidden="true">✳</span>
-          <span><strong>Cathedral</strong><small>ARCANA</small></span>
+          <span><strong>Arcana</strong></span>
         </a>
         <nav className="steps" aria-label="Reading steps">
           <span className={state.stage === 'setup' ? 'step active' : 'step'}><i>01</i> Prepare</span>
@@ -250,9 +250,9 @@ function App() {
 
         {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} cardBackUrl={cardBackUrl} onCopy={copyReading} onNew={newReading} onReset={resetDeck} />}
       </main>
-      <footer className="footer"><span>Cathedral Arcana</span><span>Quiet hands. Clear questions.</span><span>YOUR TABLE, YOURS ALONE</span></footer>
+      <footer className="footer"><span>Arcana</span><span>Quiet hands. Clear questions.</span><span>YOUR TABLE, YOURS ALONE</span></footer>
       {toast && <NotificationToast key={toast.id} toast={toast} onDismiss={dismissToast} />}
-      {updateReady && <div className="update-toast" role="status"><span>A new version of Cathedral Arcana is available.</span><button onClick={() => updateServiceWorker(true)}>Update</button><button className="dismiss" aria-label="Dismiss update notice" onClick={() => setUpdateReady(false)}>×</button></div>}
+      {updateReady && <div className="update-toast" role="status"><span>A new version of Arcana is available.</span><button onClick={() => updateServiceWorker(true)}>Update</button><button className="dismiss" aria-label="Dismiss update notice" onClick={() => setUpdateReady(false)}>×</button></div>}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-# Cathedral Arcana
+# Arcana
 
 A self-hosted, offline-capable tarot table. The first release is deliberately private and client-side: no account, history, interpretation engine, or server-side reading data.
 

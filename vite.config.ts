@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['icons/cathedral.svg', 'decks/cathedral/**/*.svg', 'decks/cathedral/deck.json'],
       manifest: {
-        name: 'Cathedral Arcana',
+        name: 'Arcana',
         short_name: 'Arcana',
         description: 'A quiet, private tarot table for your own cards and questions.',
         theme_color: '#100c14',

@@ -16,7 +16,7 @@ export function DeckGallery({ cards, cardBackUrl, onReturn }: { cards: DeckCard[
   }, [enlarged])
 
   return <div className="app-shell gallery-shell">
-    <header className="gallery-header"><a className="brand" href="/" onClick={(event) => { event.preventDefault(); onReturn() }}><span className="brand-sigil">✳</span><span><strong>Cathedral</strong><small>ARCANA</small></span></a><div className="gallery-heading"><span className="eyebrow"><span/> THE CRYSTAL GEOMETRY DECK <span/></span><h1>Forms of the <em>arcana</em></h1><p>All 78 cards, rendered in crystalline geometry.</p></div><button className="text-button gallery-return" onClick={onReturn}>Return to the table</button></header>
+    <header className="gallery-header"><a className="brand" href="/" onClick={(event) => { event.preventDefault(); onReturn() }} aria-label="Arcana home"><span className="brand-sigil">✳</span><span><strong>Arcana</strong></span></a><div className="gallery-heading"><span className="eyebrow"><span/> THE CRYSTAL GEOMETRY DECK <span/></span><h1>Forms of the <em>arcana</em></h1><p>All 78 cards, rendered in crystalline geometry.</p></div><button className="text-button gallery-return" onClick={onReturn}>Return to the table</button></header>
     <main className="gallery-main">
       <div className="gallery-toolbar" aria-label="Gallery controls">
         <button className={animations ? 'gallery-control selected' : 'gallery-control'} aria-pressed={animations} onClick={() => setAnimations((value) => !value)}><span className="control-orb">✧</span>Motion <strong>{animations ? 'On' : 'Off'}</strong></button>
