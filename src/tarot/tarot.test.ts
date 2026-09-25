@@ -87,6 +87,13 @@ describe('spread parsing and reading output', () => {
     })
   })
 
+  it('parses a plain first-line title and includes it in copied reading', () => {
+    const spread = parseSpread('Current Direction\n\n1. What energy surrounds this situation?')!
+    const reading = mapReading([{ ...cards[0], orientation: 'upright' } as RuntimeCard], spread)
+    expect(spread.title).toBe('Current Direction')
+    expect(formatReading(reading, spread)).toBe('Current Direction\n\n1. What energy surrounds this situation?\nCard 0')
+  })
+
   it('copies only numbered questions and card results for spreads', () => {
     const spread = parseSpread('# Three cards\n1. **Now**\nWhat is present?\n2. **Next**\nWhat is forming?')!
     const drawn = [0, 1].map((index) => ({ ...cards[index], orientation: index ? 'reversed' : 'upright' })) as RuntimeCard[]

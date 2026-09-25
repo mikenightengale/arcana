@@ -1,6 +1,7 @@
 import type { TarotPosition, TarotSpread } from '../types/tarot'
 
 const clean = (value: string) => value.trim().replace(/^\*\*(.*?)\*\*$/, '$1').replace(/^__(.*?)__$/, '$1').trim()
+const normalizeTitle = (value: string) => clean(value).replace(/^Tarot Spread\s*[—–:-]\s*/i, '').replace(/^['“](.*)['”]$/, '$1')
 
 export function parseSpread(input: string): TarotSpread | null {
   const lines = input.replace(/\r\n?/g, '\n').split('\n')
@@ -25,11 +26,15 @@ export function parseSpread(input: string): TarotSpread | null {
     const line = rawLine.trim()
     if (!line) continue
     const heading = line.match(/^#{1,3}\s+(.+?)\s*#*$/)
+    const numbered = line.match(/^\s*(\d+)\s*[.)]\s+(.+)$/)
     if (heading && positions.length === 0 && !current) {
-      title = clean(heading[1]).replace(/^Tarot Spread\s*[—–:-]\s*/i, '').replace(/^['“](.*)['”]$/, '$1')
+      title = normalizeTitle(heading[1])
       continue
     }
-    const numbered = line.match(/^\s*(\d+)\s*[.)]\s+(.+)$/)
+    if (!title && positions.length === 0 && !current && !numbered) {
+      title = normalizeTitle(line)
+      continue
+    }
     if (numbered) {
       finishCurrent()
       const number = Number(numbered[1])
