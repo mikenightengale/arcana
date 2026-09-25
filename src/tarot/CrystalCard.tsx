@@ -216,7 +216,7 @@ export function CrystalCard({ card, reversed = false, animations = true, classNa
       <radialGradient id={`orb-${uid}`}><stop stopColor={colors.c} stopOpacity=".6"/><stop offset=".5" stopColor={colors.a} stopOpacity=".18"/><stop offset="1" stopColor="#070b1c" stopOpacity="0"/></radialGradient>
       <filter id={`glow-${uid}`} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
-    <g className={reversed ? 'whole-card reversed-art' : 'whole-card'}>
+    <g className="whole-card" transform={reversed ? 'rotate(180 120 192)' : undefined}>
       <rect width="240" height="384" fill={`url(#base-${uid})`}/><rect width="240" height="384" fill={`url(#orb-${uid})`} opacity=".44"/>
       <path d="M18 34Q120 8 222 34V350Q120 376 18 350Z" fill="none" stroke={`url(#gold-${uid})`} strokeOpacity=".48" strokeWidth=".7"/>
       <path d="M24 40Q120 17 216 40V344Q120 367 24 344Z" fill="none" stroke="#9e8ce1" strokeOpacity=".19" strokeWidth=".7"/>
