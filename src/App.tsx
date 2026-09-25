@@ -227,7 +227,6 @@ function App() {
           </button>
           <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>
           <p className="privacy-note"><span aria-hidden="true">◈</span> Your cards and readings stay on this device.</p>
-          <a className="gallery-link" href="/gallery/crystal-geometry">Explore the Crystal Geometry deck</a>
         </section>}
 
         {state.stage === 'shuffling' && <section className="shuffle-view" aria-labelledby="screen-title">

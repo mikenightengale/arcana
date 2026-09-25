@@ -57,7 +57,8 @@ textarea:focus { border-color: rgba(173,145,244,.55); box-shadow: 0 0 0 3px rgba
 .spread-preview span { color: #938c97; font-size: 11px; line-height: 1.45; }
 .deck-picker { min-height: 318px; padding: 22px 24px 20px; display: grid; grid-template-rows: auto 1fr; gap: 18px; background: radial-gradient(ellipse at 50% 56%,rgba(81,34,79,.24),transparent 68%),linear-gradient(145deg,rgba(24,20,29,.91),rgba(15,13,20,.93)); }
 .deck-picker-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.deck-picker-status { color: var(--ice-blue); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+.deck-picker-explore { flex: 0 0 auto; color: #c7b7d0; font-size: 10px; letter-spacing: .07em; text-decoration-color: rgba(173,145,244,.45); text-underline-offset: 4px; white-space: nowrap; }
+.deck-picker-explore:hover { color: var(--lavender-bright); }
 .deck-picker-body { min-width: 0; display: grid; grid-template-columns: minmax(126px,.8fr) minmax(0,1.2fr); align-items: center; gap: 12px; }
 .deck-options { min-width: 0; }
 .deck-option { width: 100%; min-height: 76px; padding: 11px; display: flex; align-items: center; gap: 9px; border: 1px solid rgba(173,145,244,.25); border-radius: 3px; color: #c7bfd1; background: rgba(11,9,17,.55); text-align: left; cursor: pointer; transition: border-color .2s,background .2s,box-shadow .2s; }
@@ -167,8 +168,6 @@ textarea:focus { border-color: rgba(173,145,244,.55); box-shadow: 0 0 0 3px rgba
   /* Avoid applying perspective transforms to the outer SVG viewport. */
   .motion-on.card-reveal { animation-name: card-arrive-flat; }
 }
-.gallery-link { display: block; width: fit-content; margin: 14px auto 0; color: #c7b7d0; font-size: 11px; letter-spacing: .07em; text-decoration-color: rgba(173,145,244,.45); text-underline-offset: 5px; }
-.gallery-link:hover { color: var(--lavender-bright); }
 .gallery-shell { min-height: 100vh; }
 .gallery-header { min-height: 166px; display: grid; grid-template-columns: 1fr minmax(300px,2fr) 1fr; align-items: center; padding: 24px clamp(20px,5vw,80px); border-bottom: 1px solid rgba(173,145,244,.16); }
 .gallery-heading { text-align: center; }.gallery-heading .eyebrow { font-size: 9px; }.gallery-heading h1 { margin: 10px 0 4px; font-size: clamp(32px,4vw,44px); }.gallery-heading p { margin: 0; color: var(--text-muted); font: 15px var(--font-ceremonial); }

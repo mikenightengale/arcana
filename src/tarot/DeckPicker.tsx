@@ -10,7 +10,7 @@ export function DeckPicker({ manifest, cardBackUrl }: { manifest: DeckManifest; 
   return <section className="deck-picker panel" aria-labelledby="deck-picker-title">
     <div className="deck-picker-heading">
       <span className="panel-label" id="deck-picker-title"><span className="label-mark" aria-hidden="true">◈</span>Choose a deck</span>
-      <span className="deck-picker-status" role="status">{isSelected ? 'Selected' : 'Choose one'}</span>
+      <a className="deck-picker-explore" href="/gallery/crystal-geometry">Explore Deck</a>
     </div>
     <div className="deck-picker-body">
       <div className="deck-options" role="group" aria-label="Available decks">
