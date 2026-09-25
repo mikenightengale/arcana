@@ -28,14 +28,16 @@ function watchVisibility(element: Element, listener: (visible: boolean) => void)
 }
 
 function Crystal({ x, y, size = 30, rotation = 0, colors, glow = false }: { x: number; y: number; size?: number; rotation?: number; colors: typeof palettes.major; glow?: boolean }) {
-  return <g transform={`translate(${x} ${y}) rotate(${rotation}) scale(${size / 36})`} className={glow ? 'crystal-glow' : undefined}>
-    <path d="M0-36 21-17 17 20 0 34-17 20-21-17Z" fill="var(--glass-url)" stroke="var(--gold-url)" strokeWidth="1.15"/>
-    <path d="M0-36 0 34-17 20-21-17Z" fill={colors.b} opacity=".48"/>
-    <path d="M0-36 21-17 0-11Z" fill={colors.c} opacity=".54"/>
-    <path d="M0-11 21-17 17 20 0 34Z" fill={colors.a} opacity=".5"/>
-    <path d="M0-11-21-17 0 34Z" fill={colors.b} opacity=".36"/>
-    <path d="M-21-17 0-11 21-17M0-11V34" fill="none" stroke="#e3f7ff" strokeOpacity=".64" strokeWidth=".8"/>
-    <path d="M0-11 17 20M0-11-17 20" fill="none" stroke="#edcf8e" strokeOpacity=".46" strokeWidth=".7"/>
+  return <g transform={`translate(${x} ${y}) rotate(${rotation}) scale(${size / 36})`}>
+    <g className={glow ? 'crystal-glow' : undefined}>
+      <path d="M0-36 21-17 17 20 0 34-17 20-21-17Z" fill="var(--glass-url)" stroke="var(--gold-url)" strokeWidth="1.15"/>
+      <path d="M0-36 0 34-17 20-21-17Z" fill={colors.b} opacity=".48"/>
+      <path d="M0-36 21-17 0-11Z" fill={colors.c} opacity=".54"/>
+      <path d="M0-11 21-17 17 20 0 34Z" fill={colors.a} opacity=".5"/>
+      <path d="M0-11-21-17 0 34Z" fill={colors.b} opacity=".36"/>
+      <path d="M-21-17 0-11 21-17M0-11V34" fill="none" stroke="#e3f7ff" strokeOpacity=".64" strokeWidth=".8"/>
+      <path d="M0-11 17 20M0-11-17 20" fill="none" stroke="#edcf8e" strokeOpacity=".46" strokeWidth=".7"/>
+    </g>
   </g>
 }
 
@@ -159,7 +161,7 @@ function PipScene({ card, colors }: { card: DeckCard; colors: typeof palettes.ma
     {layout === 'fractured' && <><path d="M63 185 177 205M71 226 169 165" stroke={colors.a} strokeOpacity=".28"/><Crystal x={120} y={197} size={23} colors={colors}/></>}
     {layout === 'diagonal' && Array.from({length:3},(_,i)=><path key={i} d={`M${57+i*7} ${263-i*5}L${181+i*5} ${117-i*3}`} stroke={colors.c} strokeOpacity={.16} strokeWidth="5"/>)}
     <Halo cy={197} r={80} colors={colors}/>
-    {positions.map(([x,y,scale,rotation],i)=><g key={i} className="pip-symbol" transform={`rotate(${rotation ?? 0} ${x} ${y})`} style={{'--pip-delay':`${(i*0.37 + (card.rank?.length ?? 0)*.23).toFixed(2)}s`} as CSSProperties}><SuitSigil suit={suit} x={x} y={y} size={scale} colors={colors}/>{count===1 && <><circle cx={x} cy={y} r="42" fill="none" stroke={colors.c} strokeOpacity=".3"/><Star x={x} y={y-50} r={7} color={colors.c}/></>}</g>)}
+    {positions.map(([x,y,scale,rotation],i)=><g key={i} transform={`rotate(${rotation ?? 0} ${x} ${y})`}><g className="pip-symbol" style={{'--pip-delay':`${(i*0.37 + (card.rank?.length ?? 0)*.23).toFixed(2)}s`} as CSSProperties}><SuitSigil suit={suit} x={x} y={y} size={scale} colors={colors}/>{count===1 && <><circle cx={x} cy={y} r="42" fill="none" stroke={colors.c} strokeOpacity=".3"/><Star x={x} y={y-50} r={7} color={colors.c}/></>}</g></g>)}
     {card.id === 'three-of-swords' && <><Crystal x={120} y={195} size={26} colors={colors}/><path d="M120 132V245M78 175 162 215M162 175 78 215" stroke={colors.c} strokeWidth="1.5"/><path d="M108 184 120 198 131 185" fill="none" stroke="#f0d494"/></>}
     {card.id === 'seven-of-cups' && <path d="M53 250Q85 232 120 250T187 250M60 263Q89 247 120 263T180 263" fill="none" stroke={colors.c} strokeOpacity=".52"/>}
   </>
