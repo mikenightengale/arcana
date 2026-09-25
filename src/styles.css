@@ -26,6 +26,10 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .deck-status { justify-self: end; color: var(--lavender-bright); font: 12px var(--font-display); letter-spacing: .07em; display: flex; align-items: center; gap: 8px; }
 .deck-status span:last-child { color: var(--text-muted); font: 10px var(--font-ui); letter-spacing: .04em; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #77b68e; box-shadow: 0 0 12px rgba(119,182,142,.6); }
+.deck-status-low { color: #f0c75e; }
+.deck-status-low .status-dot { background: #f0c75e; box-shadow: 0 0 12px rgba(240,199,94,.55); }
+.deck-status-critical { color: #ff777f; }
+.deck-status-critical .status-dot { background: #ff777f; box-shadow: 0 0 12px rgba(255,119,127,.6); }
 .main-content { flex: 1; width: min(1160px, calc(100% - 48px)); margin: 0 auto; padding: 54px 0 76px; }
 .setup-view { max-width: 1020px; margin: 0 auto; text-align: center; }
 .eyebrow { display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--lavender); font: 10px var(--font-ui); letter-spacing: .22em; }

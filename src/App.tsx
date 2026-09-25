@@ -81,6 +81,7 @@ function App() {
   const parsed = useMemo(() => state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText])
   const count = parsed ? parsed.positions.length : (state?.drawCount ?? 20)
   const remaining = state ? remainingCards(state.deck) : 78
+  const deckStatus = remaining <= 13 ? 'critical' : remaining <= 26 ? 'low' : 'normal'
 
   function update(patch: Partial<AppState>) {
     setState((current) => current ? { ...current, ...patch } : current)
@@ -191,7 +192,10 @@ function App() {
           <span className="step-rule" />
           <span className={state.stage === 'reading' ? 'step active' : 'step'}><i>03</i> Reading</span>
         </nav>
-        <div className="deck-status"><span className="status-dot" />{remaining} <span>cards remain</span></div>
+        <div className={`deck-status deck-status-${deckStatus}`} role="status" aria-label={`${remaining} ${remaining === 1 ? 'card remains' : 'cards remain'}${deckStatus === 'critical' ? ', very low' : deckStatus === 'low' ? ', running low' : ''}`}>
+          <span className="status-dot" aria-hidden="true" />
+          {remaining} <span>{remaining === 1 ? 'card remains' : 'cards remain'}</span>
+        </div>
       </header>
 
       <main id="top" className={`main-content stage-${state.stage}`}>
