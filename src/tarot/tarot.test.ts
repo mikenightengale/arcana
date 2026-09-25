@@ -49,14 +49,14 @@ describe('spread parsing and reading output', () => {
     const drawn = [0, 1].map((index) => ({ ...cards[index], orientation: index ? 'reversed' : 'upright' })) as RuntimeCard[]
     const reading = mapReading(drawn, spread)
     expect(reading[1].position?.title).toBe('Next')
-    expect(formatReading(reading, spread)).toBe('1. What is present?\n\nCard 0\n\n2. What is forming?\n\nCard 1 — Reversed')
+    expect(formatReading(reading, spread)).toBe('1. What is present?\nCard 0\n\n2. What is forming?\nCard 1 — Reversed')
     expect(formatReading(reading, spread)).not.toMatch(/Tarot Spread|\*\*Now\*\*|\*\*Next\*\*|Position:|Card:/)
   })
 
   it('formats spread questions the same whether or not the spread has a title', () => {
     const spread = parseSpread('1. What should I notice?')!
     const reading = mapReading([{ ...cards[0], orientation: 'upright' } as RuntimeCard], spread)
-    expect(formatReading(reading, spread)).toBe('1. What should I notice?\n\nCard 0')
+    expect(formatReading(reading, spread)).toBe('1. What should I notice?\nCard 0')
   })
 
   it('keeps open draws numbered', () => {

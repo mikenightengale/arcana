@@ -4,20 +4,14 @@ A self-hosted, offline-capable tarot table. The first release is deliberately pr
 
 ## Run it
 
-With Docker installed:
-
-```sh
-docker compose up -d --build
-```
-
-Open `http://localhost:8080` (or `http://SERVER-IP:8080` from another device). Stop it with `docker compose down`.
-
-For local development, use Node.js 22 or newer:
+With Node.js 22 or newer:
 
 ```sh
 npm ci
 npm run dev
 ```
+
+Open the local URL printed by Vite (usually `http://localhost:5173`). Stop the server with **Ctrl+C**.
 
 ## Use the table
 
@@ -36,4 +30,4 @@ npm test
 npm run build
 ```
 
-The Docker image builds the static PWA and serves it with nginx. IndexedDB belongs to the browser installation, so restarting or replacing the container does not reset the deck.
+The Vite dev server serves the PWA directly. IndexedDB belongs to the browser installation, so restarting the dev server does not reset the deck.

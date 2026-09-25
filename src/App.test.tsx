@@ -49,7 +49,7 @@ describe('reading copy notifications', () => {
     fireEvent.click(copyButton)
     await waitFor(() => expect(mocks.writeText).toHaveBeenCalledTimes(1))
     expect(await screen.findByText('Reading copied to clipboard.')).toBeInTheDocument()
-    expect(mocks.writeText).toHaveBeenLastCalledWith('1. What should I notice?\n\nCard 0 — Reversed')
+    expect(mocks.writeText).toHaveBeenLastCalledWith('1. What should I notice?\nCard 0 — Reversed')
 
     fireEvent.click(copyButton)
     await waitFor(() => expect(mocks.writeText).toHaveBeenCalledTimes(2))

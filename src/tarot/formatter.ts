@@ -4,7 +4,6 @@ export function formatReading(reading: ReadingPosition[], spread: TarotSpread | 
   if (spread) {
     return reading.map(({ position, card }, index) => [
       `${position?.number ?? index + 1}. ${position?.question ?? ''}`,
-      '',
       `${card.name}${card.orientation === 'reversed' ? ' — Reversed' : ''}`,
     ].join('\n')).join('\n\n')
   }
