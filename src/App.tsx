@@ -7,7 +7,7 @@ import { mapReading } from './tarot/mapping'
 import { DeckPicker } from './tarot/DeckPicker'
 import { DeckGallery } from './tarot/DeckGallery'
 import { parseSpread } from './tarot/parser'
-import { createShuffledDeck, drawCards, remainingCards } from './tarot/shuffle'
+import { createReadyDeck, drawCards, performShuffleStep, remainingCards } from './tarot/shuffle'
 import type { AppState, DeckManifest } from './types/tarot'
 import { ReadingView, type CardRect } from './ReadingView'
 import { appPath, assetPath, isGalleryPath } from './paths'
@@ -22,6 +22,14 @@ function App() {
   const [showPreview, setShowPreview] = useState(true)
   const [updateReady, setUpdateReady] = useState(false)
   const [dealOrigin, setDealOrigin] = useState<CardRect | null>(null)
+  const stateRef = useRef<AppState | null>(null)
+  const holding = useRef(false)
+  const shuffleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const frozenWrite = useRef<Promise<void>>(Promise.resolve())
+  const shuffleMotion = useRef(0)
+  const activePointer = useRef<number | null>(null)
+  const activeKey = useRef<string | null>(null)
+  const [waterfallKey, setWaterfallKey] = useState(0)
   const dealing = useRef(false)
   const toastId = useRef(0)
   const notify = useCallback((variant: ToastVariant, message: string) => {
@@ -50,11 +58,18 @@ function App() {
         ...saved,
         deck: { ...saved.deck, cards: saved.deck.cards.map(hydrate) },
         reading: saved.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
+        // A hold cannot resume after reload. Preserve the last mutation and
+        // recover into a settled, drawable state.
+        shuffleStatus: saved.stage === 'shuffling'
+          ? (saved.shuffleStatus === 'holding' || !saved.shuffleStatus ? 'frozen' as const : saved.shuffleStatus)
+          : saved.shuffleStatus,
       } : null
-      setState(migrated ?? {
-        stage: 'setup', deck: createShuffledDeck(loadedManifest.cards), spread: null,
+      const initialState = migrated ?? {
+        stage: 'setup' as const, deck: createReadyDeck(loadedManifest.cards), spread: null,
         reading: null, drawCount: 20, sourceText: '',
-      })
+      }
+      stateRef.current = initialState
+      setState(initialState)
     }).catch((reason: unknown) => {
       if (alive) setError(reason instanceof Error ? reason.message : 'Arcana could not start.')
     })
@@ -65,26 +80,55 @@ function App() {
     if (state) void saveState(state).catch(() => notify('error', 'Your latest changes could not be saved in this browser.'))
   }, [state])
 
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') releaseShuffle()
+    }
+    const onWindowPointerEnd = (event: PointerEvent) => {
+      if (activePointer.current === event.pointerId) releaseShuffle()
+    }
+    window.addEventListener('blur', releaseShuffle)
+    window.addEventListener('pointerup', onWindowPointerEnd)
+    window.addEventListener('pointercancel', onWindowPointerEnd)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      window.removeEventListener('blur', releaseShuffle)
+      window.removeEventListener('pointerup', onWindowPointerEnd)
+      window.removeEventListener('pointercancel', onWindowPointerEnd)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      holding.current = false
+      if (shuffleTimer.current) clearTimeout(shuffleTimer.current)
+    }
+  }, [])
+
   const parsed = useMemo(() => state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText])
   const count = parsed ? parsed.positions.length : (state?.drawCount ?? 20)
   const remaining = state ? remainingCards(state.deck) : 78
   const deckStatus = remaining <= 13 ? 'critical' : remaining <= 26 ? 'low' : 'normal'
 
   function update(patch: Partial<AppState>) {
-    setState((current) => current ? { ...current, ...patch } : current)
+    const current = stateRef.current
+    if (!current) return
+    const next = { ...current, ...patch }
+    stateRef.current = next
+    setState(next)
     setToast(null)
   }
 
   function onSpreadChange(sourceText: string) {
-    if (!state) return
+    const current = stateRef.current
+    if (!current) return
     const spread = sourceText.trim() ? parseSpread(sourceText) : null
-    setState({ ...state, sourceText, spread, drawCount: spread ? spread.positions.length : 20 })
+    const next = { ...current, sourceText, spread, drawCount: spread ? spread.positions.length : 20 }
+    stateRef.current = next
+    setState(next)
     setToast(null)
   }
 
   function beginShuffle() {
-    if (!state) return
-    if (!parsed && state.sourceText.trim()) {
+    const current = stateRef.current
+    if (!current) return
+    if (!parsed && current.sourceText.trim()) {
       notify('warning', 'We couldn’t find numbered positions with questions. Check the spread format or clear it to draw without a spread.')
       return
     }
@@ -96,25 +140,104 @@ function App() {
       notify('warning', `${count} cards requested. ${remaining} cards remain. Reset the deck before continuing.`)
       return
     }
-    update({ spread: parsed, stage: 'shuffling', reading: null, drawCount: count })
+    update({ spread: parsed, stage: 'shuffling', shuffleStatus: 'ready', reading: null, drawCount: count })
+  }
+
+  function applyShuffleStep() {
+    if (!holding.current) return
+    const current = stateRef.current
+    if (!current || current.stage !== 'shuffling') return
+    const next: AppState = { ...current, deck: performShuffleStep(current.deck), shuffleStatus: 'holding' }
+    stateRef.current = next
+    setState(next)
+    shuffleMotion.current += 1
+    setWaterfallKey(shuffleMotion.current)
+    if (shuffleMotion.current % 3 === 0 && typeof navigator.vibrate === 'function') navigator.vibrate(8)
+    void saveState(next).catch(() => notify('error', 'Your latest changes could not be saved in this browser.'))
+    if (remainingCards(next.deck) > 1) {
+      shuffleTimer.current = setTimeout(applyShuffleStep, 80 + Math.floor(Math.random() * 61))
+    } else {
+      releaseShuffle()
+    }
+  }
+
+  function startShuffle() {
+    const current = stateRef.current
+    if (!current || current.stage !== 'shuffling' || holding.current || remainingCards(current.deck) < 2) return
+    holding.current = true
+    update({ shuffleStatus: 'holding' })
+    applyShuffleStep()
+  }
+
+  function onShufflePointerDown(event: React.PointerEvent<HTMLButtonElement>) {
+    if (event.button !== 0 || (activePointer.current !== null)) return
+    event.preventDefault()
+    activePointer.current = event.pointerId
+    try { event.currentTarget.setPointerCapture(event.pointerId) } catch { /* Pointer capture is unavailable in some test browsers. */ }
+    startShuffle()
+  }
+
+  function onShufflePointerUp(event: React.PointerEvent<HTMLButtonElement>) {
+    if (activePointer.current !== event.pointerId) return
+    event.preventDefault()
+    releaseShuffle()
+  }
+
+  function onShufflePointerCancel() {
+    releaseShuffle()
+  }
+
+  function onShuffleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
+    if (event.key !== ' ' && event.key !== 'Enter') return
+    event.preventDefault()
+    if (event.repeat || activeKey.current) return
+    activeKey.current = event.key
+    startShuffle()
+  }
+
+  function onShuffleKeyUp(event: React.KeyboardEvent<HTMLButtonElement>) {
+    if (event.key !== activeKey.current) return
+    event.preventDefault()
+    releaseShuffle()
+  }
+
+  function releaseShuffle() {
+    if (!holding.current) return
+    holding.current = false
+    activePointer.current = null
+    activeKey.current = null
+    if (shuffleTimer.current) {
+      clearTimeout(shuffleTimer.current)
+      shuffleTimer.current = null
+    }
+    if (typeof navigator.vibrate === 'function') navigator.vibrate(0)
+    const current = stateRef.current
+    if (!current || current.stage !== 'shuffling') return
+    const frozen: AppState = { ...current, shuffleStatus: 'frozen' }
+    stateRef.current = frozen
+    setState(frozen)
+    frozenWrite.current = saveState(frozen).catch(() => notify('error', 'The settled deck could not be saved in this browser.'))
   }
 
   async function deal() {
-    if (!state || dealing.current) return
+    const current = stateRef.current
+    if (!current || current.stage !== 'shuffling' || current.shuffleStatus !== 'frozen' || holding.current || dealing.current) return
     dealing.current = true
     try {
-      const result = drawCards(state.deck, count)
-      const reading = mapReading(result.cards, parsed ?? state.spread)
+      await frozenWrite.current
+      const result = drawCards(current.deck, count)
+      const reading = mapReading(result.cards, parsed ?? current.spread)
       const nextState: AppState = {
-        ...state,
+        ...current,
         deck: result.deck,
-        spread: parsed ?? state.spread,
+        spread: parsed ?? current.spread,
         reading,
         stage: 'reading',
+        shuffleStatus: undefined,
         drawCount: count,
       }
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      const source = document.querySelector<HTMLElement>('.shuffle-card-3') ?? document.querySelector<HTMLElement>('.shuffle-ritual')
+      const source = document.querySelector<HTMLElement>('.waterfall-card') ?? document.querySelector<HTMLElement>('.shuffle-table')
       const bounds = source?.getBoundingClientRect()
 
       // Save the immutable draw before starting its visual presentation.
@@ -126,6 +249,7 @@ function App() {
         width: bounds.width,
         height: bounds.height,
       } : null)
+      stateRef.current = nextState
       setState(nextState)
     } catch (reason) {
       notify('error', reason instanceof Error ? reason.message : 'The cards could not be drawn or saved.')
@@ -136,12 +260,13 @@ function App() {
 
   function newReading() {
     if (!state) return
-    update({ stage: 'setup', spread: null, reading: null, sourceText: '', drawCount: 20 })
+    update({ stage: 'setup', shuffleStatus: undefined, spread: null, reading: null, sourceText: '', drawCount: 20 })
   }
 
   function resetDeck() {
     if (!state || !manifest) return
-    update({ deck: createShuffledDeck(manifest.cards), stage: 'setup', spread: null, reading: null, drawCount: 20, sourceText: '' })
+    releaseShuffle()
+    update({ deck: createReadyDeck(manifest.cards), stage: 'setup', shuffleStatus: undefined, spread: null, reading: null, drawCount: 20, sourceText: '' })
   }
 
   async function copyReading() {
@@ -222,16 +347,35 @@ function App() {
 
         {state.stage === 'shuffling' && <section className="shuffle-view" aria-labelledby="screen-title">
           <div className="eyebrow"><span /> THE TABLE IS SET <span /></div>
-          <h1 id="screen-title">Shuffling the <em>cards</em></h1>
-          <p className="ceremony-line">The veil stirs.<br />Order becomes possibility.</p>
-          <div className="shuffle-ritual" aria-hidden="true">
+          <h1 id="screen-title">Set the <em>deck</em></h1>
+          <p className="ceremony-line">Hold while the cards move.<br />Release when the moment feels right.</p>
+          <div className={`shuffle-table ${state.shuffleStatus === 'holding' ? 'is-shuffling' : ''} ${state.shuffleStatus === 'frozen' ? 'is-frozen' : ''}`} aria-hidden="true">
             <span className="shuffle-orbit orbit-one" /><span className="shuffle-orbit orbit-two" />
-            {[0, 1, 2, 3, 4].map((card) => <div className={`shuffle-card shuffle-card-${card + 1}`} key={card}><img src={cardBackUrl} alt="" /></div>)}
+            <div className="shuffle-stack"><img src={cardBackUrl} alt="" /><img src={cardBackUrl} alt="" /><img src={cardBackUrl} alt="" /></div>
+            <div className="waterfall-card" key={waterfallKey}><img src={cardBackUrl} alt="" /></div>
             <span className="shuffle-spark spark-a">✧</span><span className="shuffle-spark spark-b">·</span><span className="shuffle-spark spark-c">✦</span>
           </div>
+          <p className="shuffle-status" role="status" aria-live="polite">
+            {state.shuffleStatus === 'holding' ? 'The cards are moving.' : state.shuffleStatus === 'frozen' ? 'The deck is set.' : 'Ready when you are.'}
+          </p>
+          <button
+            className={`primary-button hold-shuffle-button ${state.shuffleStatus === 'holding' ? 'is-held' : ''}`}
+            type="button"
+            aria-label="Hold to shuffle; release to stop"
+            aria-pressed={state.shuffleStatus === 'holding'}
+            onPointerDown={onShufflePointerDown}
+            onPointerUp={onShufflePointerUp}
+            onPointerCancel={onShufflePointerCancel}
+            onLostPointerCapture={onShufflePointerCancel}
+            onKeyDown={onShuffleKeyDown}
+            onKeyUp={onShuffleKeyUp}
+          >
+            <span>{state.shuffleStatus === 'holding' ? 'Release to stop' : 'Hold to shuffle'}</span><span className="button-arrow" aria-hidden="true">✦</span>
+          </button>
           <p className="draw-count-note">A reading of <strong>{count}</strong> {count === 1 ? 'card' : 'cards'}</p>
-          <button className="primary-button draw-button" onClick={deal}><span>Draw all cards</span><span className="button-arrow" aria-hidden="true">↗</span></button>
-          <button className="text-button return-button" onClick={() => update({ stage: 'setup' })}>Return to preparation</button>
+          <button className="primary-button draw-button" onClick={deal} disabled={state.shuffleStatus !== 'frozen' || holding.current}><span>Draw cards</span><span className="button-arrow" aria-hidden="true">↗</span></button>
+          {state.shuffleStatus === 'frozen' && <button className="text-button return-button" onClick={() => update({ shuffleStatus: 'ready' })}>Shuffle again</button>}
+          <button className="text-button return-button" onClick={() => { releaseShuffle(); update({ stage: 'setup', shuffleStatus: undefined }) }}>Return to preparation</button>
         </section>}
 
         {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} cardBackUrl={cardBackUrl} onCopy={copyReading} onNew={newReading} onReset={resetDeck} />}
