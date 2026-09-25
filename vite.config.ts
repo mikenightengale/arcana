@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icons/arcana.svg', 'decks/cathedral/**/*.svg', 'decks/cathedral/deck.json'],
+      includeAssets: ['icons/arcana.svg', 'decks/cathedral/backs/*.png', 'decks/cathedral/**/*.svg', 'decks/cathedral/deck.json'],
       manifest: {
         name: 'Arcana',
         short_name: 'Arcana',
@@ -21,7 +21,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,json,woff2}'],
         navigateFallback: '/index.html',
-        maximumFileSizeToCacheInBytes: 2_000_000,
+        maximumFileSizeToCacheInBytes: 3_000_000,
       },
       devOptions: { enabled: true },
     }),

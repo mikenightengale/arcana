@@ -11,6 +11,14 @@ export async function loadState(): Promise<AppState | undefined> {
   return (await dbPromise).get('current-state', 'active') as Promise<AppState | undefined>
 }
 
+// Keep writes in order: the draw's explicit save must never be overtaken by an
+// earlier effect save that was still waiting for IndexedDB to open.
+let pendingWrite: Promise<unknown> = Promise.resolve()
+
 export async function saveState(state: AppState): Promise<void> {
-  await (await dbPromise).put('current-state', state, 'active')
+  const write = pendingWrite.catch(() => undefined).then(async () => {
+    await (await dbPromise).put('current-state', state, 'active')
+  })
+  pendingWrite = write
+  await write
 }
