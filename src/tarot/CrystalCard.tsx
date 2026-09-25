@@ -183,7 +183,7 @@ function CourtScene({ card, colors }: { card: DeckCard; colors: typeof palettes.
   </>
 }
 
-export function CrystalCard({ card, reversed = false, animations = true, className = '', reveal = false }: { card: DeckCard; reversed?: boolean; animations?: boolean; className?: string; reveal?: boolean }) {
+export function CrystalCard({ card, reversed = false, animations = true, className = '', reveal = false, showLabels = true }: { card: DeckCard; reversed?: boolean; animations?: boolean; className?: string; reveal?: boolean; showLabels?: boolean }) {
   const theme = card.suit ?? 'major'
   const colors = palettes[theme]
   const uid = card.id.replace(/[^a-z0-9]/gi, '')
@@ -228,7 +228,7 @@ export function CrystalCard({ card, reversed = false, animations = true, classNa
         <path d="M40 91C40 81 52 78 56 87 58 92 54 96 50 94M200 91C200 81 188 78 184 87 182 92 186 96 190 94M40 293C40 303 52 306 56 297 58 292 54 288 50 290M200 293C200 303 188 306 184 297 182 292 186 288 190 290"/>
         <path d="M120 71 126 77 120 83 114 77ZM120 301 126 307 120 313 114 307Z"/>
       </g>
-      <text x="120" y="57" textAnchor="middle" className="card-numeral">{numeral}</text>
+      {showLabels && <text x="120" y="57" textAnchor="middle" className="card-numeral">{numeral}</text>}
       <g className={`card-scene card-${uid} suit-${card.suit ?? 'major'}`} style={{'--accent':colors.a} as CSSProperties}>
         <path d="M120 101 212 197 120 293 28 197Z M120 106V288M35 197H205" fill="none" stroke={colors.c} strokeOpacity=".075" strokeWidth=".8"/>
         <g className="scene-engraving" fill="none" stroke={`url(#frame-${uid})`} strokeWidth=".65" opacity=".29">
@@ -241,8 +241,8 @@ export function CrystalCard({ card, reversed = false, animations = true, classNa
       </g>
       <path d="M47 310H193" stroke={`url(#frame-${uid})`} strokeOpacity=".6" strokeWidth=".7"/>
       <path d="M55 316 61 322 67 316M173 316 179 322 185 316" fill="none" stroke={colors.c} strokeWidth=".8"/>
-      <text x="120" y="337" textAnchor="middle" className="card-title" style={{ fontSize: card.name.length > 15 ? 10.5 : 12.5, fontWeight: 600 }}>{card.name.toUpperCase()}</text>
-      {card.suit && <text x="120" y="352" textAnchor="middle" className="card-suit-label">{card.suit.toUpperCase()}</text>}
+      {showLabels && <text x="120" y="337" textAnchor="middle" className="card-title" style={{ fontSize: card.name.length > 15 ? 10.5 : 12.5, fontWeight: 600 }}>{card.name.toUpperCase()}</text>}
+      {showLabels && card.suit && <text x="120" y="352" textAnchor="middle" className="card-suit-label">{card.suit.toUpperCase()}</text>}
       <path d="M97 365H143" stroke={`url(#frame-${uid})`} strokeWidth=".7"/><circle cx="120" cy="365" r="2" fill={colors.c}/>
     </g>
   </svg>

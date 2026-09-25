@@ -331,7 +331,7 @@ function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, onNew, 
     <p className="intro">{spread?.title ? `A quiet moment with “${spread.title}”` : 'A quiet moment with the cards.'}</p>
     <div className="reading-grid" ref={gridRef}>
       {reading.map(({ position, card }, index) => <article className="reading-card" key={`${index}-${card.id}`}>
-        <div className={`card-art-wrap ${flightCards ? 'card-art-hidden' : ''}`}><CrystalCard className="card-art" card={card} reversed={card.orientation === 'reversed'} reveal animations /></div>
+        <div className={`card-art-wrap ${flightCards ? 'card-art-hidden' : ''}`}><CrystalCard className="card-art" card={card} reversed={card.orientation === 'reversed'} reveal animations showLabels={false} /></div>
         <div className="card-copy"><span className="position-index">{String(position?.number ?? index + 1).padStart(2, '0')}</span><div className="position-text">{position?.title && <h2>{position.title}</h2>}{position?.question && <p>{position.question}</p>}</div></div>
         <div className="card-label"><strong className="card-name">{card.name}</strong>{card.orientation === 'reversed' && <span className="card-orientation">Reversed</span>}</div>
         <p className="card-meaning">{getCardMeaning(card.id, card.orientation) ?? 'A meaning guide is not available for this card.'}</p>
@@ -367,7 +367,7 @@ function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, onNew, 
           >
             <div className="deal-flight-inner">
               <div className="deal-flight-face deal-flight-back"><img src={cardBackUrl} alt="" /></div>
-              <div className="deal-flight-face deal-flight-front"><CrystalCard card={reading[index].card} reversed={reading[index].card.orientation === 'reversed'} animations={false} /></div>
+              <div className="deal-flight-face deal-flight-front"><CrystalCard card={reading[index].card} reversed={reading[index].card.orientation === 'reversed'} animations={false} showLabels={false} /></div>
             </div>
           </div>
         })}
