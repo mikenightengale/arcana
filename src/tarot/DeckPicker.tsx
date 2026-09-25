@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { DeckManifest } from '../types/tarot'
 import { CrystalCard } from './CrystalCard'
+import { appPath } from '../paths'
 
 export function DeckPicker({ manifest, cardBackUrl }: { manifest: DeckManifest; cardBackUrl: string }) {
   const [selectedDeckId, setSelectedDeckId] = useState(manifest.id)
@@ -10,7 +11,7 @@ export function DeckPicker({ manifest, cardBackUrl }: { manifest: DeckManifest; 
   return <section className="deck-picker panel" aria-labelledby="deck-picker-title">
     <div className="deck-picker-heading">
       <span className="panel-label" id="deck-picker-title"><span className="label-mark" aria-hidden="true">◈</span>Choose a deck</span>
-      <a className="deck-picker-explore" href="/gallery/crystal-geometry">Explore Deck</a>
+      <a className="deck-picker-explore" href={appPath('gallery/crystal-geometry')}>Explore Deck</a>
     </div>
     <div className="deck-picker-body">
       <div className="deck-options" role="group" aria-label="Available decks">
