@@ -34,4 +34,4 @@ The Vite dev server serves the PWA directly. IndexedDB belongs to the browser in
 
 ## GitHub Pages deployment
 
-The production site is served at `https://mikenightengale.github.io/arcana/`. Pushes to `feat/github-pages-deployment` run the GitHub Actions Pages deployment workflow; set the repository's Pages publishing source to **GitHub Actions**. Readings and deck state remain local in browser IndexedDB. For local development, run `npm run dev`.
+The production site is served at `https://mikenightengale.github.io/arcana/`. Pushes to `main` run the GitHub Actions Pages deployment workflow; set the repository's Pages publishing source to **GitHub Actions**. Readings and deck state remain local in browser IndexedDB. For local development, run `npm run dev`. GitHub Pages allows one site per repository, so a separate live preview requires a separate Pages site.
