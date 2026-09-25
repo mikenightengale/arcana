@@ -140,7 +140,7 @@ function App() {
       notify('warning', `${count} cards requested. ${remaining} cards remain. Reset the deck before continuing.`)
       return
     }
-    update({ spread: parsed, stage: 'shuffling', shuffleStatus: 'ready', reading: null, drawCount: count })
+    update({ spread: parsed, stage: 'shuffling', shuffleStatus: remaining === 1 ? 'frozen' : 'ready', reading: null, drawCount: count })
   }
 
   function applyShuffleStep() {

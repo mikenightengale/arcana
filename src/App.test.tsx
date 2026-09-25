@@ -181,6 +181,17 @@ describe('interactive shuffle', () => {
     expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).shuffleStatus === 'holding')).toBe(false)
   })
 
+  it('makes the last remaining card drawable without starting a no-op shuffle', async () => {
+    mocks.loadState.mockResolvedValue({
+      ...setupState(),
+      deck: { cards: cards.map((card) => ({ ...card, orientation: 'upright' })), nextCardIndex: 77, resetAt: 1 },
+    })
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /Shuffle the deck/ }))
+    expect(screen.getByText('The deck is set.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Draw cards' })).toBeEnabled()
+  })
+
   it('uses keyboard hold and release even with reduced motion enabled', async () => {
     mocks.loadState.mockResolvedValue(setupState())
     const originalMatchMedia = window.matchMedia
