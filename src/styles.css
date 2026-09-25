@@ -138,3 +138,13 @@ textarea:focus { border-color: rgba(173,145,244,.55); box-shadow: 0 0 0 3px rgba
 @media (max-width: 420px) { .brand strong { font-size: 12px; }.deck-status { font-size: 11px; gap: 6px; }.deck-status span:last-child { font-size: 9px; }.main-content { width: calc(100% - 28px); }.eyebrow { font-size: 8px; letter-spacing: .17em; }h1 { font-size: 38px; }.intro { font-size: 15px; }.draw-summary strong { font-size: 12px; }.draw-summary small { max-width: 190px; line-height: 1.4; }.count-control button { width: 28px; }.count-control input { width: 31px; font-size: 14px; }.deck-picker { padding: 15px; gap: 14px; }.deck-picker-body { grid-template-columns: 1fr; gap: 12px; }.deck-option { min-height: 60px; padding: 8px; gap: 6px; }.deck-option-symbol { font-size: 16px; }.deck-option-copy strong { font-size: 11px; }.deck-option-copy small { font-size: 8px; }.deck-option-check { width: 16px; height: 16px; }.deck-design-preview { gap: 10px; }.deck-sample-art { width: min(24vw,78px); }.deck-sample { gap: 5px; font-size: 8px; }.reading-grid { gap: 17px 10px; }.position-index { font-size: 10px; }.card-name { font-size: 13px; }.reading-actions { gap: 9px; }.reading-actions > * { width: 100%; justify-content: center; }.reading-actions .reading-reset-button { width: auto; } }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 @media (prefers-reduced-motion: reduce) { .shuffle-table.is-shuffling .waterfall-card { animation: none; opacity: .55; transform: translate(10px,4px); } }
+
+/* Keep reading controls after the cards on larger screens; surface them before the cards on mobile. */
+.reading-view { display: flex; flex-direction: column; }
+.reading-grid { order: 2; }
+.reading-actions { order: 3; }
+.copy-icon { width: 17px; height: 17px; flex: 0 0 auto; }
+@media (max-width: 760px) {
+  .reading-view .reading-actions { order: 2; margin: 0 auto 24px; }
+  .reading-view .reading-grid { order: 3; }
+}
