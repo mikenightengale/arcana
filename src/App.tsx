@@ -4,6 +4,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react'
 import { NotificationToast, type ToastMessage, type ToastVariant } from './NotificationToast'
 import { loadState, saveState } from './persistence/db'
 import { formatReading } from './tarot/formatter'
+import { getCardMeaning } from './tarot/meanings'
 import { mapReading } from './tarot/mapping'
 import { CrystalCard } from './tarot/CrystalCard'
 import { DeckGallery } from './tarot/DeckGallery'
@@ -295,6 +296,7 @@ function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, onNew, 
         <div className={`card-art-wrap ${flightCards ? 'card-art-hidden' : ''}`}><CrystalCard className="card-art" card={card} reversed={card.orientation === 'reversed'} reveal animations /></div>
         <div className="card-copy"><span className="position-index">{String(position?.number ?? index + 1).padStart(2, '0')}</span><div className="position-text">{position?.title && <h2>{position.title}</h2>}{position?.question && <p>{position.question}</p>}</div></div>
         <div className="card-label"><strong className="card-name">{card.name}</strong>{card.orientation === 'reversed' && <span className="card-orientation">Reversed</span>}</div>
+        <p className="card-meaning">{getCardMeaning(card.id, card.orientation) ?? 'A meaning guide is not available for this card.'}</p>
       </article>)}
     </div>
     {flightCards && createPortal(

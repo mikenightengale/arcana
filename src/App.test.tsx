@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AppState, DeckCard, DeckManifest, RuntimeCard } from './types/tarot'
 import App from './App'
@@ -18,7 +18,7 @@ const cards: DeckCard[] = Array.from({ length: 78 }, (_, number) => ({
 }))
 const manifest: DeckManifest = { id: 'cathedral', name: 'Cathedral', cardBack: 'back.svg', cards }
 const position = { number: 1, title: 'Focus', question: 'What should I notice?' }
-const readingCard: RuntimeCard = { ...cards[0], orientation: 'reversed' }
+const readingCard: RuntimeCard = { ...cards[0], id: 'the-fool', name: 'The Fool', orientation: 'reversed' }
 const state: AppState = {
   stage: 'reading',
   deck: { cards: cards.map((card, index) => ({ ...card, orientation: index % 2 ? 'upright' : 'reversed' })), nextCardIndex: 1, resetAt: 1 },
@@ -37,11 +37,33 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  cleanup()
   vi.unstubAllGlobals()
   vi.clearAllMocks()
 })
 
 describe('reading copy notifications', () => {
+  it('shows the reversed guide meaning with a spread question without changing copied text', async () => {
+    render(<App />)
+
+    expect(await screen.findByText('Pause before a leap; uncertainty or avoidable risk may need attention.')).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: 'Copy reading' }))
+    await waitFor(() => expect(mocks.writeText).toHaveBeenCalledTimes(1))
+    expect(mocks.writeText).toHaveBeenLastCalledWith('A title that must be copied\n\n1. What should I notice?\nThe Fool — Reversed')
+    expect(mocks.writeText.mock.calls[0][0]).not.toContain('Pause before a leap')
+  })
+
+  it('shows the upright guide meaning for an open draw without a spread', async () => {
+    mocks.loadState.mockResolvedValue({
+      ...state,
+      spread: null,
+      reading: [{ card: { ...readingCard, orientation: 'upright' } }],
+    })
+    render(<App />)
+
+    expect(await screen.findByText('New beginnings, openness, and a willingness to explore.')).toBeInTheDocument()
+  })
+
   it('allows repeated copies and reports each success', async () => {
     render(<App />)
     const copyButton = await screen.findByRole('button', { name: 'Copy reading' })
@@ -49,7 +71,7 @@ describe('reading copy notifications', () => {
     fireEvent.click(copyButton)
     await waitFor(() => expect(mocks.writeText).toHaveBeenCalledTimes(1))
     expect(await screen.findByText('Reading copied to clipboard.')).toBeInTheDocument()
-    expect(mocks.writeText).toHaveBeenLastCalledWith('A title that must be copied\n\n1. What should I notice?\nCard 0 — Reversed')
+    expect(mocks.writeText).toHaveBeenLastCalledWith('A title that must be copied\n\n1. What should I notice?\nThe Fool — Reversed')
 
     fireEvent.click(copyButton)
     await waitFor(() => expect(mocks.writeText).toHaveBeenCalledTimes(2))
