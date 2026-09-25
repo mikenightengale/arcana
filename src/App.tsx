@@ -282,6 +282,49 @@ function ReadingView({ reading, spread, dealOrigin, cardBackUrl, onCopy, onNew, 
     }
   }, [dealOrigin, reading])
 
+  useLayoutEffect(() => {
+    const grid = gridRef.current
+    if (!grid) return
+    let copies: HTMLElement[] = []
+
+    const alignPositionRows = () => {
+      const cards = Array.from(grid.querySelectorAll<HTMLElement>('.reading-card'))
+      const rows = new Map<number, HTMLElement[]>()
+      copies = cards.map((card) => card.querySelector<HTMLElement>('.card-copy')).filter((copy): copy is HTMLElement => copy !== null)
+      copies.forEach((copy) => { copy.style.minHeight = '' })
+
+      cards.forEach((card) => {
+        const copy = card.querySelector<HTMLElement>('.card-copy')
+        if (!copy) return
+        const row = rows.get(card.offsetTop) ?? []
+        row.push(copy)
+        rows.set(card.offsetTop, row)
+      })
+
+      rows.forEach((row) => {
+        const height = Math.max(...row.map((copy) => copy.getBoundingClientRect().height))
+        row.forEach((copy) => { copy.style.minHeight = `${height}px` })
+      })
+    }
+
+    let frame = 0
+    let active = true
+    const scheduleAlignment = () => {
+      if (!active) return
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(alignPositionRows)
+    }
+    alignPositionRows()
+    window.addEventListener('resize', scheduleAlignment)
+    document.fonts?.ready.then(scheduleAlignment)
+    return () => {
+      active = false
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', scheduleAlignment)
+      copies.forEach((copy) => { copy.style.minHeight = '' })
+    }
+  }, [reading])
+
   return <section className="reading-view" aria-labelledby="screen-title">
     <div className="eyebrow"><span /> THE CARDS HAVE SPOKEN <span /></div>
     <h1 id="screen-title">Your <em>reading</em></h1>
