@@ -29,7 +29,6 @@ function App() {
   const shuffleMotion = useRef(0)
   const activePointer = useRef<number | null>(null)
   const activeKey = useRef<string | null>(null)
-  const [waterfallKey, setWaterfallKey] = useState(0)
   const dealing = useRef(false)
   const toastId = useRef(0)
   const notify = useCallback((variant: ToastVariant, message: string) => {
@@ -151,12 +150,9 @@ function App() {
     stateRef.current = next
     setState(next)
     shuffleMotion.current += 1
-    setWaterfallKey(shuffleMotion.current)
     if (shuffleMotion.current % 3 === 0 && typeof navigator.vibrate === 'function') navigator.vibrate(8)
     void saveState(next).catch(() => notify('error', 'Your latest changes could not be saved in this browser.'))
     if (remainingCards(next.deck) > 1) {
-      // Give each waterfall card time to complete its movement before the next
-      // logical deck mutation begins.
       shuffleTimer.current = setTimeout(applyShuffleStep, 300 + Math.floor(Math.random() * 61))
     } else {
       releaseShuffle()
@@ -239,7 +235,7 @@ function App() {
         drawCount: count,
       }
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      const source = document.querySelector<HTMLElement>('.waterfall-card') ?? document.querySelector<HTMLElement>('.shuffle-table')
+      const source = document.querySelector<HTMLElement>('.shuffle-table')
       const bounds = source?.getBoundingClientRect()
 
       // Save the immutable draw before starting its visual presentation.
@@ -354,8 +350,7 @@ function App() {
           <div className={`shuffle-table ${state.shuffleStatus === 'holding' ? 'is-shuffling' : ''} ${state.shuffleStatus === 'frozen' ? 'is-frozen' : ''}`} aria-hidden="true">
             <span className="shuffle-orbit orbit-one" /><span className="shuffle-orbit orbit-two" />
             <div className="shuffle-stack"><img src={cardBackUrl} alt="" /><img src={cardBackUrl} alt="" /><img src={cardBackUrl} alt="" /></div>
-            <div className="waterfall-card" key={waterfallKey}><img src={cardBackUrl} alt="" /></div>
-            <span className="shuffle-spark spark-a">✧</span><span className="shuffle-spark spark-b">·</span><span className="shuffle-spark spark-c">✦</span>
+                        <span className="shuffle-spark spark-a">✧</span><span className="shuffle-spark spark-b">·</span><span className="shuffle-spark spark-c">✦</span>
           </div>
           <p className="shuffle-status" role="status" aria-live="polite">
             {state.shuffleStatus === 'holding' ? 'The cards are moving.' : state.shuffleStatus === 'frozen' ? 'The deck is set.' : 'Ready when you are.'}
