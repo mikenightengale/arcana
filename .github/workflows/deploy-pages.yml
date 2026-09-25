@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [feature/cards]
+    branches: [feat/github-pages-deployment]
   workflow_dispatch:
 
 permissions:
@@ -39,7 +39,7 @@ jobs:
           path: dist
 
   deploy:
-    if: github.ref == 'refs/heads/feature/cards'
+    if: github.ref == 'refs/heads/feat/github-pages-deployment'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
