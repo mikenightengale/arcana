@@ -7,6 +7,7 @@ import { formatReading } from './tarot/formatter'
 import { getCardMeaning } from './tarot/meanings'
 import { mapReading } from './tarot/mapping'
 import { CrystalCard } from './tarot/CrystalCard'
+import { DeckPicker } from './tarot/DeckPicker'
 import { DeckGallery } from './tarot/DeckGallery'
 import { parseSpread } from './tarot/parser'
 import { createShuffledDeck, drawCards, remainingCards } from './tarot/shuffle'
@@ -214,12 +215,7 @@ function App() {
               </div>}
             </section>
 
-            <section className="altar panel" aria-label="Cathedral deck">
-              <div className="altar-arch" aria-hidden="true"><div className="glass glass-a" /><div className="glass glass-b" /><div className="glass glass-c" /></div>
-              <div className="altar-stars" aria-hidden="true">✧　　　·　　✦　　　 ·　　✧</div>
-              <div className="card-back" aria-hidden="true"><img src={cardBackUrl} alt="" /></div>
-              <div className="altar-caption"><span>CRYSTAL GEOMETRY</span><small>78 cards · Rider–Waite–Smith archetypes</small></div>
-            </section>
+            <DeckPicker manifest={manifest} cardBackUrl={cardBackUrl} />
           </div>
 
           <div className="draw-settings">
