@@ -180,7 +180,7 @@ function App() {
       <div className="ambient ambient-two" aria-hidden="true" />
       <header className="topbar">
         <a className="brand" href="#top" onClick={(event) => event.preventDefault()} aria-label="Arcana home">
-          <span className="brand-sigil" aria-hidden="true">✳</span>
+          <img className="brand-logo" src="/icons/arcana.svg" alt="" />
           <span><strong>Arcana</strong></span>
         </a>
         <nav className="steps" aria-label="Reading steps">

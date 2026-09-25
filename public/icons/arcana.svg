@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="frame" x1="56" y1="40" x2="456" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF0B8"/>
+      <stop offset=".48" stop-color="#E9AC58"/>
+      <stop offset="1" stop-color="#F9D98C"/>
+    </linearGradient>
+    <linearGradient id="crystal" x1="256" y1="142" x2="256" y2="383" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF3C9"/>
+      <stop offset=".34" stop-color="#D9A4FF"/>
+      <stop offset=".72" stop-color="#8253D6"/>
+      <stop offset="1" stop-color="#F5B8DC"/>
+    </linearGradient>
+    <linearGradient id="page" x1="115" y1="183" x2="256" y2="370" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#19203B"/>
+      <stop offset="1" stop-color="#101323"/>
+    </linearGradient>
+    <filter id="glow" x="166" y="90" width="180" height="340" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="92" fill="#090A12"/>
+  <rect x="24" y="24" width="464" height="464" rx="75" stroke="url(#frame)" stroke-width="5"/>
+  <rect x="36" y="36" width="440" height="440" rx="66" stroke="#8A5C75" stroke-opacity=".48" stroke-width="1.5"/>
+
+  <path d="M70 225C102 130 176 77 256 64c80 13 154 66 186 161" stroke="#E9B866" stroke-opacity=".8" stroke-width="2"/>
+  <path d="M91 230c30-73 91-119 165-133 74 14 135 60 165 133" stroke="#E9B866" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="2 10"/>
+
+  <!-- Crescent and guiding stars -->
+  <path d="M256 77a37 37 0 1 0 37 48 32 32 0 0 1-37-48Z" fill="#F2C876" stroke="#FFF0B8" stroke-width="2"/>
+  <path d="M256 39v22m-11-11h22" stroke="#FFF0B8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M111 168v20m-10-10h20M401 168v20m-10-10h20M256 433v22m-11-11h22" stroke="#F3C878" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="144" cy="117" r="3" fill="#F6D68A"/>
+  <circle cx="368" cy="117" r="3" fill="#F6D68A"/>
+  <circle cx="83" cy="286" r="2.5" fill="#D9A4FF"/>
+  <circle cx="429" cy="286" r="2.5" fill="#D9A4FF"/>
+
+  <!-- Open book -->
+  <path d="M75 218c55-17 112-11 181 22v172c-66-29-124-33-181-12V218Z" fill="url(#page)" stroke="url(#frame)" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M437 218c-55-17-112-11-181 22v172c66-29 124-33 181-12V218Z" fill="url(#page)" stroke="url(#frame)" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M91 237c50-13 98-6 151 17v137c-55-22-102-27-151-13V237Zm330 0c-50-13-98-6-151 17v137c55-22 102-27 151-13V237Z" stroke="#D7A85E" stroke-opacity=".68" stroke-width="1.5"/>
+  <path d="M105 263c38-9 76-3 111 11m-111 13c38-9 76-3 111 11m-111 13c38-9 76-3 111 11m191-48c-38-9-76-3-111 11m111 13c-38-9-76-3-111 11m111 13c-38-9-76-3-111 11" stroke="#E9B866" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"/>
+  <path d="M256 239v171" stroke="#FFF0B8" stroke-opacity=".8" stroke-width="2"/>
+
+  <!-- Faceted crystal rising from the book -->
+  <path d="M256 137 303 197 301 327 256 385 211 327 209 197 256 137Z" fill="#8D58D7" opacity=".42" filter="url(#glow)"/>
+  <path d="m256 145 42 54-2 124-40 53-40-53-2-124 42-54Z" fill="url(#crystal)" stroke="#FFF0C8" stroke-width="4" stroke-linejoin="round"/>
+  <path d="m256 145 1 231-41-53-2-124 42-54Z" fill="#AF75ED" fill-opacity=".62" stroke="#F9DFFB" stroke-opacity=".88" stroke-width="2" stroke-linejoin="round"/>
+  <path d="m256 145 42 54-41 42-1-96Zm0 96 41-42-1 124-40-13v-69Zm0 0-41-42 1 124 40-13v-69Z" fill="#FFE6B1" fill-opacity=".24" stroke="#FFF1D1" stroke-opacity=".88" stroke-width="2" stroke-linejoin="round"/>
+  <path d="m256 241 40 82-40 53-40-53 40-82Z" fill="#F5B6E6" fill-opacity=".35" stroke="#FFF1D1" stroke-opacity=".9" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M256 145v231" stroke="#FFF9E8" stroke-opacity=".9" stroke-width="2"/>
+
+  <path d="M159 205v18m-9-9h18M353 205v18m-9-9h18" stroke="#F3C878" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M256 414v8m-4-4h8" stroke="#FFF0B8" stroke-width="2" stroke-linecap="round"/>
+</svg>
