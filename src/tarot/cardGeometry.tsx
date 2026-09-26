@@ -8,6 +8,14 @@ export const palettes: Record<Suit | 'major', { a: string; b: string; c: string 
   pentacles: { a: 'var(--cg-emerald)', b: 'var(--cg-teal)', c: 'var(--cg-silver-lilac)' },
 }
 
+export const nocturnePalettes: Record<Suit | 'major', { a: string; b: string; c: string }> = {
+  major: { a: '#897aa4', b: '#655c7b', c: '#e0dce9' },
+  wands: { a: '#9480a1', b: '#6b617e', c: '#e2ddea' },
+  cups: { a: '#8389ad', b: '#646a89', c: '#e0e2ef' },
+  swords: { a: '#9b9daf', b: '#6f7389', c: '#eeedf2' },
+  pentacles: { a: '#89929a', b: '#626b78', c: '#e0e3e6' },
+}
+
 export function Crystal({ x, y, size = 30, rotation = 0, colors, glow = false }: { x: number; y: number; size?: number; rotation?: number; colors: typeof palettes.major; glow?: boolean }) {
   return <g transform={`translate(${x} ${y}) rotate(${rotation}) scale(${size / 36})`}>
     <g className={glow ? 'crystal-glow' : undefined}>
@@ -58,4 +66,3 @@ export function CrystalOrb({ x, y, r, colors }: { x: number; y: number; r: numbe
     <path d={`M${x} ${y-r}V${y+r}M${x-r*.78} ${y-r*.25}L${x+r*.72} ${y-r*.28}M${x-r*.68} ${y+r*.5}L${x+r*.56} ${y+r*.66}`} stroke="#d8f7ff" strokeOpacity=".6" strokeWidth=".7"/>
   </g>
 }
-

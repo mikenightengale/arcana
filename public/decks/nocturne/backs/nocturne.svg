@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 384" role="img" aria-label="Nocturne eclipse card back">
+  <defs>
+    <radialGradient id="night" cx="50%" cy="44%" r="72%"><stop stop-color="#171322"/><stop offset=".58" stop-color="#0b0a10"/><stop offset="1" stop-color="#050508"/></radialGradient>
+    <linearGradient id="silver" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#777785"/><stop offset=".5" stop-color="#d6d5df"/><stop offset="1" stop-color="#777785"/></linearGradient>
+    <radialGradient id="eclipse"><stop stop-color="#aaa8b9"/><stop offset=".72" stop-color="#656472"/><stop offset="1" stop-color="#292632"/></radialGradient>
+  </defs>
+  <style>
+    .border { fill:none; stroke:url(#silver); stroke-width:.8; opacity:.5; stroke-dasharray:2 7; filter:drop-shadow(0 0 1px #716180); animation:border-drift 36s linear infinite; }
+    .inner { fill:none; stroke:url(#silver); stroke-width:.65; opacity:.36; }
+    .orbit { transform-origin:120px 192px; animation:outer-turn 96s linear infinite; }
+    .eclipse { transform-origin:120px 192px; animation:eclipse-turn 160s linear infinite; }
+    .stars circle { animation:twinkle 6.8s ease-in-out infinite; }
+    .stars circle:nth-child(3n) { animation-delay:-2.2s; }
+    .stars circle:nth-child(4n) { animation-delay:-4.1s; }
+    .rings,.orbit,.glyphs,.eclipse { transition:filter .8s ease,opacity .8s ease; }
+    .eclipse { transition-delay:0ms; }
+    .rings { transition-delay:140ms; }
+    .glyphs { transition-delay:280ms; }
+    .orbit { transition-delay:420ms; }
+    svg:hover .eclipse { filter:drop-shadow(0 0 5px #aaa8c0); }
+    svg:hover .glyphs { filter:drop-shadow(0 0 3px #bcb9cf); }
+    svg:hover .rings { filter:drop-shadow(0 0 4px #8b7aac); }
+    svg:hover .orbit { filter:drop-shadow(0 0 5px #b7a5d5); }
+    @keyframes eclipse-turn { to { transform:rotate(360deg); } }
+    @keyframes outer-turn { to { transform:rotate(-360deg); } }
+    @keyframes border-drift { to { stroke-dashoffset:-144; } }
+    @keyframes twinkle { 0%,100% { opacity:.35; } 50% { opacity:.95; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
+  </style>
+  <rect width="240" height="384" rx="7" fill="url(#night)"/>
+  <rect x="9" y="9" width="222" height="366" rx="5" class="border"/>
+  <rect x="15" y="15" width="210" height="354" rx="3" class="inner"/>
+  <path d="M25 60Q120 32 215 60V324Q120 352 25 324Z" class="inner" opacity=".22"/>
+  <g class="stars" fill="#dad8e3">
+    <circle cx="45" cy="84" r="1.2"/><circle cx="190" cy="91" r=".8"/><circle cx="56" cy="166" r=".7"/><circle cx="185" cy="168" r="1"/><circle cx="50" cy="250" r=".9"/><circle cx="192" cy="286" r="1.1"/><circle cx="78" cy="307" r=".7"/><circle cx="164" cy="70" r=".7"/><circle cx="80" cy="112" r=".8"/><circle cx="158" cy="270" r=".7"/>
+  </g>
+  <g class="rings" fill="none" stroke="url(#silver)" stroke-width=".65">
+    <circle cx="120" cy="192" r="76" opacity=".57"/>
+    <circle cx="120" cy="192" r="67" stroke-dasharray="1 4" opacity=".7"/>
+    <circle cx="120" cy="192" r="53" opacity=".39"/>
+    <path d="M120 105V119M120 265V279M33 192H47M193 192H207M58.5 130.5 68.4 140.4M171.6 243.6 181.5 253.5M181.5 130.5 171.6 140.4M68.4 243.6 58.5 253.5" opacity=".6"/>
+  </g>
+  <g class="orbit" fill="none" stroke="url(#silver)" stroke-width=".75">
+    <circle cx="120" cy="192" r="91" stroke-dasharray="2 6" opacity=".7"/>
+    <path d="m120 91 5 10-5 10-5-10zM120 273l5 10-5 10-5-10zM19 192l10-5 10 5-10 5zM201 192l10-5 10 5-10 5z" opacity=".74"/>
+    <circle cx="120" cy="101" r="2" fill="#bcb9c8"/><circle cx="120" cy="283" r="2" fill="#bcb9c8"/>
+  </g>
+  <g class="eclipse">
+    <circle cx="120" cy="192" r="34" fill="#08080d" stroke="url(#silver)" stroke-width=".9"/>
+    <circle cx="120" cy="192" r="29" fill="url(#eclipse)" opacity=".82"/>
+    <path d="M120 163a29 29 0 1 0 0 58 21 21 0 1 1 0-58Z" fill="#111019" stroke="#c7c5d1" stroke-opacity=".72" stroke-width=".65"/>
+    <circle cx="120" cy="192" r="39" fill="none" stroke="#9387a8" stroke-opacity=".42" stroke-width=".7"/>
+  </g>
+  <g class="glyphs" fill="none" stroke="url(#silver)" stroke-width=".8" opacity=".8">
+    <path d="M35 42 42 35 49 42 42 49Z M191 42 198 35 205 42 198 49Z M35 342 42 335 49 342 42 349Z M191 342 198 335 205 342 198 349Z"/>
+    <path d="M42 53v12m-5-6h10M198 53v12m-5-6h10M42 319v12m-5-6h10M198 319v12m-5-6h10"/>
+    <circle cx="42" cy="42" r="13" opacity=".4"/><circle cx="198" cy="42" r="13" opacity=".4"/><circle cx="42" cy="342" r="13" opacity=".4"/><circle cx="198" cy="342" r="13" opacity=".4"/>
+  </g>
+</svg>

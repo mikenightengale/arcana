@@ -3,7 +3,7 @@ import { CrystalCard } from './CrystalCard'
 import type { DeckCard } from '../types/tarot'
 import { appPath, assetPath } from '../paths'
 
-export function DeckGallery({ cards, cardBackUrl, onReturn }: { cards: DeckCard[]; cardBackUrl: string; onReturn: () => void }) {
+export function DeckGallery({ deckId, deckName, cards, cardBackUrl, onReturn }: { deckId: string; deckName: string; cards: DeckCard[]; cardBackUrl: string; onReturn: () => void }) {
   const [animations, setAnimations] = useState(true)
   const [reversed, setReversed] = useState(false)
   const [showBack, setShowBack] = useState(false)
@@ -16,8 +16,8 @@ export function DeckGallery({ cards, cardBackUrl, onReturn }: { cards: DeckCard[
     return () => window.removeEventListener('keydown', close)
   }, [enlarged])
 
-  return <div className="app-shell gallery-shell">
-    <header className="gallery-header"><a className="brand" href={appPath()} onClick={(event) => { event.preventDefault(); onReturn() }} aria-label="Arcana home"><img className="brand-logo" src={assetPath('icons/arcana.svg')} alt="" /><span><strong>Arcana</strong></span></a><div className="gallery-heading"><span className="eyebrow"><span/> THE CRYSTAL GEOMETRY DECK <span/></span><h1>Forms of the <em>arcana</em></h1><p>All 78 cards, rendered in crystalline geometry.</p></div><button className="text-button gallery-return" onClick={onReturn}>Return to the table</button></header>
+  return <div className={`app-shell gallery-shell gallery-${deckId}`}>
+    <header className="gallery-header"><a className="brand" href={appPath()} onClick={(event) => { event.preventDefault(); onReturn() }} aria-label="Arcana home"><img className="brand-logo" src={assetPath('icons/arcana.svg')} alt="" /><span><strong>Arcana</strong></span></a><div className="gallery-heading"><span className="eyebrow"><span/> THE {deckName.toUpperCase()} DECK <span/></span><h1>Forms of the <em>arcana</em></h1><p>{deckId === 'nocturne' ? 'Seventy-eight nocturnes in silver and shadow.' : 'All 78 cards, rendered in crystalline geometry.'}</p></div><button className="text-button gallery-return" onClick={onReturn}>Return to the table</button></header>
     <main className="gallery-main">
       <div className="gallery-toolbar" aria-label="Gallery controls">
         <button className={animations ? 'gallery-control selected' : 'gallery-control'} aria-pressed={animations} onClick={() => setAnimations((value) => !value)}><span className="control-orb">✧</span>Motion <strong>{animations ? 'On' : 'Off'}</strong></button>
@@ -25,7 +25,7 @@ export function DeckGallery({ cards, cardBackUrl, onReturn }: { cards: DeckCard[
         <button className={showBack ? 'gallery-control selected' : 'gallery-control'} aria-pressed={showBack} onClick={() => setShowBack((value) => !value)}><span className="control-orb">◈</span>Side <strong>{showBack ? 'Back' : 'Front'}</strong></button>
         <span className="gallery-hint">Select a card to enlarge</span>
       </div>
-      <section className="gallery-grid" aria-label="All 78 Crystal Geometry tarot cards">
+      <section className="gallery-grid" aria-label={`All 78 ${deckName} tarot cards`}>
         {cards.map((card, index) => <article className="gallery-card" key={card.id}>
           <button className="gallery-card-button" onClick={() => setEnlarged(card)} aria-label={`Enlarge ${card.name}`}>
             <span className="gallery-art-wrap">{showBack ? <img className={`gallery-back ${reversed ? 'reversed-art' : ''}`} src={cardBackUrl} alt="" /> : <CrystalCard card={card} reversed={reversed} animations={animations} />}</span>

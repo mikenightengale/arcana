@@ -6,12 +6,21 @@ import { parseSpread } from './parser'
 import { createReadyDeck, drawCards, performShuffleStep, remainingCards } from './shuffle'
 import type { DeckCard, RuntimeCard } from '../types/tarot'
 import cathedralDeck from '../../public/decks/cathedral/deck.json'
+import nocturneDeck from '../../public/decks/nocturne/deck.json'
 
 const cards: DeckCard[] = Array.from({ length: 78 }, (_, number) => ({
   id: `card-${number}`, name: `Card ${number}`, arcana: number < 22 ? 'major' : 'minor', number,
 }))
 
 describe('Cathedral deck', () => {
+  it('keeps Nocturne as a complete alternate with the same ordered card identities', () => {
+    expect(cathedralDeck.cards).toHaveLength(78)
+    expect(nocturneDeck.cards).toHaveLength(78)
+    expect(new Set(nocturneDeck.cards.map((card) => card.id)).size).toBe(78)
+    expect(nocturneDeck.cards.map((card) => card.id)).toEqual(cathedralDeck.cards.map((card) => card.id))
+    expect(nocturneDeck.cards.every((card) => card.visual?.theme === 'nocturne')).toBe(true)
+  })
+
   it('has upright and reversed guide meanings for every manifest card', () => {
     expect(Object.keys(cardMeanings)).toHaveLength(cathedralDeck.cards.length)
     for (const card of cathedralDeck.cards) {

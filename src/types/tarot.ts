@@ -6,6 +6,7 @@ export type Arcana = 'major' | 'minor'
 
 export interface CardVisual {
   renderer: 'major' | 'pip' | 'court'
+  theme?: 'crystal' | 'nocturne'
   composition?: string
   primarySymbol?: string
   layout: string
@@ -58,6 +59,8 @@ export interface ReadingPosition {
 
 export interface AppState {
   stage: Stage
+  /** Selected presentation deck; omitted on older saved states. */
+  deckId?: string
   /** Optional for compatibility with browser states saved before hold-to-shuffle. */
   shuffleStatus?: ShuffleStatus
   deck: DeckState

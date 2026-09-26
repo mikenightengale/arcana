@@ -36,6 +36,42 @@
 .motion-on .suit-pentacles .sigil-pentacles circle:first-child { transform-box: fill-box; transform-origin: center; animation: earth-seal 5s ease-in-out infinite; }
 .motion-on.card-reveal { animation: card-arrive 950ms cubic-bezier(.2,.8,.2,1) both; }
 .motion-off *, .motion-off *::before, .motion-off *::after { animation: none !important; }
+.nocturne-card { display:block; width:100%; height:100%; overflow:hidden; background:#08070b; }
+.nocturne-numeral { fill:#d3d0da; font:12px Georgia,serif; letter-spacing:1.5px; }
+.nocturne-title { fill:#e4e1e9; font:600 11px Georgia,serif; letter-spacing:.9px; }
+.nocturne-suit { fill:#97919f; font:600 7px Inter,system-ui,sans-serif; letter-spacing:1px; }
+.nocturne-aura { opacity:.72; transform-box:fill-box; transform-origin:center; }
+.nocturne-art { opacity:.95; filter:drop-shadow(0 0 3px rgba(202,196,213,.3)) drop-shadow(0 0 10px rgba(100,74,127,.24)); transition:filter .65s ease,opacity .65s ease; transition-delay:0ms; }
+.nocturne-scene { filter:drop-shadow(0 0 2px rgba(195,181,218,.16)); }
+.nocturne-line-trace { pointer-events:none; opacity:.82; filter:drop-shadow(0 0 2px rgba(212,184,246,.75)) drop-shadow(0 0 6px rgba(132,91,174,.42)); }
+.nocturne-line-trace :is(path,circle,ellipse,line,polyline,polygon,rect) { fill:none!important; stroke:#e2caff!important; stroke-width:1.65px!important; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:3 22; stroke-dashoffset:0; opacity:1!important; }
+.nocturne-line-trace :is(path,circle,ellipse,line,polyline,polygon,rect):nth-child(3n+1) { animation-delay:-1.1s!important; }
+.nocturne-line-trace :is(path,circle,ellipse,line,polyline,polygon,rect):nth-child(3n+2) { animation-delay:-2.2s!important; }
+.nocturne-pip { transform-box:fill-box; transform-origin:center; filter:drop-shadow(0 0 2px rgba(177,164,202,.22)); }
+.nocturne-arch { transition:filter .65s ease,opacity .65s ease; transition-delay:120ms; }
+.nocturne-border-inner { transition:filter .65s ease,opacity .65s ease; transition-delay:240ms; }
+.nocturne-border { transition:filter .65s ease,opacity .65s ease; transition-delay:360ms; }
+.nocturne-card:hover .nocturne-art { opacity:1; filter:drop-shadow(0 0 4px rgba(218,214,228,.42)) drop-shadow(0 0 12px rgba(136,101,166,.34)); }
+.nocturne-card:hover .nocturne-line-trace { opacity:1; filter:drop-shadow(0 0 4px rgba(218,192,246,1)) drop-shadow(0 0 9px rgba(148,107,192,.82)); }
+.nocturne-card:hover .nocturne-pip { filter:drop-shadow(0 0 4px rgba(197,180,223,.42)); }
+.nocturne-card:hover .nocturne-aura { opacity:1; }
+.nocturne-card:hover .nocturne-arch { opacity:.9; filter:drop-shadow(0 0 3px rgba(169,145,189,.5)); }
+.nocturne-card:hover .nocturne-border-inner { opacity:.75; filter:drop-shadow(0 0 3px rgba(169,145,189,.48)); }
+.nocturne-card:hover .nocturne-border { filter:drop-shadow(0 0 4px rgba(121,92,145,.64)); }
+.motion-on .nocturne-border { animation:nocturne-etch-drift 42s linear infinite,nocturne-frame-breath 8s ease-in-out var(--nocturne-phase) infinite; }
+.motion-on .nocturne-line-trace :is(path,circle,ellipse,line,polyline,polygon,rect) { animation:nocturne-line-flow 3.6s linear infinite; }
+.motion-on .nocturne-pip { animation:nocturne-pip-glimmer 4s ease-in-out var(--pip-delay) infinite; }
+.motion-on .nocturne-corners { animation:nocturne-corner-glint 9s ease-in-out var(--nocturne-phase) infinite; }
+.motion-on .nocturne-stars path { transform-box:fill-box; transform-origin:center; animation:nocturne-star-shimmer 7s ease-in-out var(--star-delay) infinite; }
+.motion-on .nocturne-header-mark { transform-box:view-box; transform-origin:120px 69px; animation:nocturne-moon-turn 32s linear infinite; }
+.motion-off *, .motion-off *::before, .motion-off *::after { animation:none!important; }
+@keyframes nocturne-etch-drift { to { stroke-dashoffset:-250; } }
+@keyframes nocturne-star-shimmer { 0%,100% { opacity:.2; transform:scale(.72); filter:drop-shadow(0 0 0 rgba(207,198,224,0)); } 50% { opacity:1; transform:scale(1.7); filter:drop-shadow(0 0 4px rgba(222,210,246,.9)); } }
+@keyframes nocturne-moon-turn { to { transform:rotate(360deg); } }
+@keyframes nocturne-frame-breath { 0%,100% { opacity:.64; filter:drop-shadow(0 0 1px rgba(116,83,144,.16)); } 50% { opacity:.88; filter:drop-shadow(0 0 4px rgba(131,94,162,.42)); } }
+@keyframes nocturne-line-flow { to { stroke-dashoffset:-25px; } }
+@keyframes nocturne-pip-glimmer { 0%,100% { opacity:.62; filter:brightness(.82) drop-shadow(0 0 1px rgba(177,164,202,.18)); } 50% { opacity:1; filter:brightness(1.65) drop-shadow(0 0 7px rgba(210,190,239,.78)); } }
+@keyframes nocturne-corner-glint { 0%,86%,100% { filter:drop-shadow(0 0 0 rgba(138,104,168,0)); } 92% { filter:drop-shadow(0 0 3px rgba(138,104,168,.38)); } }
 @supports (-moz-appearance: none) {
   /* Avoid applying perspective transforms to the outer SVG viewport. */
   .motion-on.card-reveal { animation-name: card-arrive-flat; }

@@ -12,11 +12,11 @@ import type { AppState, DeckManifest } from './types/tarot'
 import { ReadingView, type CardRect } from './ReadingView'
 import { appPath, assetPath, isGalleryPath } from './paths'
 
-const manifestUrl = appPath('decks/cathedral/deck.json')
+const deckIds = ['cathedral', 'nocturne'] as const
 
 function App() {
   const [state, setState] = useState<AppState | null>(null)
-  const [manifest, setManifest] = useState<DeckManifest | null>(null)
+  const [manifests, setManifests] = useState<DeckManifest[]>([])
   const [error, setError] = useState('')
   const [toast, setToast] = useState<ToastMessage | null>(null)
   const [showPreview, setShowPreview] = useState(true)
@@ -41,20 +41,26 @@ function App() {
 
   useEffect(() => {
     let alive = true
-    Promise.all([
-      fetch(manifestUrl).then((response) => {
-        if (!response.ok) throw new Error('The Cathedral deck manifest could not be loaded.')
-        return response.json() as Promise<DeckManifest>
-      }),
-      loadState(),
-    ]).then(([loadedManifest, saved]) => {
+    const manifestLoads = deckIds.map((id) => fetch(appPath(`decks/${id}/deck.json`)).then((response) => {
+      if (!response.ok) throw new Error(`The ${id === 'nocturne' ? 'Nocturne' : 'Crystal Geometry'} deck manifest could not be loaded.`)
+      return response.json() as Promise<DeckManifest>
+    }))
+    Promise.all([Promise.all(manifestLoads), loadState()]).then(([loadedManifests, saved]) => {
       if (!alive) return
-      if (loadedManifest.cards.length !== 78) throw new Error('The Cathedral deck must contain exactly 78 cards.')
-      setManifest(loadedManifest)
-      const canonicalCards = new Map(loadedManifest.cards.map((card) => [card.id, card]))
+      const cathedral = loadedManifests.find((deck) => deck.id === 'cathedral')
+      if (!cathedral || loadedManifests.some((deck) => deck.cards.length !== 78)) throw new Error('Each deck must contain exactly 78 cards.')
+      const cathedralIds = cathedral.cards.map((card) => card.id)
+      if (loadedManifests.some((deck) => deck.cards.map((card) => card.id).join('\u0000') !== cathedralIds.join('\u0000'))) {
+        throw new Error('Every deck must contain the same 78 cards in the same order.')
+      }
+      setManifests(loadedManifests)
+      const selectedDeckId = loadedManifests.some((deck) => deck.id === saved?.deckId) ? saved?.deckId ?? 'cathedral' : 'cathedral'
+      const selectedManifest = loadedManifests.find((deck) => deck.id === selectedDeckId)!
+      const canonicalCards = new Map(selectedManifest.cards.map((card) => [card.id, card]))
       const hydrate = <T extends { id: string; orientation: 'upright' | 'reversed' }>(card: T) => ({ ...card, ...(canonicalCards.get(card.id) ?? {}), orientation: card.orientation })
       const migrated = saved ? {
         ...saved,
+        deckId: selectedDeckId,
         deck: { ...saved.deck, cards: saved.deck.cards.map(hydrate) },
         reading: saved.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
         // A hold cannot resume after reload. Preserve the last mutation and
@@ -64,7 +70,7 @@ function App() {
           : saved.shuffleStatus,
       } : null
       const initialState = migrated ?? {
-        stage: 'setup' as const, deck: createReadyDeck(loadedManifest.cards), spread: null,
+        stage: 'setup' as const, deckId: 'cathedral', deck: createReadyDeck(cathedral.cards), spread: null,
         reading: null, drawCount: 20, sourceText: '',
       }
       stateRef.current = initialState
@@ -74,6 +80,8 @@ function App() {
     })
     return () => { alive = false }
   }, [])
+
+  const manifest = manifests.find((deck) => deck.id === state?.deckId) ?? manifests.find((deck) => deck.id === 'cathedral') ?? null
 
   useEffect(() => {
     if (state) void saveState(state).catch(() => notify('error', 'Your latest changes could not be saved in this browser.'))
@@ -112,6 +120,19 @@ function App() {
     stateRef.current = next
     setState(next)
     setToast(null)
+  }
+
+  function selectDeck(deckId: string) {
+    const current = stateRef.current
+    const selected = manifests.find((deck) => deck.id === deckId)
+    if (!current || !selected || current.deckId === deckId) return
+    const cardsById = new Map(selected.cards.map((card) => [card.id, card]))
+    const hydrate = <T extends { id: string; orientation: 'upright' | 'reversed' }>(card: T) => ({ ...card, ...(cardsById.get(card.id) ?? {}), orientation: card.orientation })
+    update({
+      deckId,
+      deck: { ...current.deck, cards: current.deck.cards.map(hydrate) },
+      reading: current.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
+    })
   }
 
   function onSpreadChange(sourceText: string) {
@@ -280,10 +301,13 @@ function App() {
   if (error && !state) return <main className="boot-error"><h1>Arcana</h1><p>{error}</p></main>
   if (!state || !manifest) return <main className="loading"><span className="loading-sigil" aria-hidden="true">✳</span><p>Opening the table</p></main>
 
-  const cardBackUrl = assetPath(`decks/cathedral/${manifest.cardBack}`)
+  const cardBackUrl = assetPath(`decks/${manifest.id}/${manifest.cardBack}`)
 
   if (isGalleryPath(window.location.pathname)) {
-    return <DeckGallery cards={manifest.cards} cardBackUrl={cardBackUrl} onReturn={() => { window.location.href = appPath() }} />
+    const galleryId = window.location.pathname.replace(/\/$/, '').split('/').pop()
+    const galleryManifest = manifests.find((deck) => deck.id === galleryId) ?? manifest
+    const galleryBackUrl = assetPath(`decks/${galleryManifest.id}/${galleryManifest.cardBack}`)
+    return <DeckGallery deckId={galleryManifest.id} deckName={galleryManifest.id === 'cathedral' ? 'Crystal Geometry' : galleryManifest.name} cards={galleryManifest.cards} cardBackUrl={galleryBackUrl} onReturn={() => { window.location.href = appPath() }} />
   }
 
   return (
@@ -329,7 +353,7 @@ function App() {
               </div>}
             </section>
 
-            <DeckPicker manifest={manifest} cardBackUrl={cardBackUrl} />
+            <DeckPicker manifests={manifests} selectedDeckId={manifest.id} onSelect={selectDeck} />
           </div>
 
           <div className="draw-settings">

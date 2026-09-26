@@ -14,4 +14,17 @@ describe('CrystalCard SVG paint servers', () => {
     const cards = container.querySelectorAll('svg.crystal-card')
     expect(cards[0].querySelector('rect')?.getAttribute('fill')).not.toBe(cards[1].querySelector('rect')?.getAttribute('fill'))
   })
+
+  it('renders Nocturne with its own occult SVG frame instead of the Crystal Geometry frame', () => {
+    const nocturneCard: DeckCard = {
+      ...card,
+      visual: { renderer: 'major', theme: 'nocturne', layout: 'nocturne' },
+    }
+    const { container } = render(<CrystalCard card={nocturneCard} animations={false} />)
+    const svg = container.querySelector('svg.nocturne-card')
+    expect(svg).toBeInTheDocument()
+    expect(svg?.querySelector('.nocturne-corners')).toBeInTheDocument()
+    expect(svg?.querySelector('.nocturne-title-plate')).toBeInTheDocument()
+    expect(container.querySelector('svg.crystal-card')).not.toBeInTheDocument()
+  })
 })

@@ -68,6 +68,10 @@ textarea:focus { border-color: rgba(173,145,244,.55); box-shadow: 0 0 0 3px rgba
 .deck-option { width: 100%; min-height: 76px; padding: 11px; display: flex; align-items: center; gap: 9px; border: 1px solid rgba(173,145,244,.25); border-radius: 3px; color: #c7bfd1; background: rgba(11,9,17,.55); text-align: left; cursor: pointer; transition: border-color .2s,background .2s,box-shadow .2s; }
 .deck-option:hover { border-color: rgba(173,145,244,.58); }
 .deck-option.selected { border-color: rgba(173,145,244,.75); background: rgba(80,58,128,.2); box-shadow: inset 0 0 18px rgba(173,145,244,.06); }
+.deck-option-nocturne { border-color: rgba(185,183,197,.2); }
+.deck-option-nocturne:hover,.deck-option-nocturne.selected { border-color: rgba(185,183,197,.58); }
+.deck-option-nocturne.selected { background: rgba(82,78,101,.18); box-shadow: inset 0 0 18px rgba(185,183,197,.05); }
+.deck-option-nocturne .deck-option-symbol { color: #c5c2d0; }
 .deck-option-symbol { flex: 0 0 auto; color: var(--ice-blue); font-size: 19px; }
 .deck-option-copy { min-width: 0; display: grid; gap: 6px; }
 .deck-option-copy strong { color: var(--ivory); font: 13px var(--font-display); line-height: 1.2; }
@@ -77,6 +81,7 @@ textarea:focus { border-color: rgba(173,145,244,.55); box-shadow: 0 0 0 3px rgba
 .deck-design-preview { min-width: 0; display: flex; align-items: center; justify-content: center; gap: 11px; }
 .deck-sample { margin: 0; display: grid; justify-items: center; gap: 7px; color: #bdb2cf; font-size: 9px; letter-spacing: .11em; text-transform: uppercase; }
 .deck-sample-art { width: 78px; aspect-ratio: 5/8; overflow: hidden; border: 1px solid rgba(173,145,244,.5); border-radius: 4px; background: #080d20; box-shadow: 0 8px 21px rgba(0,0,0,.36),0 0 18px rgba(112,82,174,.1); }
+.deck-picker-nocturne .deck-sample-art { border-color: rgba(195,193,204,.45); background: #08080c; box-shadow: 0 8px 21px rgba(0,0,0,.36),0 0 18px rgba(132,119,154,.08); }
 .deck-sample-art img,.deck-sample-art .crystal-card { width: 100%; height: 100%; display: block; object-fit: fill; }
 .draw-settings { min-height: 74px; max-width: 520px; margin: 24px auto 18px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(173,145,244,.15); border-bottom: 1px solid rgba(173,145,244,.15); }
 .draw-summary { display: flex; align-items: center; gap: 12px; text-align: left; }.summary-icon { color: var(--lavender); font-size: 22px; }.draw-summary strong,.draw-summary small { display: block; }.draw-summary strong { color: var(--ivory); font: 14px var(--font-display); }.draw-summary small { color: #8f8993; font-size: 10px; margin-top: 4px; }
