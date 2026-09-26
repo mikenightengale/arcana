@@ -336,10 +336,12 @@ function App() {
             <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed ? 'One card for each position' : 'Choose how many cards to bring to the table'}</small></span></div>
             {!parsed && <label className="count-control"><span className="visually-hidden">Cards to draw</span><button aria-label="Decrease card count" onClick={() => update({ drawCount: Math.max(1, count - 1) })} disabled={count <= 1}>−</button><input type="number" min="1" max="78" value={count} onChange={(event) => update({ drawCount: Math.min(78, Math.max(1, Number(event.target.value) || 1)) })} /><button aria-label="Increase card count" onClick={() => update({ drawCount: Math.min(78, count + 1) })} disabled={count >= 78}>+</button></label>}
           </div>
-          <button className="primary-button" onClick={beginShuffle}>
-            <span>Shuffle the deck</span><span className="button-arrow" aria-hidden="true">↗</span>
-          </button>
-          <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>
+          <div className="setup-actions">
+            <button className="primary-button" onClick={beginShuffle}>
+              <span>Shuffle the deck</span><span className="button-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>
+          </div>
           <p className="privacy-note"><span aria-hidden="true">◈</span> Your cards and readings stay on this device.</p>
         </section>}
 
