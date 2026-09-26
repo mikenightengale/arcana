@@ -52,6 +52,7 @@ afterEach(() => {
   if (originalMatchMediaDescriptor) Object.defineProperty(window, 'matchMedia', originalMatchMediaDescriptor)
   else delete (window as Partial<Window>).matchMedia
   vi.clearAllMocks()
+  vi.restoreAllMocks()
 })
 
 describe('reading copy notifications', () => {
@@ -109,6 +110,14 @@ describe('reading copy notifications', () => {
 })
 
 describe('interactive shuffle', () => {
+  beforeEach(() => {
+    let value = 0
+    vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation((array) => {
+      (array as Uint32Array)[0] = value++
+      return array
+    })
+  })
+
   function lastSaved(predicate: (saved: AppState) => boolean): AppState | undefined {
     return mocks.saveState.mock.calls.map(([saved]) => saved as AppState).reverse().find(predicate)
   }
@@ -126,6 +135,30 @@ describe('interactive shuffle', () => {
     }
   }
 
+  it('resets into a fresh shuffled deck and clears drawn reading progress', async () => {
+    let value = 0
+    vi.mocked(globalThis.crypto.getRandomValues).mockImplementation((array) => {
+      (array as Uint32Array)[0] = value
+      return array
+    })
+    mocks.loadState.mockResolvedValue(setupState())
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Reset the Deck' }))
+    const first = mocks.saveState.mock.calls.map(([saved]) => saved as AppState).at(-1)!
+    expect(first.deck.cards.map((card) => card.id)).toEqual([...cards.slice(1), cards[0]].map((card) => card.id))
+    expect(first.deck.cards.every((card) => card.orientation === 'upright')).toBe(true)
+    expect(first.deck.nextCardIndex).toBe(0)
+
+    value = 1
+    fireEvent.click(screen.getByRole('button', { name: 'Reset the Deck' }))
+    const second = mocks.saveState.mock.calls.map(([saved]) => saved as AppState).at(-1)!
+    expect(second.deck.cards.map((card) => card.id)).not.toEqual(first.deck.cards.map((card) => card.id))
+    expect(second.deck.cards.every((card) => card.orientation === 'reversed')).toBe(true)
+    expect(second.deck.nextCardIndex).toBe(0)
+    expect(second.stage).toBe('setup')
+    expect(second.reading).toBeNull()
+  })
+
   it('defaults saved states without a deck choice to Crystal Geometry', async () => {
     mocks.loadState.mockResolvedValue(setupState())
     render(<App />)
@@ -135,8 +168,10 @@ describe('interactive shuffle', () => {
 
   it('switches Nocturne artwork while retaining progress and persists the selected deck', async () => {
     const starting = setupState()
+    starting.deck.cards = [...starting.deck.cards.slice(12), ...starting.deck.cards.slice(0, 12)]
     starting.deck.nextCardIndex = 9
     starting.deck.cards[0].orientation = 'reversed'
+    const logicalCards = starting.deck.cards.map(({ id, orientation }) => ({ id, orientation }))
     mocks.loadState.mockResolvedValue(starting)
     const { unmount } = render(<App />)
 
@@ -144,7 +179,8 @@ describe('interactive shuffle', () => {
     await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).deckId === 'nocturne')).toBe(true))
     const saved = mocks.saveState.mock.calls.map(([value]) => value as AppState).reverse().find((value) => value.deckId === 'nocturne')!
     expect(saved.deck.nextCardIndex).toBe(9)
-    expect(saved.deck.cards[0]).toMatchObject({ id: cards[0].id, orientation: 'reversed', visual: { theme: 'nocturne' } })
+    expect(saved.deck.cards.map(({ id, orientation }) => ({ id, orientation }))).toEqual(logicalCards)
+    expect(saved.deck.cards[0]).toMatchObject({ id: logicalCards[0].id, orientation: 'reversed', visual: { theme: 'nocturne' } })
     expect(await screen.findByRole('button', { name: /Nocturne/ })).toHaveAttribute('aria-pressed', 'true')
 
     unmount()
