@@ -36,6 +36,15 @@
 .motion-on .suit-pentacles .sigil-pentacles circle:first-child { transform-box: fill-box; transform-origin: center; animation: earth-seal 5s ease-in-out infinite; }
 .motion-on.card-reveal { animation: card-arrive 950ms cubic-bezier(.2,.8,.2,1) both; }
 .motion-off *, .motion-off *::before, .motion-off *::after { animation: none !important; }
+@media (max-width: 760px) {
+  /* Keep long readings light while scrolling on phones. The per-card SVG effects
+     repeatedly repaint; retain only each card's one-time arrival animation. */
+  .reading-view .card-art.motion-on,
+  .reading-view .card-art.motion-on * { animation: none !important; }
+  .reading-view .card-art.motion-on.card-reveal {
+    animation: card-arrive 950ms cubic-bezier(.2,.8,.2,1) both !important;
+  }
+}
 @supports (-moz-appearance: none) {
   /* Avoid applying perspective transforms to the outer SVG viewport. */
   .motion-on.card-reveal { animation-name: card-arrive-flat; }
