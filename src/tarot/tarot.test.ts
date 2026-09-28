@@ -3,7 +3,7 @@ import { formatReading } from './formatter'
 import { mapReading } from './mapping'
 import { cardMeanings } from './meanings'
 import { parseSpread } from './parser'
-import { createReadyDeck, drawCards, performShuffleStep, remainingCards } from './shuffle'
+import { createReadyDeck, drawCards, performShuffleStep, remainingCards, secureShuffle } from './shuffle'
 import type { DeckCard, RuntimeCard } from '../types/tarot'
 import cathedralDeck from '../../public/decks/cathedral/deck.json'
 import nocturneDeck from '../../public/decks/nocturne/deck.json'
@@ -40,12 +40,29 @@ describe('Cathedral deck', () => {
     }
   })
 
-  it('creates an ordered 78 card deck without pre-shuffling or assigning reversals', () => {
-    const deck = createReadyDeck(cards, 456)
+  it('uses Fisher–Yates with injected indices and leaves its input untouched', () => {
+    const original = [0, 1, 2, 3]
+    const bounds: number[] = []
+    expect(secureShuffle(original, (bound) => { bounds.push(bound); return 0 })).toEqual([1, 2, 3, 0])
+    expect(bounds).toEqual([4, 3, 2])
+    expect(original).toEqual([0, 1, 2, 3])
+  })
+
+  it('creates a fully shuffled 78 card deck with independently randomized orientations', () => {
+    const original = cards.map((card) => ({ ...card }))
+    let orientationIndex = 0
+    const bounds: number[] = []
+    const deck = createReadyDeck(cards, 456, (bound) => {
+      bounds.push(bound)
+      return bounds.length > 77 ? orientationIndex++ % 2 : 0
+    })
     expect(deck.cards).toHaveLength(78)
     expect(new Set(deck.cards.map((card) => card.id)).size).toBe(78)
-    expect(deck.cards.map((card) => card.id)).toEqual(cards.map((card) => card.id))
-    expect(deck.cards.every((card) => card.orientation === 'upright')).toBe(true)
+    expect(deck.cards.map((card) => card.id)).toEqual([...cards.slice(1), cards[0]].map((card) => card.id))
+    expect(deck.cards.map((card) => card.orientation)).toEqual(cards.map((_, index) => index % 2 ? 'reversed' : 'upright'))
+    expect(bounds).toEqual([...Array.from({ length: 77 }, (_, index) => 78 - index), ...Array(78).fill(2)])
+    expect(cards).toEqual(original)
+    expect(deck.cards[0]).not.toBe(cards[1])
     expect(deck.nextCardIndex).toBe(0)
     expect(deck.resetAt).toBe(456)
   })
@@ -60,16 +77,34 @@ describe('Cathedral deck', () => {
     expect(() => drawCards(second.deck, 58)).toThrow(/Only 57 cards remain/)
   })
 
-  it('starts in manifest order and each overhand step changes only the undrawn cards', () => {
-    const ready = createReadyDeck(cards, 789)
+  it('shuffles only the undrawn cards and rerolls every remaining orientation', () => {
+    const ready = createReadyDeck(cards, 789, () => 0)
     const dealt = drawCards(ready, 4)
-    const stepped = performShuffleStep(dealt.deck, () => 0)
+    const original = structuredClone(dealt.deck)
+    const bounds: number[] = []
+    const stepped = performShuffleStep(dealt.deck, (bound) => { bounds.push(bound); return bounds.length > 73 ? 1 : 0 })
     expect(stepped.cards.slice(0, 4)).toEqual(dealt.deck.cards.slice(0, 4))
-    expect(stepped.cards.slice(4).map((card) => card.id)).not.toEqual(dealt.deck.cards.slice(4).map((card) => card.id))
+    expect(stepped.cards.slice(0, 4).every((card, index) => card === dealt.deck.cards[index])).toBe(true)
+    expect(stepped.cards.slice(4).map((card) => card.id)).toEqual([
+      ...dealt.deck.cards.slice(5), dealt.deck.cards[4],
+    ].map((card) => card.id))
+    expect(stepped.cards.slice(4).every((card) => card.orientation === 'reversed')).toBe(true)
+    expect(bounds).toEqual([...Array.from({ length: 73 }, (_, index) => 74 - index), ...Array(74).fill(2)])
     expect(stepped.cards).toHaveLength(78)
+    expect(new Set(stepped.cards.map((card) => card.id)).size).toBe(78)
     expect(stepped.nextCardIndex).toBe(4)
     expect(stepped.resetAt).toBe(789)
     expect(stepped.cards.every((card) => card.name.startsWith('Card '))).toBe(true)
+    expect(dealt.deck).toEqual(original)
+    expect(stepped).not.toBe(dealt.deck)
+  })
+
+  it('rerolls the final undrawn card without changing drawn cards', () => {
+    const deck = { ...createReadyDeck(cards, 123, () => 0), nextCardIndex: 77 }
+    const stepped = performShuffleStep(deck, () => 1)
+    expect(stepped.cards.slice(0, 77)).toEqual(deck.cards.slice(0, 77))
+    expect(stepped.cards[77]).toMatchObject({ id: deck.cards[77].id, orientation: 'reversed' })
+    expect(deck.cards[77].orientation).toBe('upright')
   })
 
   it('preserves all 78 unique cards through many discrete shuffle steps', () => {
