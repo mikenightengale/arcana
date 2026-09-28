@@ -17,10 +17,6 @@
     .rings { transition-delay:140ms; }
     .glyphs { transition-delay:280ms; }
     .orbit { transition-delay:420ms; }
-    svg:hover .eclipse { filter:drop-shadow(0 0 5px #aaa8c0); }
-    svg:hover .glyphs { filter:drop-shadow(0 0 3px #bcb9cf); }
-    svg:hover .rings { filter:drop-shadow(0 0 4px #8b7aac); }
-    svg:hover .orbit { filter:drop-shadow(0 0 5px #b7a5d5); }
     @keyframes eclipse-turn { to { transform:rotate(360deg); } }
     @keyframes outer-turn { to { transform:rotate(-360deg); } }
     @keyframes border-drift { to { stroke-dashoffset:-144; } }

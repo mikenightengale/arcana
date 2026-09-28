@@ -9,7 +9,7 @@ import { DeckGallery } from './tarot/DeckGallery'
 import { parseSpread } from './tarot/parser'
 import { createReadyDeck, drawCards, performShuffleStep, remainingCards } from './tarot/shuffle'
 import type { AppState, DeckManifest } from './types/tarot'
-import { ReadingView, type CardRect } from './ReadingView'
+import { ReadingView } from './ReadingView'
 import { appPath, assetPath, isGalleryPath } from './paths'
 
 const deckIds = ['cathedral', 'nocturne'] as const
@@ -21,7 +21,6 @@ function App() {
   const [toast, setToast] = useState<ToastMessage | null>(null)
   const [showPreview, setShowPreview] = useState(true)
   const [updateReady, setUpdateReady] = useState(false)
-  const [dealOrigin, setDealOrigin] = useState<CardRect | null>(null)
   const stateRef = useRef<AppState | null>(null)
   const holding = useRef(false)
   const shuffleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -255,19 +254,9 @@ function App() {
         shuffleStatus: undefined,
         drawCount: count,
       }
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      const source = document.querySelector<HTMLElement>('.shuffle-table')
-      const bounds = source?.getBoundingClientRect()
-
       // Save the immutable draw before starting its visual presentation.
       await saveState(nextState)
       setToast(null)
-      setDealOrigin(!reducedMotion && bounds ? {
-        left: bounds.left,
-        top: bounds.top,
-        width: bounds.width,
-        height: bounds.height,
-      } : null)
       stateRef.current = nextState
       setState(nextState)
     } catch (reason) {
@@ -401,7 +390,7 @@ function App() {
           <button className="text-button return-button" onClick={() => { releaseShuffle(); update({ stage: 'setup', shuffleStatus: undefined }) }}>Return to preparation</button>
         </section>}
 
-        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} cardBackUrl={cardBackUrl} onCopy={copyReading} onNew={newReading} onReset={resetDeck} />}
+        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} onCopy={copyReading} onNew={newReading} onReset={resetDeck} />}
       </main>
       <footer className="footer"><span>Arcana</span><span>Quiet hands. Clear questions.</span><span>YOUR TABLE, YOURS ALONE</span></footer>
       {toast && <NotificationToast key={toast.id} toast={toast} onDismiss={dismissToast} />}

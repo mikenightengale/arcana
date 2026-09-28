@@ -51,13 +51,6 @@
 .nocturne-arch { transition:filter .65s ease,opacity .65s ease; transition-delay:120ms; }
 .nocturne-border-inner { transition:filter .65s ease,opacity .65s ease; transition-delay:240ms; }
 .nocturne-border { transition:filter .65s ease,opacity .65s ease; transition-delay:360ms; }
-.nocturne-card:hover .nocturne-art { opacity:1; filter:drop-shadow(0 0 4px rgba(218,214,228,.42)) drop-shadow(0 0 12px rgba(136,101,166,.34)); }
-.nocturne-card:hover .nocturne-line-trace { opacity:1; filter:drop-shadow(0 0 4px rgba(218,192,246,1)) drop-shadow(0 0 9px rgba(148,107,192,.82)); }
-.nocturne-card:hover .nocturne-pip { filter:drop-shadow(0 0 4px rgba(197,180,223,.42)); }
-.nocturne-card:hover .nocturne-aura { opacity:1; }
-.nocturne-card:hover .nocturne-arch { opacity:.9; filter:drop-shadow(0 0 3px rgba(169,145,189,.5)); }
-.nocturne-card:hover .nocturne-border-inner { opacity:.75; filter:drop-shadow(0 0 3px rgba(169,145,189,.48)); }
-.nocturne-card:hover .nocturne-border { filter:drop-shadow(0 0 4px rgba(121,92,145,.64)); }
 .motion-on .nocturne-border { animation:nocturne-etch-drift 42s linear infinite,nocturne-frame-breath 8s ease-in-out var(--nocturne-phase) infinite; }
 .motion-on .nocturne-line-trace :is(path,circle,ellipse,line,polyline,polygon,rect) { animation:nocturne-line-flow 3.6s linear infinite; }
 .motion-on .nocturne-pip { animation:nocturne-pip-glimmer 4s ease-in-out var(--pip-delay) infinite; }

@@ -29,7 +29,7 @@ export function CrystalCard(props: CrystalCardProps) {
   return props.card.visual?.theme === 'nocturne' ? <NocturneCard {...props} /> : <CrystalGeometryCard {...props} />
 }
 
-function CrystalGeometryCard({ card, reversed = false, animations = true, className = '', reveal = false, showLabels = true }: CrystalCardProps) {
+function CrystalGeometryCard({ card, reversed = false, animations = true, className = '', reveal = false, showLabels = false }: CrystalCardProps) {
   const theme = card.suit ?? 'major'
   const colors = palettes[theme]
   // Each card instance needs its own paint servers (gallery, preview, and deal animation can coexist).

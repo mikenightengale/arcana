@@ -5,7 +5,7 @@ import { NocturneScene } from './NocturneScene'
 const roman = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI']
 const minorNumerals: Record<string, string> = { ace: 'I', two: 'II', three: 'III', four: 'IV', five: 'V', six: 'VI', seven: 'VII', eight: 'VIII', nine: 'IX', ten: 'X' }
 
-export function NocturneCard({ card, reversed = false, animations = true, className = '', reveal = false, showLabels = true }: {
+export function NocturneCard({ card, reversed = false, animations = true, className = '', reveal = false, showLabels = false }: {
   card: DeckCard
   reversed?: boolean
   animations?: boolean
