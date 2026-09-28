@@ -20,8 +20,10 @@ function App() {
   const [error, setError] = useState('')
   const [toast, setToast] = useState<ToastMessage | null>(null)
   const [showPreview, setShowPreview] = useState(true)
+  const [showShuffleHelp, setShowShuffleHelp] = useState(false)
   const [updateReady, setUpdateReady] = useState(false)
   const stateRef = useRef<AppState | null>(null)
+  const shuffleHelpRef = useRef<HTMLDivElement>(null)
   const holding = useRef(false)
   const shuffleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const frozenWrite = useRef<Promise<void>>(Promise.resolve())
@@ -115,6 +117,27 @@ function App() {
       if (shuffleTimer.current) clearTimeout(shuffleTimer.current)
     }
   }, [])
+
+  useEffect(() => {
+    if (state?.stage !== 'shuffling') {
+      setShowShuffleHelp(false)
+      return
+    }
+    if (!showShuffleHelp) return
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!shuffleHelpRef.current?.contains(event.target as Node)) setShowShuffleHelp(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowShuffleHelp(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [showShuffleHelp, state?.stage])
 
   const parsed = useMemo(() => state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText])
   const count = parsed ? parsed.positions.length : (state?.drawCount ?? 20)
@@ -370,7 +393,23 @@ function App() {
         {state.stage === 'shuffling' && <section className="shuffle-view" aria-labelledby="screen-title">
           <div className="eyebrow"><span /> THE TABLE IS SET <span /></div>
           <h1 id="screen-title">Set the <em>deck</em></h1>
-          <p className="ceremony-line">Hold while the cards move.<br />Release when the moment feels right.</p>
+          <div className="shuffle-guidance" ref={shuffleHelpRef}>
+            <div className="shuffle-instructions">
+              <p className="ceremony-line">Hold while the cards move.<br />Release when the moment feels right.</p>
+              <button
+                type="button"
+                className="shuffle-help-toggle"
+                aria-label="How shuffling works"
+                aria-expanded={showShuffleHelp}
+                aria-controls="shuffle-help-popover"
+                onClick={() => setShowShuffleHelp((open) => !open)}
+              >?</button>
+            </div>
+            <div id="shuffle-help-popover" className="shuffle-help-popover" role="region" aria-label="How shuffling works" hidden={!showShuffleHelp}>
+              <p>While you hold, Arcana moves a random packet of up to three undrawn cards to a new position every 300–360 ms. Each moved card is randomly set upright or reversed.</p>
+              <p>Release to freeze the current order, then choose Draw Cards to deal your requested number. Cards you have already drawn stay untouched.</p>
+            </div>
+          </div>
           <div className={`shuffle-table ${state.shuffleStatus === 'holding' ? 'is-shuffling' : ''} ${state.shuffleStatus === 'frozen' ? 'is-frozen' : ''}`} aria-hidden="true">
             <span className="shuffle-orbit orbit-one" /><span className="shuffle-orbit orbit-two" />
             <div className="shuffle-stack"><img src={cardBackUrl} alt="" /><img src={cardBackUrl} alt="" /><img src={cardBackUrl} alt="" /></div>

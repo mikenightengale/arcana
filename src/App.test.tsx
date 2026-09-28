@@ -133,6 +133,29 @@ describe('interactive shuffle', () => {
     await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).deckId === 'cathedral')).toBe(true))
   })
 
+  it('explains the shuffle mechanics and dismisses the help with Escape or an outside press', async () => {
+    mocks.loadState.mockResolvedValue(setupState())
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /Shuffle the deck/ }))
+
+    const help = screen.getByRole('button', { name: 'How shuffling works' })
+    expect(help).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(help)
+    expect(help).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('random packet of up to three undrawn cards')
+    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('every 300–360 ms')
+    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('Cards you have already drawn stay untouched')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(help).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('region', { name: 'How shuffling works' })).not.toBeInTheDocument()
+
+    fireEvent.click(help)
+    fireEvent.pointerDown(screen.getByText('Ready when you are.'))
+    expect(help).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('region', { name: 'How shuffling works' })).not.toBeInTheDocument()
+  })
+
   it('switches Nocturne artwork while retaining progress and persists the selected deck', async () => {
     const starting = setupState()
     starting.deck.nextCardIndex = 9
