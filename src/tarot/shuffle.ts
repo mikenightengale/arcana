@@ -22,6 +22,36 @@ export function createReadyDeck(cards: DeckCard[], now = Date.now()): DeckState 
   }
 }
 
+/** Randomizes all cards that have not been drawn yet and assigns their orientations. */
+export function shuffleDeck(deck: DeckState, randomIndex = secureIndex): DeckState {
+  const firstUndrawn = deck.nextCardIndex
+  const cards = deck.cards.slice(firstUndrawn)
+
+  for (let index = cards.length - 1; index > 0; index -= 1) {
+    const destination = randomIndex(index + 1)
+    ;[cards[index], cards[destination]] = [cards[destination], cards[index]]
+  }
+
+  const shuffled = cards.map((card) => ({
+    ...card,
+    orientation: randomIndex(2) === 0 ? 'upright' as const : 'reversed' as const,
+  }))
+
+  return { ...deck, cards: [...deck.cards.slice(0, firstUndrawn), ...shuffled] }
+}
+
+/** Moves the current top undrawn card to the bottom of the undrawn stack. */
+export function cycleTopCardToBottom(deck: DeckState): DeckState {
+  const firstUndrawn = deck.nextCardIndex
+  const available = deck.cards.length - firstUndrawn
+  if (available < 2) return deck
+
+  const cards = deck.cards.slice()
+  const [topCard] = cards.splice(firstUndrawn, 1)
+  cards.push(topCard)
+  return { ...deck, cards }
+}
+
 /**
  * Performs one overhand-style packet transfer on the undrawn portion of a deck.
  * Random choices are made only for this step; the returned deck is the complete

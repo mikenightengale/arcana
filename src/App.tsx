@@ -7,7 +7,7 @@ import { mapReading } from './tarot/mapping'
 import { DeckPicker } from './tarot/DeckPicker'
 import { DeckGallery } from './tarot/DeckGallery'
 import { parseSpread } from './tarot/parser'
-import { createReadyDeck, drawCards, performShuffleStep, remainingCards } from './tarot/shuffle'
+import { createReadyDeck, cycleTopCardToBottom, drawCards, remainingCards, shuffleDeck } from './tarot/shuffle'
 import type { AppState, DeckManifest } from './types/tarot'
 import { ReadingView } from './ReadingView'
 import { appPath, assetPath, canonicalGalleryPath, galleryDeckId, isGalleryPath } from './paths'
@@ -191,14 +191,14 @@ function App() {
       notify('warning', `${count} cards requested. ${remaining} cards remain. Reset the deck before continuing.`)
       return
     }
-    update({ spread: parsed, stage: 'shuffling', shuffleStatus: remaining === 1 ? 'frozen' : 'ready', reading: null, drawCount: count })
+    update({ deck: shuffleDeck(current.deck), spread: parsed, stage: 'shuffling', shuffleStatus: remaining === 1 ? 'frozen' : 'ready', reading: null, drawCount: count })
   }
 
   function applyShuffleStep() {
     if (!holding.current) return
     const current = stateRef.current
     if (!current || current.stage !== 'shuffling') return
-    const next: AppState = { ...current, deck: performShuffleStep(current.deck), shuffleStatus: 'holding' }
+    const next: AppState = { ...current, deck: cycleTopCardToBottom(current.deck), shuffleStatus: 'holding' }
     stateRef.current = next
     setState(next)
     shuffleMotion.current += 1
@@ -406,8 +406,8 @@ function App() {
               >?</button>
             </div>
             <div id="shuffle-help-popover" className="shuffle-help-popover" role="region" aria-label="How shuffling works" hidden={!showShuffleHelp}>
-              <p>While you hold, Arcana moves a random packet of up to three undrawn cards to a new position every 300–360 ms. Each moved card is randomly set upright or reversed.</p>
-              <p>Release to freeze the current order, then choose Draw Cards to deal your requested number. Cards you have already drawn stay untouched.</p>
+              <p>Choosing “Shuffle the deck” randomizes the order and orientation of every undrawn card before you reach this page.</p>
+              <p>Hold to cycle the top card to the bottom, one card at a time every 300–360 ms. Release to set the deck, then choose Draw Cards to reveal your reading.</p>
             </div>
           </div>
           <div className={`shuffle-table ${state.shuffleStatus === 'holding' ? 'is-shuffling' : ''} ${state.shuffleStatus === 'frozen' ? 'is-frozen' : ''}`} aria-hidden="true">
