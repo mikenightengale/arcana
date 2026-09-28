@@ -10,7 +10,7 @@ import { parseSpread } from './tarot/parser'
 import { createReadyDeck, drawCards, performShuffleStep, remainingCards } from './tarot/shuffle'
 import type { AppState, DeckManifest } from './types/tarot'
 import { ReadingView } from './ReadingView'
-import { appPath, assetPath, isGalleryPath } from './paths'
+import { appPath, assetPath, canonicalGalleryPath, galleryDeckId, isGalleryPath } from './paths'
 
 const deckIds = ['cathedral', 'nocturne'] as const
 
@@ -37,6 +37,15 @@ function App() {
   const { updateServiceWorker } = useRegisterSW({
     onNeedRefresh() { setUpdateReady(true) },
   })
+
+  useEffect(() => {
+    const currentUrl = new URL(window.location.href)
+    const canonicalPath = canonicalGalleryPath(currentUrl.pathname)
+    if (canonicalPath !== currentUrl.pathname) {
+      currentUrl.pathname = canonicalPath
+      window.history.replaceState(window.history.state, '', currentUrl)
+    }
+  }, [])
 
   useEffect(() => {
     let alive = true
@@ -293,7 +302,7 @@ function App() {
   const cardBackUrl = assetPath(`decks/${manifest.id}/${manifest.cardBack}`)
 
   if (isGalleryPath(window.location.pathname)) {
-    const galleryId = window.location.pathname.replace(/\/$/, '').split('/').pop()
+    const galleryId = galleryDeckId(window.location.pathname)
     const galleryManifest = manifests.find((deck) => deck.id === galleryId) ?? manifest
     const galleryBackUrl = assetPath(`decks/${galleryManifest.id}/${galleryManifest.cardBack}`)
     return <DeckGallery deckId={galleryManifest.id} deckName={galleryManifest.id === 'cathedral' ? 'Crystal Geometry' : galleryManifest.name} cards={galleryManifest.cards} cardBackUrl={galleryBackUrl} onReturn={() => { window.location.href = appPath() }} />

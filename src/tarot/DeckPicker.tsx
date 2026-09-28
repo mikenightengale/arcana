@@ -1,6 +1,6 @@
 import type { DeckManifest } from '../types/tarot'
 import { CrystalCard } from './CrystalCard'
-import { appPath } from '../paths'
+import { appPath, galleryPath } from '../paths'
 
 function displayName(deck: DeckManifest) {
   return deck.id === 'cathedral' ? 'Crystal Geometry' : deck.name
@@ -13,7 +13,7 @@ export function DeckPicker({ manifests, selectedDeckId, onSelect }: { manifests:
   return <section className={`deck-picker panel deck-picker-${manifest.id}`} aria-labelledby="deck-picker-title">
     <div className="deck-picker-heading">
       <span className="panel-label" id="deck-picker-title"><span className="label-mark" aria-hidden="true">◈</span>Choose a deck</span>
-      <a className="deck-picker-explore" href={appPath(`gallery/${manifest.id}`)}>Explore Deck</a>
+      <a className="deck-picker-explore" href={galleryPath(manifest.id)}>Explore Deck</a>
     </div>
     <div className="deck-picker-body">
       <div className="deck-options" role="group" aria-label="Available decks">
