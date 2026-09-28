@@ -3,6 +3,8 @@ import type { DeckCard } from '../types/tarot'
 import { palettes } from './cardGeometry'
 import { MajorScene } from './MajorScene'
 import { CourtScene, PipScene } from './MinorScenes'
+import { NocturneCard } from './NocturneCard'
+import { VeilCard } from './VeilCard'
 
 const roman = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI']
 const visibilityListeners = new WeakMap<Element, (visible: boolean) => void>()
@@ -22,7 +24,14 @@ function watchVisibility(element: Element, listener: (visible: boolean) => void)
   }
 }
 
-export function CrystalCard({ card, reversed = false, animations = true, className = '', reveal = false, showLabels = true }: { card: DeckCard; reversed?: boolean; animations?: boolean; className?: string; reveal?: boolean; showLabels?: boolean }) {
+type CrystalCardProps = { card: DeckCard; reversed?: boolean; animations?: boolean; className?: string; reveal?: boolean; showLabels?: boolean }
+
+export function CrystalCard(props: CrystalCardProps) {
+  if (props.card.visual?.theme === 'veil') return <VeilCard {...props} />
+  return props.card.visual?.theme === 'nocturne' ? <NocturneCard {...props} /> : <CrystalGeometryCard {...props} />
+}
+
+function CrystalGeometryCard({ card, reversed = false, animations = true, className = '', reveal = false, showLabels = false }: CrystalCardProps) {
   const theme = card.suit ?? 'major'
   const colors = palettes[theme]
   // Each card instance needs its own paint servers (gallery, preview, and deal animation can coexist).
@@ -71,6 +80,7 @@ export function CrystalCard({ card, reversed = false, animations = true, classNa
       {showLabels && <text x="120" y="57" textAnchor="middle" className="card-numeral">{numeral}</text>}
       <g className={`card-scene card-${uid} suit-${card.suit ?? 'major'}`} style={{'--accent':colors.a} as CSSProperties}>
         <path d="M120 101 212 197 120 293 28 197Z M120 106V288M35 197H205" fill="none" stroke={colors.c} strokeOpacity=".075" strokeWidth=".8"/>
+
         <g className="scene-engraving" fill="none" stroke={`url(#frame-${uid})`} strokeWidth=".65" opacity=".29">
           <circle cx="120" cy="197" r="91"/><circle cx="120" cy="197" r="85" stroke={colors.b} strokeDasharray="1 5"/>
           <ellipse cx="120" cy="197" rx="101" ry="37" transform="rotate(-35 120 197)" stroke={colors.a}/>

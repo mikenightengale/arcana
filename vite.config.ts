@@ -15,7 +15,7 @@ export default defineConfig(({ command }) => {
       react(),
       VitePWA({
         registerType: 'prompt',
-        includeAssets: ['icons/arcana.svg', 'decks/cathedral/backs/*.svg', 'decks/cathedral/**/*.svg', 'decks/cathedral/deck.json'],
+        includeAssets: ['icons/arcana.svg', 'decks/cathedral/backs/*.svg', 'decks/cathedral/**/*.svg', 'decks/cathedral/deck.json', 'decks/nocturne/backs/*.svg', 'decks/nocturne/**/*.svg', 'decks/nocturne/deck.json'],
         manifest: {
           name: 'Arcana',
           short_name: 'Arcana',

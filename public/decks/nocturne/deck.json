@@ -1,0 +1,999 @@
+{
+  "id": "nocturne",
+  "name": "Nocturne",
+  "cardBack": "backs/nocturne.svg",
+  "cards": [
+    {
+      "id": "the-fool",
+      "name": "The Fool",
+      "arcana": "major",
+      "number": 0,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "star-path"
+      }
+    },
+    {
+      "id": "the-magician",
+      "name": "The Magician",
+      "arcana": "major",
+      "number": 1,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "suit-orbit"
+      }
+    },
+    {
+      "id": "the-high-priestess",
+      "name": "The High Priestess",
+      "arcana": "major",
+      "number": 2,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "moon-wax"
+      }
+    },
+    {
+      "id": "the-empress",
+      "name": "The Empress",
+      "arcana": "major",
+      "number": 3,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "crystal-bloom"
+      }
+    },
+    {
+      "id": "the-emperor",
+      "name": "The Emperor",
+      "arcana": "major",
+      "number": 4,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "solar-breath"
+      }
+    },
+    {
+      "id": "the-hierophant",
+      "name": "The Hierophant",
+      "arcana": "major",
+      "number": 5,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "slow-halo"
+      }
+    },
+    {
+      "id": "the-lovers",
+      "name": "The Lovers",
+      "arcana": "major",
+      "number": 6,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "star-pulse"
+      }
+    },
+    {
+      "id": "the-chariot",
+      "name": "The Chariot",
+      "arcana": "major",
+      "number": 7,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "slow-drift"
+      }
+    },
+    {
+      "id": "strength",
+      "name": "Strength",
+      "arcana": "major",
+      "number": 8,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "crystal-breath"
+      }
+    },
+    {
+      "id": "the-hermit",
+      "name": "The Hermit",
+      "arcana": "major",
+      "number": 9,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "lantern-glow"
+      }
+    },
+    {
+      "id": "wheel-of-fortune",
+      "name": "Wheel of Fortune",
+      "arcana": "major",
+      "number": 10,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "counter-orbit"
+      }
+    },
+    {
+      "id": "justice",
+      "name": "Justice",
+      "arcana": "major",
+      "number": 11,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "blade-shimmer"
+      }
+    },
+    {
+      "id": "the-hanged-man",
+      "name": "The Hanged Man",
+      "arcana": "major",
+      "number": 12,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "halo-drift"
+      }
+    },
+    {
+      "id": "death",
+      "name": "Death",
+      "arcana": "major",
+      "number": 13,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reform-fragments"
+      }
+    },
+    {
+      "id": "temperance",
+      "name": "Temperance",
+      "arcana": "major",
+      "number": 14,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "energy-flow"
+      }
+    },
+    {
+      "id": "the-devil",
+      "name": "The Devil",
+      "arcana": "major",
+      "number": 15,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "violet-pulse"
+      }
+    },
+    {
+      "id": "the-tower",
+      "name": "The Tower",
+      "arcana": "major",
+      "number": 16,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reveal-flash"
+      }
+    },
+    {
+      "id": "the-star",
+      "name": "The Star",
+      "arcana": "major",
+      "number": 17,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "star-pulse"
+      }
+    },
+    {
+      "id": "the-moon",
+      "name": "The Moon",
+      "arcana": "major",
+      "number": 18,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "lunar-mist"
+      }
+    },
+    {
+      "id": "the-sun",
+      "name": "The Sun",
+      "arcana": "major",
+      "number": 19,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ray-breath"
+      }
+    },
+    {
+      "id": "judgement",
+      "name": "Judgement",
+      "arcana": "major",
+      "number": 20,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "crystal-ascent"
+      }
+    },
+    {
+      "id": "the-world",
+      "name": "The World",
+      "arcana": "major",
+      "number": 21,
+      "visual": {
+        "renderer": "major",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "slow-orbits"
+      }
+    },
+    {
+      "id": "ace-of-wands",
+      "name": "Ace of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "ace",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "two-of-wands",
+      "name": "Two of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "two",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "three-of-wands",
+      "name": "Three of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "three",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "four-of-wands",
+      "name": "Four of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "four",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "five-of-wands",
+      "name": "Five of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "five",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "six-of-wands",
+      "name": "Six of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "six",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "seven-of-wands",
+      "name": "Seven of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "seven",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "eight-of-wands",
+      "name": "Eight of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "eight",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "nine-of-wands",
+      "name": "Nine of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "nine",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "ten-of-wands",
+      "name": "Ten of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "ten",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "page-of-wands",
+      "name": "Page of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "page",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "knight-of-wands",
+      "name": "Knight of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "knight",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "queen-of-wands",
+      "name": "Queen of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "queen",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "king-of-wands",
+      "name": "King of Wands",
+      "arcana": "minor",
+      "suit": "wands",
+      "rank": "king",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "ember-rise"
+      }
+    },
+    {
+      "id": "ace-of-cups",
+      "name": "Ace of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "ace",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "two-of-cups",
+      "name": "Two of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "two",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "three-of-cups",
+      "name": "Three of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "three",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "four-of-cups",
+      "name": "Four of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "four",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "five-of-cups",
+      "name": "Five of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "five",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "six-of-cups",
+      "name": "Six of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "six",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "seven-of-cups",
+      "name": "Seven of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "seven",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "eight-of-cups",
+      "name": "Eight of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "eight",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "nine-of-cups",
+      "name": "Nine of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "nine",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "ten-of-cups",
+      "name": "Ten of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "ten",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "page-of-cups",
+      "name": "Page of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "page",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "knight-of-cups",
+      "name": "Knight of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "knight",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "queen-of-cups",
+      "name": "Queen of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "queen",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "king-of-cups",
+      "name": "King of Cups",
+      "arcana": "minor",
+      "suit": "cups",
+      "rank": "king",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "reflective-flow"
+      }
+    },
+    {
+      "id": "ace-of-swords",
+      "name": "Ace of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "ace",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "two-of-swords",
+      "name": "Two of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "two",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "three-of-swords",
+      "name": "Three of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "three",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "four-of-swords",
+      "name": "Four of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "four",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "five-of-swords",
+      "name": "Five of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "five",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "six-of-swords",
+      "name": "Six of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "six",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "seven-of-swords",
+      "name": "Seven of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "seven",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "eight-of-swords",
+      "name": "Eight of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "eight",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "nine-of-swords",
+      "name": "Nine of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "nine",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "ten-of-swords",
+      "name": "Ten of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "ten",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "page-of-swords",
+      "name": "Page of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "page",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "knight-of-swords",
+      "name": "Knight of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "knight",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "queen-of-swords",
+      "name": "Queen of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "queen",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "king-of-swords",
+      "name": "King of Swords",
+      "arcana": "minor",
+      "suit": "swords",
+      "rank": "king",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "edge-shimmer"
+      }
+    },
+    {
+      "id": "ace-of-pentacles",
+      "name": "Ace of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "ace",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "two-of-pentacles",
+      "name": "Two of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "two",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "three-of-pentacles",
+      "name": "Three of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "three",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "four-of-pentacles",
+      "name": "Four of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "four",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "five-of-pentacles",
+      "name": "Five of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "five",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "six-of-pentacles",
+      "name": "Six of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "six",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "seven-of-pentacles",
+      "name": "Seven of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "seven",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "eight-of-pentacles",
+      "name": "Eight of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "eight",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "nine-of-pentacles",
+      "name": "Nine of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "nine",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "ten-of-pentacles",
+      "name": "Ten of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "ten",
+      "visual": {
+        "renderer": "pip",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "page-of-pentacles",
+      "name": "Page of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "page",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "knight-of-pentacles",
+      "name": "Knight of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "knight",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "queen-of-pentacles",
+      "name": "Queen of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "queen",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    },
+    {
+      "id": "king-of-pentacles",
+      "name": "King of Pentacles",
+      "arcana": "minor",
+      "suit": "pentacles",
+      "rank": "king",
+      "visual": {
+        "renderer": "court",
+        "theme": "nocturne",
+        "layout": "nocturne",
+        "animation": "earth-pulse"
+      }
+    }
+  ]
+}

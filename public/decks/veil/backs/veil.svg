@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 384">
+  <defs>
+    <radialGradient id="ground" cx="50%" cy="44%" r="75%"><stop stop-color="#2a1c30"/><stop offset=".56" stop-color="#100c14"/><stop offset="1" stop-color="#050508"/></radialGradient>
+    <linearGradient id="silver"><stop stop-color="#71687a"/><stop offset=".5" stop-color="#d5cfda"/><stop offset="1" stop-color="#71687a"/></linearGradient>
+    <radialGradient id="haze"><stop stop-color="#795880" stop-opacity=".5"/><stop offset="1" stop-color="#231729" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="240" height="384" fill="url(#ground)"/>
+  <ellipse cx="120" cy="192" rx="94" ry="132" fill="url(#haze)"/>
+  <path d="M14 369V65Q14 20 58 20H182Q226 20 226 65V369H14Z" fill="none" stroke="url(#silver)" stroke-width="1"/>
+  <path d="M25 359V68Q25 31 61 31H179Q215 31 215 68V359H25Z" fill="none" stroke="#715d79" stroke-width=".7"/>
+  <path d="M38 284V180Q38 98 120 72Q202 98 202 180V284M52 284V181Q52 111 120 88Q188 111 188 181V284" fill="none" stroke="url(#silver)" stroke-width=".8" opacity=".82"/>
+  <path d="M43 102Q80 143 82 190T69 279Q102 240 97 187T62 104ZM197 102Q160 143 158 190T171 279Q138 240 143 187T178 104Z" fill="#100b14" fill-opacity=".8" stroke="#725778" stroke-width=".7"/>
+  <circle cx="120" cy="191" r="37" fill="none" stroke="url(#silver)" stroke-width=".8"/>
+  <circle cx="120" cy="191" r="25" fill="none" stroke="#9d83a6" stroke-width=".65" stroke-dasharray="2 5"/>
+  <path d="M120 143 132 179 168 191 132 203 120 239 108 203 72 191 108 179Z" fill="#201626" stroke="url(#silver)" stroke-width=".8"/>
+  <path d="M120 158V224M87 191H153M97 168l46 46m0-46-46 46" stroke="#9e87a6" stroke-width=".6" opacity=".62"/>
+  <circle cx="120" cy="191" r="5" fill="#d5cfda"/>
+  <path d="M92 57h56m-38 7h20M103 327h34m-17-8v16m-6-8 6-6 6 6-6 6Z" fill="none" stroke="url(#silver)" stroke-width=".8"/>
+</svg>

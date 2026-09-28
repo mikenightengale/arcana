@@ -17,6 +17,14 @@ const cards: DeckCard[] = Array.from({ length: 78 }, (_, number) => ({
   id: `card-${number}`, name: `Card ${number}`, arcana: number < 22 ? 'major' : 'minor', number,
 }))
 const manifest: DeckManifest = { id: 'cathedral', name: 'Cathedral', cardBack: 'back.svg', cards }
+const nocturneManifest: DeckManifest = {
+  id: 'nocturne', name: 'Nocturne', cardBack: 'backs/nocturne.svg',
+  cards: cards.map((card) => ({ ...card, visual: { renderer: card.arcana === 'major' ? 'major' : 'pip', theme: 'nocturne', layout: 'orbit' } })),
+}
+const veilManifest: DeckManifest = {
+  id: 'veil', name: 'The Veil', cardBack: 'backs/veil.svg',
+  cards: cards.map((card) => ({ ...card, visual: { renderer: card.arcana === 'major' ? 'major' : 'pip', theme: 'veil', layout: 'threshold' } })),
+}
 const position = { number: 1, title: 'Focus', question: 'What should I notice?' }
 const readingCard: RuntimeCard = { ...cards[0], id: 'the-fool', name: 'The Fool', orientation: 'reversed' }
 const originalMatchMediaDescriptor = Object.getOwnPropertyDescriptor(window, 'matchMedia')
@@ -33,7 +41,10 @@ beforeEach(() => {
   mocks.loadState.mockResolvedValue(state)
   mocks.saveState.mockResolvedValue(undefined)
   mocks.writeText.mockResolvedValue(undefined)
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => manifest }))
+  vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+    const deck = url.includes('/nocturne/') ? nocturneManifest : url.includes('/veil/') ? veilManifest : manifest
+    return Promise.resolve({ ok: true, json: async () => deck })
+  }))
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn().mockReturnValue({ matches: false, addListener: vi.fn(), removeListener: vi.fn() }) })
   Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: mocks.writeText } })
 })
@@ -45,6 +56,7 @@ afterEach(() => {
   if (originalMatchMediaDescriptor) Object.defineProperty(window, 'matchMedia', originalMatchMediaDescriptor)
   else delete (window as Partial<Window>).matchMedia
   vi.clearAllMocks()
+  vi.restoreAllMocks()
 })
 
 describe('reading copy notifications', () => {
@@ -102,6 +114,14 @@ describe('reading copy notifications', () => {
 })
 
 describe('interactive shuffle', () => {
+  beforeEach(() => {
+    let value = 0
+    vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation((array) => {
+      (array as Uint32Array)[0] = value++
+      return array
+    })
+  })
+
   function lastSaved(predicate: (saved: AppState) => boolean): AppState | undefined {
     return mocks.saveState.mock.calls.map(([saved]) => saved as AppState).reverse().find(predicate)
   }
@@ -118,6 +138,104 @@ describe('interactive shuffle', () => {
       shuffleStatus: undefined,
     }
   }
+
+  it('resets into a fresh shuffled deck and clears drawn reading progress', async () => {
+    let value = 0
+    vi.mocked(globalThis.crypto.getRandomValues).mockImplementation((array) => {
+      (array as Uint32Array)[0] = value
+      return array
+    })
+    mocks.loadState.mockResolvedValue(setupState())
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Reset the Deck' }))
+    const first = mocks.saveState.mock.calls.map(([saved]) => saved as AppState).at(-1)!
+    expect(first.deck.cards.map((card) => card.id)).toEqual([...cards.slice(1), cards[0]].map((card) => card.id))
+    expect(first.deck.cards.every((card) => card.orientation === 'upright')).toBe(true)
+    expect(first.deck.nextCardIndex).toBe(0)
+
+    value = 1
+    fireEvent.click(screen.getByRole('button', { name: 'Reset the Deck' }))
+    const second = mocks.saveState.mock.calls.map(([saved]) => saved as AppState).at(-1)!
+    expect(second.deck.cards.map((card) => card.id)).not.toEqual(first.deck.cards.map((card) => card.id))
+    expect(second.deck.cards.every((card) => card.orientation === 'reversed')).toBe(true)
+    expect(second.deck.nextCardIndex).toBe(0)
+    expect(second.stage).toBe('setup')
+    expect(second.reading).toBeNull()
+  })
+
+  it('defaults saved states without a deck choice to Crystal Geometry', async () => {
+    mocks.loadState.mockResolvedValue(setupState())
+    render(<App />)
+    expect(await screen.findByRole('button', { name: /Crystal Geometry/ })).toHaveAttribute('aria-pressed', 'true')
+    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).deckId === 'cathedral')).toBe(true))
+  })
+
+  it('explains the shuffle mechanics and dismisses the help with Escape or an outside press', async () => {
+    mocks.loadState.mockResolvedValue(setupState())
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /Shuffle the deck/ }))
+
+    const help = screen.getByRole('button', { name: 'How shuffling works' })
+    expect(help).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(help)
+    expect(help).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('order and orientation of every undrawn card')
+    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('one card at a time every 300–360 ms')
+    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('Release to set the deck')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(help).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('region', { name: 'How shuffling works' })).not.toBeInTheDocument()
+
+    fireEvent.click(help)
+    fireEvent.pointerDown(screen.getByText('Ready when you are.'))
+    expect(help).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('region', { name: 'How shuffling works' })).not.toBeInTheDocument()
+  })
+
+  it('switches Nocturne artwork while retaining progress and persists the selected deck', async () => {
+    const starting = setupState()
+    starting.deck.cards = [...starting.deck.cards.slice(12), ...starting.deck.cards.slice(0, 12)]
+    starting.deck.nextCardIndex = 9
+    starting.deck.cards[0].orientation = 'reversed'
+    const logicalCards = starting.deck.cards.map(({ id, orientation }) => ({ id, orientation }))
+    mocks.loadState.mockResolvedValue(starting)
+    const { unmount } = render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /Nocturne/ }))
+    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).deckId === 'nocturne')).toBe(true))
+    const saved = mocks.saveState.mock.calls.map(([value]) => value as AppState).reverse().find((value) => value.deckId === 'nocturne')!
+    expect(saved.deck.nextCardIndex).toBe(9)
+    expect(saved.deck.cards.map(({ id, orientation }) => ({ id, orientation }))).toEqual(logicalCards)
+    expect(saved.deck.cards[0]).toMatchObject({ id: logicalCards[0].id, orientation: 'reversed', visual: { theme: 'nocturne' } })
+    expect(await screen.findByRole('button', { name: /Nocturne/ })).toHaveAttribute('aria-pressed', 'true')
+
+    unmount()
+    mocks.loadState.mockResolvedValue(saved)
+    render(<App />)
+    expect(await screen.findByRole('button', { name: /Nocturne/ })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('switches to The Veil, renders its deck option, retains progress, and restores it from saved state', async () => {
+    const starting = setupState()
+    starting.deck.nextCardIndex = 4
+    starting.deck.cards[0].orientation = 'reversed'
+    mocks.loadState.mockResolvedValue(starting)
+    const { unmount } = render(<App />)
+
+    expect(await screen.findByRole('button', { name: /The Veil/ })).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(screen.getByRole('button', { name: /The Veil/ }))
+    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).deckId === 'veil')).toBe(true))
+    const saved = mocks.saveState.mock.calls.map(([value]) => value as AppState).reverse().find((value) => value.deckId === 'veil')!
+    expect(saved.deck.nextCardIndex).toBe(4)
+    expect(saved.deck.cards[0]).toMatchObject({ id: cards[0].id, orientation: 'reversed', visual: { theme: 'veil', layout: 'threshold' } })
+    expect(await screen.findByRole('button', { name: /The Veil/ })).toHaveAttribute('aria-pressed', 'true')
+
+    unmount()
+    mocks.loadState.mockResolvedValue(saved)
+    render(<App />)
+    expect(await screen.findByRole('button', { name: /The Veil/ })).toHaveAttribute('aria-pressed', 'true')
+  })
 
   it('changes the working deck during a hold, freezes immediately on release, and draws that order', async () => {
     mocks.loadState.mockResolvedValue(setupState())

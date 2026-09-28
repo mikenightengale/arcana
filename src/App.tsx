@@ -7,22 +7,23 @@ import { mapReading } from './tarot/mapping'
 import { DeckPicker } from './tarot/DeckPicker'
 import { DeckGallery } from './tarot/DeckGallery'
 import { parseSpread } from './tarot/parser'
-import { createReadyDeck, drawCards, performShuffleStep, remainingCards } from './tarot/shuffle'
+import { createReadyDeck, cycleTopCardToBottom, drawCards, remainingCards, shuffleDeck } from './tarot/shuffle'
 import type { AppState, DeckManifest } from './types/tarot'
-import { ReadingView, type CardRect } from './ReadingView'
-import { appPath, assetPath, isGalleryPath } from './paths'
+import { ReadingView } from './ReadingView'
+import { appPath, assetPath, canonicalGalleryPath, galleryDeckId, isGalleryPath } from './paths'
 
-const manifestUrl = appPath('decks/cathedral/deck.json')
+const deckIds = ['cathedral', 'nocturne', 'veil'] as const
 
 function App() {
   const [state, setState] = useState<AppState | null>(null)
-  const [manifest, setManifest] = useState<DeckManifest | null>(null)
+  const [manifests, setManifests] = useState<DeckManifest[]>([])
   const [error, setError] = useState('')
   const [toast, setToast] = useState<ToastMessage | null>(null)
   const [showPreview, setShowPreview] = useState(true)
+  const [showShuffleHelp, setShowShuffleHelp] = useState(false)
   const [updateReady, setUpdateReady] = useState(false)
-  const [dealOrigin, setDealOrigin] = useState<CardRect | null>(null)
   const stateRef = useRef<AppState | null>(null)
+  const shuffleHelpRef = useRef<HTMLDivElement>(null)
   const holding = useRef(false)
   const shuffleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const frozenWrite = useRef<Promise<void>>(Promise.resolve())
@@ -40,21 +41,36 @@ function App() {
   })
 
   useEffect(() => {
+    const currentUrl = new URL(window.location.href)
+    const canonicalPath = canonicalGalleryPath(currentUrl.pathname)
+    if (canonicalPath !== currentUrl.pathname) {
+      currentUrl.pathname = canonicalPath
+      window.history.replaceState(window.history.state, '', currentUrl)
+    }
+  }, [])
+
+  useEffect(() => {
     let alive = true
-    Promise.all([
-      fetch(manifestUrl).then((response) => {
-        if (!response.ok) throw new Error('The Cathedral deck manifest could not be loaded.')
-        return response.json() as Promise<DeckManifest>
-      }),
-      loadState(),
-    ]).then(([loadedManifest, saved]) => {
+    const manifestLoads = deckIds.map((id) => fetch(appPath(`decks/${id}/deck.json`)).then((response) => {
+      if (!response.ok) throw new Error(`The ${id === 'nocturne' ? 'Nocturne' : id === 'veil' ? 'The Veil' : 'Crystal Geometry'} deck manifest could not be loaded.`)
+      return response.json() as Promise<DeckManifest>
+    }))
+    Promise.all([Promise.all(manifestLoads), loadState()]).then(([loadedManifests, saved]) => {
       if (!alive) return
-      if (loadedManifest.cards.length !== 78) throw new Error('The Cathedral deck must contain exactly 78 cards.')
-      setManifest(loadedManifest)
-      const canonicalCards = new Map(loadedManifest.cards.map((card) => [card.id, card]))
+      const cathedral = loadedManifests.find((deck) => deck.id === 'cathedral')
+      if (!cathedral || loadedManifests.some((deck) => deck.cards.length !== 78)) throw new Error('Each deck must contain exactly 78 cards.')
+      const cathedralIds = cathedral.cards.map((card) => card.id)
+      if (loadedManifests.some((deck) => deck.cards.map((card) => card.id).join('\u0000') !== cathedralIds.join('\u0000'))) {
+        throw new Error('Every deck must contain the same 78 cards in the same order.')
+      }
+      setManifests(loadedManifests)
+      const selectedDeckId = loadedManifests.some((deck) => deck.id === saved?.deckId) ? saved?.deckId ?? 'cathedral' : 'cathedral'
+      const selectedManifest = loadedManifests.find((deck) => deck.id === selectedDeckId)!
+      const canonicalCards = new Map(selectedManifest.cards.map((card) => [card.id, card]))
       const hydrate = <T extends { id: string; orientation: 'upright' | 'reversed' }>(card: T) => ({ ...card, ...(canonicalCards.get(card.id) ?? {}), orientation: card.orientation })
       const migrated = saved ? {
         ...saved,
+        deckId: selectedDeckId,
         deck: { ...saved.deck, cards: saved.deck.cards.map(hydrate) },
         reading: saved.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
         // A hold cannot resume after reload. Preserve the last mutation and
@@ -64,7 +80,7 @@ function App() {
           : saved.shuffleStatus,
       } : null
       const initialState = migrated ?? {
-        stage: 'setup' as const, deck: createReadyDeck(loadedManifest.cards), spread: null,
+        stage: 'setup' as const, deckId: 'cathedral', deck: createReadyDeck(cathedral.cards), spread: null,
         reading: null, drawCount: 20, sourceText: '',
       }
       stateRef.current = initialState
@@ -74,6 +90,8 @@ function App() {
     })
     return () => { alive = false }
   }, [])
+
+  const manifest = manifests.find((deck) => deck.id === state?.deckId) ?? manifests.find((deck) => deck.id === 'cathedral') ?? null
 
   useEffect(() => {
     if (state) void saveState(state).catch(() => notify('error', 'Your latest changes could not be saved in this browser.'))
@@ -100,6 +118,27 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (state?.stage !== 'shuffling') {
+      setShowShuffleHelp(false)
+      return
+    }
+    if (!showShuffleHelp) return
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!shuffleHelpRef.current?.contains(event.target as Node)) setShowShuffleHelp(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowShuffleHelp(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [showShuffleHelp, state?.stage])
+
   const parsed = useMemo(() => state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText])
   const count = parsed ? parsed.positions.length : (state?.drawCount ?? 20)
   const remaining = state ? remainingCards(state.deck) : 78
@@ -112,6 +151,19 @@ function App() {
     stateRef.current = next
     setState(next)
     setToast(null)
+  }
+
+  function selectDeck(deckId: string) {
+    const current = stateRef.current
+    const selected = manifests.find((deck) => deck.id === deckId)
+    if (!current || !selected || current.deckId === deckId) return
+    const cardsById = new Map(selected.cards.map((card) => [card.id, card]))
+    const hydrate = <T extends { id: string; orientation: 'upright' | 'reversed' }>(card: T) => ({ ...card, ...(cardsById.get(card.id) ?? {}), orientation: card.orientation })
+    update({
+      deckId,
+      deck: { ...current.deck, cards: current.deck.cards.map(hydrate) },
+      reading: current.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
+    })
   }
 
   function onSpreadChange(sourceText: string) {
@@ -139,14 +191,14 @@ function App() {
       notify('warning', `${count} cards requested. ${remaining} cards remain. Reset the deck before continuing.`)
       return
     }
-    update({ spread: parsed, stage: 'shuffling', shuffleStatus: remaining === 1 ? 'frozen' : 'ready', reading: null, drawCount: count })
+    update({ deck: shuffleDeck(current.deck), spread: parsed, stage: 'shuffling', shuffleStatus: remaining === 1 ? 'frozen' : 'ready', reading: null, drawCount: count })
   }
 
   function applyShuffleStep() {
     if (!holding.current) return
     const current = stateRef.current
     if (!current || current.stage !== 'shuffling') return
-    const next: AppState = { ...current, deck: performShuffleStep(current.deck), shuffleStatus: 'holding' }
+    const next: AppState = { ...current, deck: cycleTopCardToBottom(current.deck), shuffleStatus: 'holding' }
     stateRef.current = next
     setState(next)
     shuffleMotion.current += 1
@@ -234,19 +286,9 @@ function App() {
         shuffleStatus: undefined,
         drawCount: count,
       }
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      const source = document.querySelector<HTMLElement>('.shuffle-table')
-      const bounds = source?.getBoundingClientRect()
-
       // Save the immutable draw before starting its visual presentation.
       await saveState(nextState)
       setToast(null)
-      setDealOrigin(!reducedMotion && bounds ? {
-        left: bounds.left,
-        top: bounds.top,
-        width: bounds.width,
-        height: bounds.height,
-      } : null)
       stateRef.current = nextState
       setState(nextState)
     } catch (reason) {
@@ -280,10 +322,13 @@ function App() {
   if (error && !state) return <main className="boot-error"><h1>Arcana</h1><p>{error}</p></main>
   if (!state || !manifest) return <main className="loading"><span className="loading-sigil" aria-hidden="true">✳</span><p>Opening the table</p></main>
 
-  const cardBackUrl = assetPath(`decks/cathedral/${manifest.cardBack}`)
+  const cardBackUrl = assetPath(`decks/${manifest.id}/${manifest.cardBack}`)
 
   if (isGalleryPath(window.location.pathname)) {
-    return <DeckGallery cards={manifest.cards} cardBackUrl={cardBackUrl} onReturn={() => { window.location.href = appPath() }} />
+    const galleryId = galleryDeckId(window.location.pathname)
+    const galleryManifest = manifests.find((deck) => deck.id === galleryId) ?? manifest
+    const galleryBackUrl = assetPath(`decks/${galleryManifest.id}/${galleryManifest.cardBack}`)
+    return <DeckGallery deckId={galleryManifest.id} deckName={galleryManifest.id === 'cathedral' ? 'Crystal Geometry' : galleryManifest.name} cards={galleryManifest.cards} cardBackUrl={galleryBackUrl} onReturn={() => { window.location.href = appPath() }} />
   }
 
   return (
@@ -329,7 +374,7 @@ function App() {
               </div>}
             </section>
 
-            <DeckPicker manifest={manifest} cardBackUrl={cardBackUrl} />
+            <DeckPicker manifests={manifests} selectedDeckId={manifest.id} onSelect={selectDeck} />
           </div>
 
           <div className="draw-settings">
@@ -337,18 +382,34 @@ function App() {
             {!parsed && <label className="count-control"><span className="visually-hidden">Cards to draw</span><button aria-label="Decrease card count" onClick={() => update({ drawCount: Math.max(1, count - 1) })} disabled={count <= 1}>−</button><input type="number" min="1" max="78" value={count} onChange={(event) => update({ drawCount: Math.min(78, Math.max(1, Number(event.target.value) || 1)) })} /><button aria-label="Increase card count" onClick={() => update({ drawCount: Math.min(78, count + 1) })} disabled={count >= 78}>+</button></label>}
           </div>
           <div className="setup-actions">
-            <button className="primary-button" onClick={beginShuffle}>
-              <span>Shuffle the deck</span><span className="button-arrow" aria-hidden="true">↗</span>
+            <button className="primary-button shuffle-start-button" onClick={beginShuffle}>
+              <span>Shuffle the deck</span><svg className="shuffle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M2 6h2.5c2 0 3.2.9 4.3 2.5l6.4 9c1.1 1.6 2.4 2.5 4.3 2.5H22"/><path d="m18 14 4 4-4 4"/><path d="M2 18h2.5c2 0 3.2-.9 4.3-2.5l6.4-9C16.3 4.9 17.6 4 19.5 4H22"/><path d="m18 2 4 4-4 4"/></svg>
             </button>
-            <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>
+            {remaining < 78 && <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>}
           </div>
           <p className="privacy-note"><span aria-hidden="true">◈</span> Your cards and readings stay on this device.</p>
         </section>}
 
         {state.stage === 'shuffling' && <section className="shuffle-view" aria-labelledby="screen-title">
           <div className="eyebrow"><span /> THE TABLE IS SET <span /></div>
-          <h1 id="screen-title">Set the <em>deck</em></h1>
-          <p className="ceremony-line">Hold while the cards move.<br />Release when the moment feels right.</p>
+          <h1 id="screen-title">Set the <em>deck</em>{state.spread?.title && <> for <span className="shuffle-spread-title">{state.spread.title}</span></>}</h1>
+          <div className="shuffle-guidance" ref={shuffleHelpRef}>
+            <div className="shuffle-instructions">
+              <p className="ceremony-line">Hold while the cards move.<br />Release when the moment feels right.</p>
+              <button
+                type="button"
+                className="shuffle-help-toggle"
+                aria-label="How shuffling works"
+                aria-expanded={showShuffleHelp}
+                aria-controls="shuffle-help-popover"
+                onClick={() => setShowShuffleHelp((open) => !open)}
+              >?</button>
+            </div>
+            <div id="shuffle-help-popover" className="shuffle-help-popover" role="region" aria-label="How shuffling works" hidden={!showShuffleHelp}>
+              <p>Choosing “Shuffle the deck” randomizes the order and orientation of every undrawn card before you reach this page.</p>
+              <p>Hold to cycle the top card to the bottom, one card at a time every 300–360 ms. Release to set the deck, then choose Draw Cards to reveal your reading.</p>
+            </div>
+          </div>
           <div className={`shuffle-table ${state.shuffleStatus === 'holding' ? 'is-shuffling' : ''} ${state.shuffleStatus === 'frozen' ? 'is-frozen' : ''}`} aria-hidden="true">
             <span className="shuffle-orbit orbit-one" /><span className="shuffle-orbit orbit-two" />
             <div className="shuffle-stack"><img src={cardBackUrl} alt="" /><img src={cardBackUrl} alt="" /><img src={cardBackUrl} alt="" /></div>
@@ -369,17 +430,16 @@ function App() {
             onKeyDown={onShuffleKeyDown}
             onKeyUp={onShuffleKeyUp}
           >
-            <span>{state.shuffleStatus === 'holding' ? 'Release to stop' : 'Hold to shuffle'}</span><span className="button-arrow" aria-hidden="true">✦</span>
+            <span>{state.shuffleStatus === 'holding' ? 'Release to stop' : 'Hold to shuffle'}</span><svg className="shuffle-icon hold-shuffle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M2 6h2.5c2 0 3.2.9 4.3 2.5l6.4 9c1.1 1.6 2.4 2.5 4.3 2.5H22"/><path d="m18 14 4 4-4 4"/><path d="M2 18h2.5c2 0 3.2-.9 4.3-2.5l6.4-9C16.3 4.9 17.6 4 19.5 4H22"/><path d="m18 2 4 4-4 4"/></svg>
           </button>
           <p className="draw-count-note">A reading of <strong>{count}</strong> {count === 1 ? 'card' : 'cards'}</p>
-          <button className="primary-button draw-button" onClick={deal} disabled={state.shuffleStatus !== 'frozen' || holding.current}><span>Draw cards</span><span className="button-arrow" aria-hidden="true">↗</span></button>
+          <button className="primary-button draw-button" onClick={deal} disabled={state.shuffleStatus !== 'frozen' || holding.current}><span>Draw cards</span><svg className="draw-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="12" height="17" rx="1.5"/><path d="M7 7h4M18 8v12m-4-4 4 4 4-4"/></svg></button>
           {state.shuffleStatus === 'frozen' && <button className="text-button return-button" onClick={() => update({ shuffleStatus: 'ready' })}>Shuffle again</button>}
           <button className="text-button return-button" onClick={() => { releaseShuffle(); update({ stage: 'setup', shuffleStatus: undefined }) }}>Return to preparation</button>
         </section>}
 
-        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} dealOrigin={dealOrigin} cardBackUrl={cardBackUrl} onCopy={copyReading} onNew={newReading} onReset={resetDeck} />}
+        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} onCopy={copyReading} onNew={newReading} onReset={remaining < 78 ? resetDeck : undefined} />}
       </main>
-      <footer className="footer"><span>Arcana</span><span>Quiet hands. Clear questions.</span><span>YOUR TABLE, YOURS ALONE</span></footer>
       {toast && <NotificationToast key={toast.id} toast={toast} onDismiss={dismissToast} />}
       {updateReady && <div className="update-toast" role="status"><span>A new version of Arcana is available.</span><button onClick={() => updateServiceWorker(true)}>Update</button><button className="dismiss" aria-label="Dismiss update notice" onClick={() => setUpdateReady(false)}>×</button></div>}
     </div>
