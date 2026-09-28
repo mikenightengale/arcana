@@ -359,10 +359,10 @@ function App() {
             {!parsed && <label className="count-control"><span className="visually-hidden">Cards to draw</span><button aria-label="Decrease card count" onClick={() => update({ drawCount: Math.max(1, count - 1) })} disabled={count <= 1}>−</button><input type="number" min="1" max="78" value={count} onChange={(event) => update({ drawCount: Math.min(78, Math.max(1, Number(event.target.value) || 1)) })} /><button aria-label="Increase card count" onClick={() => update({ drawCount: Math.min(78, count + 1) })} disabled={count >= 78}>+</button></label>}
           </div>
           <div className="setup-actions">
-            <button className="primary-button" onClick={beginShuffle}>
-              <span>Shuffle the deck</span><span className="button-arrow" aria-hidden="true">↗</span>
+            <button className="primary-button shuffle-start-button" onClick={beginShuffle}>
+              <span>Shuffle the deck</span><svg className="shuffle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M2 6h2.5c2 0 3.2.9 4.3 2.5l6.4 9c1.1 1.6 2.4 2.5 4.3 2.5H22"/><path d="m18 14 4 4-4 4"/><path d="M2 18h2.5c2 0 3.2-.9 4.3-2.5l6.4-9C16.3 4.9 17.6 4 19.5 4H22"/><path d="m18 2 4 4-4 4"/></svg>
             </button>
-            <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>
+            {remaining < 78 && <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>}
           </div>
           <p className="privacy-note"><span aria-hidden="true">◈</span> Your cards and readings stay on this device.</p>
         </section>}
@@ -391,17 +391,16 @@ function App() {
             onKeyDown={onShuffleKeyDown}
             onKeyUp={onShuffleKeyUp}
           >
-            <span>{state.shuffleStatus === 'holding' ? 'Release to stop' : 'Hold to shuffle'}</span><span className="button-arrow" aria-hidden="true">✦</span>
+            <span>{state.shuffleStatus === 'holding' ? 'Release to stop' : 'Hold to shuffle'}</span><svg className="shuffle-icon hold-shuffle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M2 6h2.5c2 0 3.2.9 4.3 2.5l6.4 9c1.1 1.6 2.4 2.5 4.3 2.5H22"/><path d="m18 14 4 4-4 4"/><path d="M2 18h2.5c2 0 3.2-.9 4.3-2.5l6.4-9C16.3 4.9 17.6 4 19.5 4H22"/><path d="m18 2 4 4-4 4"/></svg>
           </button>
           <p className="draw-count-note">A reading of <strong>{count}</strong> {count === 1 ? 'card' : 'cards'}</p>
-          <button className="primary-button draw-button" onClick={deal} disabled={state.shuffleStatus !== 'frozen' || holding.current}><span>Draw cards</span><span className="button-arrow" aria-hidden="true">↗</span></button>
+          <button className="primary-button draw-button" onClick={deal} disabled={state.shuffleStatus !== 'frozen' || holding.current}><span>Draw cards</span><svg className="draw-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="12" height="17" rx="1.5"/><path d="M7 7h4M18 8v12m-4-4 4 4 4-4"/></svg></button>
           {state.shuffleStatus === 'frozen' && <button className="text-button return-button" onClick={() => update({ shuffleStatus: 'ready' })}>Shuffle again</button>}
           <button className="text-button return-button" onClick={() => { releaseShuffle(); update({ stage: 'setup', shuffleStatus: undefined }) }}>Return to preparation</button>
         </section>}
 
-        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} onCopy={copyReading} onNew={newReading} onReset={resetDeck} />}
+        {state.stage === 'reading' && state.reading && <ReadingView reading={state.reading} spread={state.spread} onCopy={copyReading} onNew={newReading} onReset={remaining < 78 ? resetDeck : undefined} />}
       </main>
-      <footer className="footer"><span>Arcana</span><span>Quiet hands. Clear questions.</span><span>YOUR TABLE, YOURS ALONE</span></footer>
       {toast && <NotificationToast key={toast.id} toast={toast} onDismiss={dismissToast} />}
       {updateReady && <div className="update-toast" role="status"><span>A new version of Arcana is available.</span><button onClick={() => updateServiceWorker(true)}>Update</button><button className="dismiss" aria-label="Dismiss update notice" onClick={() => setUpdateReady(false)}>×</button></div>}
     </div>
