@@ -64,6 +64,15 @@
 @keyframes nocturne-line-flow { to { stroke-dashoffset:-25px; } }
 @keyframes nocturne-pip-glimmer { 0%,100% { opacity:.62; filter:brightness(.82) drop-shadow(0 0 1px rgba(177,164,202,.18)); } 50% { opacity:1; filter:brightness(1.65) drop-shadow(0 0 7px rgba(210,190,239,.78)); } }
 @keyframes nocturne-corner-glint { 0%,86%,100% { filter:drop-shadow(0 0 0 rgba(138,104,168,0)); } 92% { filter:drop-shadow(0 0 3px rgba(138,104,168,.38)); } }
+@media (max-width: 760px) {
+  /* Keep long readings light while scrolling on phones. The per-card SVG effects
+     repeatedly repaint; retain only each card's one-time arrival animation. */
+  .reading-view .card-art.motion-on,
+  .reading-view .card-art.motion-on * { animation: none !important; }
+  .reading-view .card-art.motion-on.card-reveal {
+    animation: card-arrive 950ms cubic-bezier(.2,.8,.2,1) both !important;
+  }
+}
 @supports (-moz-appearance: none) {
   /* Avoid applying perspective transforms to the outer SVG viewport. */
   .motion-on.card-reveal { animation-name: card-arrive-flat; }
