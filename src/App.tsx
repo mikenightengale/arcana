@@ -392,7 +392,7 @@ function App() {
 
         {state.stage === 'shuffling' && <section className="shuffle-view" aria-labelledby="screen-title">
           <div className="eyebrow"><span /> THE TABLE IS SET <span /></div>
-          <h1 id="screen-title">Set the <em>deck</em></h1>
+          <h1 id="screen-title">Set the <em>deck</em>{state.spread?.title && <> for <span className="shuffle-spread-title">{state.spread.title}</span></>}</h1>
           <div className="shuffle-guidance" ref={shuffleHelpRef}>
             <div className="shuffle-instructions">
               <p className="ceremony-line">Hold while the cards move.<br />Release when the moment feels right.</p>
