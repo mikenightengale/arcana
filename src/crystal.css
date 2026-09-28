@@ -20,7 +20,6 @@
 .motion-on .sun-rays { transform-box: view-box; transform-origin: 120px 177px; animation: ray-turn 20s linear infinite; }
 .motion-on .pip-symbol { transform-box: fill-box; transform-origin: center; animation: pip-light 4.5s ease-in-out var(--pip-delay,0s) infinite; }
 .motion-on .ambient-stars circle { transform-box: fill-box; transform-origin: center; animation: star-twinkle 3.8s ease-in-out var(--twinkle-delay,0s) infinite; }
-.motion-on .card-scene { transform-box: view-box; transform-origin: 120px 197px; animation: card-drift 6s ease-in-out var(--card-phase,0s) infinite; }
 .motion-on[data-animation="star-path"] .scene-engraving,.motion-on[data-animation="crystal-bloom"] .scene-engraving { animation: engraved-breath 4.8s ease-in-out var(--card-phase,0s) infinite; }
 .motion-on[data-animation="moon-wax"] .scene-engraving,.motion-on[data-animation="solar-breath"] .scene-engraving { animation: celestial-breath 4.2s ease-in-out var(--card-phase,0s) infinite; }
 .motion-on[data-animation="slow-halo"] .orbiting-halo,.motion-on[data-animation="halo-drift"] .orbiting-halo { animation-duration: 24s; }
