@@ -20,7 +20,7 @@ export function DeckPicker({ manifests, selectedDeckId, onSelect }: { manifests:
         {manifests.map((deck) => {
           const isSelected = selectedDeckId === deck.id
           return <button key={deck.id} className={`deck-option deck-option-${deck.id}${isSelected ? ' selected' : ''}`} type="button" aria-pressed={isSelected} onClick={() => onSelect(deck.id)}>
-            <span className="deck-option-symbol" aria-hidden="true">{deck.id === 'nocturne' ? '☾' : '✧'}</span>
+            <span className="deck-option-symbol" aria-hidden="true">{deck.id === 'nocturne' ? '☾' : deck.id === 'veil' ? '◉' : '✧'}</span>
             <span className="deck-option-copy"><strong>{displayName(deck)}</strong><small>{isSelected ? 'Active deck' : 'Select deck'}</small></span>
             <span className="deck-option-check" aria-hidden="true">{isSelected ? '✓' : ''}</span>
           </button>

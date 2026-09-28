@@ -4,6 +4,7 @@ import { palettes } from './cardGeometry'
 import { MajorScene } from './MajorScene'
 import { CourtScene, PipScene } from './MinorScenes'
 import { NocturneCard } from './NocturneCard'
+import { VeilCard } from './VeilCard'
 
 const roman = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI']
 const visibilityListeners = new WeakMap<Element, (visible: boolean) => void>()
@@ -26,6 +27,7 @@ function watchVisibility(element: Element, listener: (visible: boolean) => void)
 type CrystalCardProps = { card: DeckCard; reversed?: boolean; animations?: boolean; className?: string; reveal?: boolean; showLabels?: boolean }
 
 export function CrystalCard(props: CrystalCardProps) {
+  if (props.card.visual?.theme === 'veil') return <VeilCard {...props} />
   return props.card.visual?.theme === 'nocturne' ? <NocturneCard {...props} /> : <CrystalGeometryCard {...props} />
 }
 

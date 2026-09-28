@@ -7,18 +7,24 @@ import { createReadyDeck, drawCards, performShuffleStep, remainingCards } from '
 import type { DeckCard, RuntimeCard } from '../types/tarot'
 import cathedralDeck from '../../public/decks/cathedral/deck.json'
 import nocturneDeck from '../../public/decks/nocturne/deck.json'
+import veilDeck from '../../public/decks/veil/deck.json'
 
 const cards: DeckCard[] = Array.from({ length: 78 }, (_, number) => ({
   id: `card-${number}`, name: `Card ${number}`, arcana: number < 22 ? 'major' : 'minor', number,
 }))
 
 describe('Cathedral deck', () => {
-  it('keeps Nocturne as a complete alternate with the same ordered card identities', () => {
+  it('keeps Nocturne and The Veil as complete alternates with the same ordered card identities', () => {
     expect(cathedralDeck.cards).toHaveLength(78)
     expect(nocturneDeck.cards).toHaveLength(78)
+    expect(veilDeck.cards).toHaveLength(78)
     expect(new Set(nocturneDeck.cards.map((card) => card.id)).size).toBe(78)
+    expect(new Set(veilDeck.cards.map((card) => card.id)).size).toBe(78)
     expect(nocturneDeck.cards.map((card) => card.id)).toEqual(cathedralDeck.cards.map((card) => card.id))
+    expect(veilDeck.cards.map((card) => card.id)).toEqual(cathedralDeck.cards.map((card) => card.id))
     expect(nocturneDeck.cards.every((card) => card.visual?.theme === 'nocturne')).toBe(true)
+    expect(veilDeck.cards.every((card) => card.visual?.theme === 'veil' && card.visual.layout === 'threshold')).toBe(true)
+    expect(veilDeck.cardBack).toBe('backs/veil.svg')
   })
 
   it('has upright and reversed guide meanings for every manifest card', () => {

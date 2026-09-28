@@ -12,7 +12,7 @@ import type { AppState, DeckManifest } from './types/tarot'
 import { ReadingView } from './ReadingView'
 import { appPath, assetPath, canonicalGalleryPath, galleryDeckId, isGalleryPath } from './paths'
 
-const deckIds = ['cathedral', 'nocturne'] as const
+const deckIds = ['cathedral', 'nocturne', 'veil'] as const
 
 function App() {
   const [state, setState] = useState<AppState | null>(null)
@@ -52,7 +52,7 @@ function App() {
   useEffect(() => {
     let alive = true
     const manifestLoads = deckIds.map((id) => fetch(appPath(`decks/${id}/deck.json`)).then((response) => {
-      if (!response.ok) throw new Error(`The ${id === 'nocturne' ? 'Nocturne' : 'Crystal Geometry'} deck manifest could not be loaded.`)
+      if (!response.ok) throw new Error(`The ${id === 'nocturne' ? 'Nocturne' : id === 'veil' ? 'The Veil' : 'Crystal Geometry'} deck manifest could not be loaded.`)
       return response.json() as Promise<DeckManifest>
     }))
     Promise.all([Promise.all(manifestLoads), loadState()]).then(([loadedManifests, saved]) => {

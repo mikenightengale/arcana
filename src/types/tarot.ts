@@ -6,7 +6,7 @@ export type Arcana = 'major' | 'minor'
 
 export interface CardVisual {
   renderer: 'major' | 'pip' | 'court'
-  theme?: 'crystal' | 'nocturne'
+  theme?: 'crystal' | 'nocturne' | 'veil'
   composition?: string
   primarySymbol?: string
   layout: string

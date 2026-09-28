@@ -21,6 +21,10 @@ const nocturneManifest: DeckManifest = {
   id: 'nocturne', name: 'Nocturne', cardBack: 'backs/nocturne.svg',
   cards: cards.map((card) => ({ ...card, visual: { renderer: card.arcana === 'major' ? 'major' : 'pip', theme: 'nocturne', layout: 'orbit' } })),
 }
+const veilManifest: DeckManifest = {
+  id: 'veil', name: 'The Veil', cardBack: 'backs/veil.svg',
+  cards: cards.map((card) => ({ ...card, visual: { renderer: card.arcana === 'major' ? 'major' : 'pip', theme: 'veil', layout: 'threshold' } })),
+}
 const position = { number: 1, title: 'Focus', question: 'What should I notice?' }
 const readingCard: RuntimeCard = { ...cards[0], id: 'the-fool', name: 'The Fool', orientation: 'reversed' }
 const originalMatchMediaDescriptor = Object.getOwnPropertyDescriptor(window, 'matchMedia')
@@ -38,7 +42,7 @@ beforeEach(() => {
   mocks.saveState.mockResolvedValue(undefined)
   mocks.writeText.mockResolvedValue(undefined)
   vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
-    const deck = url.includes('/nocturne/') ? nocturneManifest : manifest
+    const deck = url.includes('/nocturne/') ? nocturneManifest : url.includes('/veil/') ? veilManifest : manifest
     return Promise.resolve({ ok: true, json: async () => deck })
   }))
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn().mockReturnValue({ matches: false, addListener: vi.fn(), removeListener: vi.fn() }) })
@@ -142,9 +146,9 @@ describe('interactive shuffle', () => {
     expect(help).toHaveAttribute('aria-expanded', 'false')
     fireEvent.click(help)
     expect(help).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('random packet of up to three undrawn cards')
-    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('every 300–360 ms')
-    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('Cards you have already drawn stay untouched')
+    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('order and orientation of every undrawn card')
+    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('one card at a time every 300–360 ms')
+    expect(screen.getByRole('region', { name: 'How shuffling works' })).toHaveTextContent('Release to set the deck')
 
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(help).toHaveAttribute('aria-expanded', 'false')
@@ -174,6 +178,27 @@ describe('interactive shuffle', () => {
     mocks.loadState.mockResolvedValue(saved)
     render(<App />)
     expect(await screen.findByRole('button', { name: /Nocturne/ })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('switches to The Veil, renders its deck option, retains progress, and restores it from saved state', async () => {
+    const starting = setupState()
+    starting.deck.nextCardIndex = 4
+    starting.deck.cards[0].orientation = 'reversed'
+    mocks.loadState.mockResolvedValue(starting)
+    const { unmount } = render(<App />)
+
+    expect(await screen.findByRole('button', { name: /The Veil/ })).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(screen.getByRole('button', { name: /The Veil/ }))
+    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).deckId === 'veil')).toBe(true))
+    const saved = mocks.saveState.mock.calls.map(([value]) => value as AppState).reverse().find((value) => value.deckId === 'veil')!
+    expect(saved.deck.nextCardIndex).toBe(4)
+    expect(saved.deck.cards[0]).toMatchObject({ id: cards[0].id, orientation: 'reversed', visual: { theme: 'veil', layout: 'threshold' } })
+    expect(await screen.findByRole('button', { name: /The Veil/ })).toHaveAttribute('aria-pressed', 'true')
+
+    unmount()
+    mocks.loadState.mockResolvedValue(saved)
+    render(<App />)
+    expect(await screen.findByRole('button', { name: /The Veil/ })).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('changes the working deck during a hold, freezes immediately on release, and draws that order', async () => {
