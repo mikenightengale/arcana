@@ -70,6 +70,19 @@ export function ReadingView({ reading, spread, onCopy, onNew, onReset }: {
         <p className="card-meaning">{getCardMeaning(card.id, card.orientation) ?? 'A meaning guide is not available for this card.'}</p>
       </article>)}
     </div>
-    <div className="reading-actions"><button className="primary-button copy-button" onClick={onCopy}><svg className="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3" /></svg><span>Copy reading</span></button><button className="secondary-button" onClick={onNew}>Prepare another reading</button>{onReset && <button className="text-button reset-setup reading-reset-button" onClick={onReset}>Reset the Deck</button>}</div>
+    <div className="reading-actions">
+      <button className="primary-button copy-button" onClick={onCopy}>
+        <svg className="reading-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3" /></svg>
+        <span>Copy reading</span>
+      </button>
+      <button className="secondary-button" onClick={onNew}>
+        <svg className="reading-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M12 8v8m-4-4h8" /></svg>
+        <span>Prepare another reading</span>
+      </button>
+      {onReset && <button className="secondary-button reading-reset-button" onClick={onReset}>
+        <svg className="reading-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M3 11a9 9 0 1 1 2.6 6.4L3 15" /><path d="M3 20v-5h5" /></svg>
+        <span>Reset the Deck</span>
+      </button>}
+    </div>
   </section>
 }
