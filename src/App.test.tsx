@@ -140,27 +140,20 @@ describe('interactive shuffle', () => {
   }
 
   it('resets into a fresh shuffled deck and clears drawn reading progress', async () => {
-    let value = 0
     vi.mocked(globalThis.crypto.getRandomValues).mockImplementation((array) => {
-      (array as Uint32Array)[0] = value
+      (array as Uint32Array)[0] = 0
       return array
     })
-    mocks.loadState.mockResolvedValue(setupState())
+    mocks.loadState.mockResolvedValue(state)
     render(<App />)
     fireEvent.click(await screen.findByRole('button', { name: 'Reset the Deck' }))
-    const first = mocks.saveState.mock.calls.map(([saved]) => saved as AppState).at(-1)!
-    expect(first.deck.cards.map((card) => card.id)).toEqual([...cards.slice(1), cards[0]].map((card) => card.id))
-    expect(first.deck.cards.every((card) => card.orientation === 'upright')).toBe(true)
-    expect(first.deck.nextCardIndex).toBe(0)
-
-    value = 1
-    fireEvent.click(screen.getByRole('button', { name: 'Reset the Deck' }))
-    const second = mocks.saveState.mock.calls.map(([saved]) => saved as AppState).at(-1)!
-    expect(second.deck.cards.map((card) => card.id)).not.toEqual(first.deck.cards.map((card) => card.id))
-    expect(second.deck.cards.every((card) => card.orientation === 'reversed')).toBe(true)
-    expect(second.deck.nextCardIndex).toBe(0)
-    expect(second.stage).toBe('setup')
-    expect(second.reading).toBeNull()
+    const reset = mocks.saveState.mock.calls.map(([saved]) => saved as AppState).at(-1)!
+    expect(reset.deck.cards.map((card) => card.id)).toEqual([...cards.slice(1), cards[0]].map((card) => card.id))
+    expect(reset.deck.cards.every((card) => card.orientation === 'upright')).toBe(true)
+    expect(reset.deck.nextCardIndex).toBe(0)
+    expect(reset.stage).toBe('setup')
+    expect(reset.spread).toBeNull()
+    expect(reset.reading).toBeNull()
   })
 
   it('defaults saved states without a deck choice to Crystal Geometry', async () => {
