@@ -3,11 +3,46 @@ import { CrystalCard } from './CrystalCard'
 import type { DeckCard } from '../types/tarot'
 import { appPath, assetPath } from '../paths'
 
+const gallerySections = [
+  { id: 'major', label: 'Major', select: (card: DeckCard) => card.arcana === 'major' },
+  { id: 'wands', label: 'Wands', select: (card: DeckCard) => card.arcana === 'minor' && card.suit === 'wands' },
+  { id: 'cups', label: 'Cups', select: (card: DeckCard) => card.arcana === 'minor' && card.suit === 'cups' },
+  { id: 'swords', label: 'Swords', select: (card: DeckCard) => card.arcana === 'minor' && card.suit === 'swords' },
+  { id: 'pentacles', label: 'Pentacles', select: (card: DeckCard) => card.arcana === 'minor' && card.suit === 'pentacles' },
+] as const
+
 export function DeckGallery({ deckId, deckName, cards, cardBackUrl, onReturn }: { deckId: string; deckName: string; cards: DeckCard[]; cardBackUrl: string; onReturn: () => void }) {
   const [animations, setAnimations] = useState(true)
   const [reversed, setReversed] = useState(false)
   const [showBack, setShowBack] = useState(false)
   const [enlarged, setEnlarged] = useState<DeckCard | null>(null)
+  const [activeSection, setActiveSection] = useState('major')
+
+  const sections = gallerySections.map((section) => ({ ...section, cards: cards.filter(section.select) }))
+  const displayIndexes = new Map(sections.flatMap((section) => section.cards).map((card, index) => [card.id, index + 1]))
+
+  useEffect(() => {
+    const updateActiveSection = () => {
+      const navBottom = document.querySelector<HTMLElement>('.gallery-section-nav')?.getBoundingClientRect().bottom ?? 0
+      const readingEdge = navBottom + 40
+      let nextSection: string = gallerySections[0].id
+
+      for (const section of gallerySections) {
+        const heading = document.getElementById(`gallery-section-${section.id}`)
+        if (heading && heading.getBoundingClientRect().top <= readingEdge) nextSection = section.id
+      }
+
+      setActiveSection((current) => current === nextSection ? current : nextSection)
+    }
+
+    window.addEventListener('scroll', updateActiveSection, { passive: true })
+    window.addEventListener('resize', updateActiveSection)
+    updateActiveSection()
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection)
+      window.removeEventListener('resize', updateActiveSection)
+    }
+  }, [])
 
   useEffect(() => {
     if (!enlarged) return
@@ -25,13 +60,21 @@ export function DeckGallery({ deckId, deckName, cards, cardBackUrl, onReturn }: 
         <button className={showBack ? 'gallery-control selected' : 'gallery-control'} aria-pressed={showBack} onClick={() => setShowBack((value) => !value)}><span className="control-orb">◈</span>Side <strong>{showBack ? 'Back' : 'Front'}</strong></button>
         <span className="gallery-hint">Select a card to enlarge</span>
       </div>
-      <section className="gallery-grid" aria-label={`All 78 ${deckName} tarot cards`}>
-        {cards.map((card, index) => <article className="gallery-card" key={card.id}>
-          <button className="gallery-card-button" onClick={() => setEnlarged(card)} aria-label={`Enlarge ${card.name}`}>
-            <span className="gallery-art-wrap">{showBack ? <img className={`gallery-back ${reversed ? 'reversed-art' : ''}`} src={cardBackUrl} alt="" /> : <CrystalCard card={card} reversed={reversed} animations={animations} />}</span>
-            <span className="gallery-card-meta"><span className="gallery-index">{String(index + 1).padStart(2, '0')}</span><span><strong>{card.name}</strong><small>{card.arcana === 'major' ? 'MAJOR ARCANA' : `${card.rank?.toUpperCase()} OF ${card.suit?.toUpperCase()}`}</small></span></span>
-          </button>
-        </article>)}
+      <nav className="gallery-section-nav" aria-label="Gallery sections">
+        {sections.map((section) => <a key={section.id} href={`#gallery-section-${section.id}`} aria-current={activeSection === section.id ? 'location' : undefined} onClick={() => setActiveSection(section.id)}>{section.label}</a>)}
+      </nav>
+      <section className="gallery-collection" aria-label={`All 78 ${deckName} tarot cards`}>
+        {sections.map((section) => <section className="gallery-section" key={section.id} aria-labelledby={`gallery-section-${section.id}`}>
+          <h2 className="gallery-section-heading" id={`gallery-section-${section.id}`}>{section.label}<span>{section.cards.length}</span></h2>
+          <div className="gallery-grid">
+            {section.cards.map((card) => <article className="gallery-card" key={card.id}>
+              <button className="gallery-card-button" onClick={() => setEnlarged(card)} aria-label={`Enlarge ${card.name}`}>
+                <span className="gallery-art-wrap">{showBack ? <img className={`gallery-back ${reversed ? 'reversed-art' : ''}`} src={cardBackUrl} alt="" /> : <CrystalCard card={card} reversed={reversed} animations={animations} />}</span>
+                <span className="gallery-card-meta"><span className="gallery-index">{String(displayIndexes.get(card.id) ?? 0).padStart(2, '0')}</span><span><strong>{card.name}</strong><small>{card.arcana === 'major' ? 'MAJOR ARCANA' : `${card.rank?.toUpperCase()} OF ${card.suit?.toUpperCase()}`}</small></span></span>
+              </button>
+            </article>)}
+          </div>
+        </section>)}
       </section>
     </main>
     {enlarged && <div className="gallery-modal" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setEnlarged(null) }}>
