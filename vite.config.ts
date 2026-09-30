@@ -15,7 +15,7 @@ export default defineConfig(({ command }) => {
       react(),
       VitePWA({
         registerType: 'prompt',
-        includeAssets: ['icons/arcana.svg', 'decks/cathedral/backs/*.svg', 'decks/cathedral/**/*.svg', 'decks/cathedral/deck.json', 'decks/nocturne/backs/*.svg', 'decks/nocturne/**/*.svg', 'decks/nocturne/deck.json'],
+        includeAssets: ['icons/*.svg', 'icons/*.png', 'decks/cathedral/backs/*.svg', 'decks/cathedral/**/*.svg', 'decks/cathedral/deck.json', 'decks/nocturne/backs/*.svg', 'decks/nocturne/**/*.svg', 'decks/nocturne/deck.json'],
         manifest: {
           name: 'Arcana',
           short_name: 'Arcana',
@@ -26,7 +26,11 @@ export default defineConfig(({ command }) => {
           background_color: '#100c14',
           display: 'standalone',
           orientation: 'any',
-          icons: [{ src: 'icons/arcana.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
+          icons: [
+            { src: 'icons/arcana.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+            { src: 'icons/arcana-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: 'icons/arcana-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          ],
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,svg,json,woff2}'],
