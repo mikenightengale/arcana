@@ -14,6 +14,47 @@ import { appPath, assetPath, canonicalGalleryPath, galleryDeckId, isGalleryPath 
 
 const deckIds = ['cathedral', 'nocturne', 'veil'] as const
 
+function CardCountControl({ value, onChange }: { value: number; onChange: (count: number) => void }) {
+  const [draft, setDraft] = useState(String(value))
+
+  useEffect(() => setDraft(String(value)), [value])
+
+  function commitDraft() {
+    const parsed = Number(draft)
+    const next = Math.min(78, Math.max(1, Number.isInteger(parsed) ? parsed : 1))
+    setDraft(String(next))
+    if (next !== value) onChange(next)
+  }
+
+  function step(amount: number) {
+    const next = Math.min(78, Math.max(1, value + amount))
+    setDraft(String(next))
+    onChange(next)
+  }
+
+  return <label className="count-control">
+    <span className="visually-hidden">Cards to draw</span>
+    <button type="button" aria-label="Decrease card count" onClick={() => step(-1)} disabled={value <= 1}>−</button>
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      aria-label="Cards to draw"
+      value={draft}
+      onChange={(event) => {
+        const nextDraft = event.target.value
+        if (!/^\d*$/.test(nextDraft)) return
+        setDraft(nextDraft)
+        const next = Number(nextDraft)
+        if (nextDraft && Number.isInteger(next) && next >= 1 && next <= 78) onChange(next)
+      }}
+      onBlur={commitDraft}
+      onKeyDown={(event) => { if (event.key === 'Enter') event.currentTarget.blur() }}
+    />
+    <button type="button" aria-label="Increase card count" onClick={() => step(1)} disabled={value >= 78}>+</button>
+  </label>
+}
+
 function App() {
   const [state, setState] = useState<AppState | null>(null)
   const [manifests, setManifests] = useState<DeckManifest[]>([])
@@ -382,7 +423,7 @@ function App() {
 
           <div className="draw-settings">
             <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed ? 'One card for each position' : 'Choose how many cards to bring to the table'}</small></span></div>
-            {!parsed && <label className="count-control"><span className="visually-hidden">Cards to draw</span><button aria-label="Decrease card count" onClick={() => update({ drawCount: Math.max(1, count - 1) })} disabled={count <= 1}>−</button><input type="number" min="1" max="78" value={count} onChange={(event) => update({ drawCount: Math.min(78, Math.max(1, Number(event.target.value) || 1)) })} /><button aria-label="Increase card count" onClick={() => update({ drawCount: Math.min(78, count + 1) })} disabled={count >= 78}>+</button></label>}
+            {!parsed && <CardCountControl value={count} onChange={(drawCount) => update({ drawCount })} />}
           </div>
           <div className="setup-actions">
             <button className="primary-button shuffle-start-button" onClick={beginShuffle}>
