@@ -264,6 +264,27 @@ describe('interactive shuffle', () => {
     expect(drawn.deck.nextCardIndex).toBe(1)
   })
 
+  it('does not finish a pending draw after returning to preparation', async () => {
+    mocks.loadState.mockResolvedValue(setupState())
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /Shuffle the deck/ }))
+    const hold = await screen.findByRole('button', { name: 'Hold to shuffle; release to stop' })
+    fireEvent.pointerDown(hold, { button: 0, pointerId: 9 })
+
+    let finishFrozenSave!: () => void
+    const frozenSave = new Promise<void>((resolve) => { finishFrozenSave = resolve })
+    mocks.saveState.mockImplementation((saved: AppState) => saved.shuffleStatus === 'frozen' ? frozenSave : Promise.resolve())
+    fireEvent.pointerUp(hold, { pointerId: 9 })
+    fireEvent.click(screen.getByRole('button', { name: 'Draw cards' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Return to preparation' }))
+    expect(await screen.findByRole('heading', { name: /Prepare your reading/ })).toBeInTheDocument()
+
+    await act(async () => { finishFrozenSave(); await frozenSave })
+
+    expect(screen.getByRole('heading', { name: /Prepare your reading/ })).toBeInTheDocument()
+    expect(mocks.saveState.mock.calls.map(([saved]) => saved as AppState).some((saved) => saved.stage === 'reading')).toBe(false)
+  })
+
   it('freezes safely on pointer cancellation and can resume the same deck on a later hold', async () => {
     mocks.loadState.mockResolvedValue(setupState())
     render(<App />)

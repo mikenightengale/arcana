@@ -275,6 +275,9 @@ function App() {
     dealing.current = true
     try {
       await frozenWrite.current
+      // Saving the frozen deck can outlive the shuffle screen. Do not let a
+      // draw that was started there overwrite a newer reset or navigation.
+      if (stateRef.current !== current) return
       const result = drawCards(current.deck, count)
       const reading = mapReading(result.cards, parsed ?? current.spread)
       const nextState: AppState = {
