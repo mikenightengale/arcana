@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CrystalCard } from './CrystalCard'
 import type { DeckCard } from '../types/tarot'
 import { appPath, assetPath } from '../paths'
@@ -17,6 +17,8 @@ export function DeckGallery({ deckId, deckName, cards, cardBackUrl, onReturn }: 
   const [showBack, setShowBack] = useState(false)
   const [enlarged, setEnlarged] = useState<DeckCard | null>(null)
   const [activeSection, setActiveSection] = useState('major')
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const openerRef = useRef<HTMLButtonElement | null>(null)
 
   const sections = gallerySections.map((section) => ({ ...section, cards: cards.filter(section.select) }))
   const displayIndexes = new Map(sections.flatMap((section) => section.cards).map((card, index) => [card.id, index + 1]))
@@ -46,9 +48,24 @@ export function DeckGallery({ deckId, deckName, cards, cardBackUrl, onReturn }: 
 
   useEffect(() => {
     if (!enlarged) return
-    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setEnlarged(null) }
-    window.addEventListener('keydown', close)
-    return () => window.removeEventListener('keydown', close)
+    closeButtonRef.current?.focus()
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setEnlarged(null)
+        return
+      }
+      if (event.key === 'Tab') {
+        // The close button is the dialog's only focusable control.
+        event.preventDefault()
+        closeButtonRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      openerRef.current?.focus()
+      openerRef.current = null
+    }
   }, [enlarged])
 
   return <div className={`app-shell gallery-shell gallery-${deckId}`}>
@@ -68,7 +85,7 @@ export function DeckGallery({ deckId, deckName, cards, cardBackUrl, onReturn }: 
           <h2 className="gallery-section-heading" id={`gallery-section-${section.id}`}>{section.label}<span>{section.cards.length}</span></h2>
           <div className="gallery-grid">
             {section.cards.map((card) => <article className="gallery-card" key={card.id}>
-              <button className="gallery-card-button" onClick={() => setEnlarged(card)} aria-label={`Enlarge ${card.name}`}>
+              <button className="gallery-card-button" onClick={(event) => { openerRef.current = event.currentTarget; setEnlarged(card) }} aria-label={`Enlarge ${card.name}`}>
                 <span className="gallery-art-wrap">{showBack ? <img className={`gallery-back ${reversed ? 'reversed-art' : ''}`} src={cardBackUrl} alt="" /> : <CrystalCard card={card} reversed={reversed} animations={animations} />}</span>
                 <span className="gallery-card-meta"><span className="gallery-index">{String(displayIndexes.get(card.id) ?? 0).padStart(2, '0')}</span><span><strong>{card.name}</strong><small>{card.arcana === 'major' ? 'MAJOR ARCANA' : `${card.rank?.toUpperCase()} OF ${card.suit?.toUpperCase()}`}</small></span></span>
               </button>
@@ -79,7 +96,7 @@ export function DeckGallery({ deckId, deckName, cards, cardBackUrl, onReturn }: 
     </main>
     {enlarged && <div className="gallery-modal" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setEnlarged(null) }}>
       <section className="gallery-modal-panel" role="dialog" aria-modal="true" aria-label={`${enlarged.name} enlarged`}>
-        <button className="gallery-close" onClick={() => setEnlarged(null)} aria-label="Close enlarged card">×</button>
+        <button ref={closeButtonRef} className="gallery-close" onClick={() => setEnlarged(null)} aria-label="Close enlarged card">×</button>
         <div className="gallery-modal-art">{showBack ? <img src={cardBackUrl} alt="Card back" className="gallery-back"/> : <CrystalCard card={enlarged} reversed={reversed} animations={animations} reveal/>}</div>
         <div className="gallery-modal-copy"><span className="eyebrow"><span/> {enlarged.arcana === 'major' ? 'MAJOR ARCANA' : `${enlarged.suit?.toUpperCase()} · ${enlarged.rank?.toUpperCase()}`} <span/></span><h2>{enlarged.name}</h2><p>Click the controls above to compare its face, orientation, and living details.</p></div>
       </section>

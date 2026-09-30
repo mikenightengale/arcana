@@ -77,4 +77,44 @@ describe('The Veil gallery', () => {
     expect(within(container).getByRole('link', { name: 'Cups' })).toHaveAttribute('aria-current', 'location')
     expect(within(container).getByRole('link', { name: 'Major' })).not.toHaveAttribute('aria-current')
   })
+
+  it('moves focus into the enlarged-card dialog, contains Tab, and restores focus on close', () => {
+    render(<DeckGallery
+      deckId="veil"
+      deckName="The Veil"
+      cards={veilDeck.cards.slice(0, 1) as DeckCard[]}
+      cardBackUrl="/decks/veil/backs/veil.svg"
+      onReturn={vi.fn()}
+    />)
+    const opener = screen.getByRole('button', { name: 'Enlarge The Fool' })
+    opener.focus()
+    fireEvent.click(opener)
+
+    const close = screen.getByRole('button', { name: 'Close enlarged card' })
+    expect(close).toHaveFocus()
+    fireEvent.keyDown(close, { key: 'Tab' })
+    expect(close).toHaveFocus()
+    fireEvent.keyDown(close, { key: 'Tab', shiftKey: true })
+    expect(close).toHaveFocus()
+
+    fireEvent.click(close)
+    expect(opener).toHaveFocus()
+  })
+
+  it('closes the enlarged-card dialog with Escape and restores focus', () => {
+    render(<DeckGallery
+      deckId="veil"
+      deckName="The Veil"
+      cards={veilDeck.cards.slice(0, 1) as DeckCard[]}
+      cardBackUrl="/decks/veil/backs/veil.svg"
+      onReturn={vi.fn()}
+    />)
+    const opener = screen.getByRole('button', { name: 'Enlarge The Fool' })
+    opener.focus()
+    fireEvent.click(opener)
+    fireEvent.keyDown(window, { key: 'Escape' })
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(opener).toHaveFocus()
+  })
 })

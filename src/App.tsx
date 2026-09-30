@@ -380,7 +380,7 @@ function App() {
       <div className="ambient ambient-one" aria-hidden="true" />
       <div className="ambient ambient-two" aria-hidden="true" />
       <header className="topbar">
-        <a className="brand" href="#top" onClick={(event) => event.preventDefault()} aria-label="Arcana home">
+        <a className="brand" href="#top" aria-label="Arcana home">
           <img className="brand-logo" src={assetPath('icons/arcana.svg')} alt="" />
           <span><strong>Arcana</strong></span>
         </a>
