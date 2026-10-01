@@ -162,6 +162,13 @@ describe('spread parsing and reading output', () => {
     ].join('\n\n'))
   })
 
+  it('replaces introductory text with the first explicit spread heading', () => {
+    const spread = parseSpread('Here are two spreads:\n\n## Tarot Spread — “First”\n\n1. What is first?\n\n## Tarot Spread — “Second”\n\n1. What is second?')!
+    expect(spread.positions.map(({ number, sectionTitle }) => [number, sectionTitle])).toEqual([
+      [1, 'First'], [1, 'Second'],
+    ])
+  })
+
   it('copies only numbered questions and card results for spreads', () => {
     const spread = parseSpread('# Three cards\n1. **Now**\nWhat is present?\n2. **Next**\nWhat is forming?')!
     const drawn = [0, 1].map((index) => ({ ...cards[index], orientation: index ? 'reversed' : 'upright' })) as RuntimeCard[]
