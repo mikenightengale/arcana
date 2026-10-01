@@ -113,6 +113,26 @@ describe('reading copy notifications', () => {
   })
 })
 
+describe('multiple spread setup', () => {
+  it('counts all questions across titled spreads and previews each title', async () => {
+    mocks.loadState.mockResolvedValue({
+      ...state,
+      stage: 'setup',
+      spread: null,
+      reading: null,
+      sourceText: '',
+      drawCount: 20,
+    })
+    render(<App />)
+    const prompt = `Tarot Spread — “First”\n\n1. What is first?\n\nTarot Spread — “Second”\n\n1. What is next?`
+    fireEvent.change(await screen.findByLabelText(/Your spread/), { target: { value: prompt } })
+    expect(screen.getByText('2 questions detected')).toBeInTheDocument()
+    expect(screen.getByText('2 cards will be drawn')).toBeInTheDocument()
+    expect(screen.getByText('First')).toBeInTheDocument()
+    expect(screen.getByText('Second')).toBeInTheDocument()
+  })
+})
+
 describe('interactive shuffle', () => {
   beforeEach(() => {
     let value = 0

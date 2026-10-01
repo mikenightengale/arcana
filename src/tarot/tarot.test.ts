@@ -144,6 +144,24 @@ describe('spread parsing and reading output', () => {
     expect(formatReading(reading, spread)).toBe('Current Direction\n\n1. What energy surrounds this situation?\nCard 0')
   })
 
+  it('parses multiple titled spreads with independent numbering and keeps sections in copied readings', () => {
+    const prompt = `Tarot Spread — “First Direction”\n\n1. What is happening?\n2. What should I notice?\n\nTarot Spread — “Second Direction”\n\n1. What is changing?\n2. What comes next?`
+    const spread = parseSpread(prompt)!
+    expect(spread.title).toBeUndefined()
+    expect(spread.positions.map(({ number, sectionTitle }) => [number, sectionTitle])).toEqual([
+      [1, 'First Direction'], [2, 'First Direction'], [1, 'Second Direction'], [2, 'Second Direction'],
+    ])
+    const reading = mapReading(cards.slice(0, 4).map((card, index) => ({ ...card, orientation: index % 2 ? 'reversed' : 'upright' })) as RuntimeCard[], spread)
+    expect(formatReading(reading, spread)).toBe([
+      'First Direction',
+      '1. What is happening?\nCard 0',
+      '2. What should I notice?\nCard 1 — Reversed',
+      'Second Direction',
+      '1. What is changing?\nCard 2',
+      '2. What comes next?\nCard 3 — Reversed',
+    ].join('\n\n'))
+  })
+
   it('copies only numbered questions and card results for spreads', () => {
     const spread = parseSpread('# Three cards\n1. **Now**\nWhat is present?\n2. **Next**\nWhat is forming?')!
     const drawn = [0, 1].map((index) => ({ ...cards[index], orientation: index ? 'reversed' : 'upright' })) as RuntimeCard[]

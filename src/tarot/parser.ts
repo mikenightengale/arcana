@@ -5,8 +5,9 @@ const normalizeTitle = (value: string) => clean(value).replace(/^Tarot Spread\s*
 
 export function parseSpread(input: string): TarotSpread | null {
   const lines = input.replace(/\r\n?/g, '\n').split('\n')
+  const sections: { title?: string; positions: TarotPosition[] }[] = []
   let title: string | undefined
-  const positions: TarotPosition[] = []
+  let positions: TarotPosition[] = []
   let current: TarotPosition | undefined
   let barePosition = false
 
@@ -22,13 +23,24 @@ export function parseSpread(input: string): TarotSpread | null {
     current = undefined
   }
 
+  const finishSection = () => {
+    finishCurrent()
+    if (positions.length) sections.push({ ...(title ? { title } : {}), positions })
+    title = undefined
+    positions = []
+  }
+
+  const isSpreadTitle = (line: string) => /^Tarot Spread\s*[—–:-]\s*/i.test(line)
+
   for (const rawLine of lines) {
     const line = rawLine.trim()
     if (!line) continue
     const heading = line.match(/^#{1,3}\s+(.+?)\s*#*$/)
     const numbered = line.match(/^\s*(\d+)\s*[.)]\s+(.+)$/)
-    if (heading && positions.length === 0 && !current) {
-      title = normalizeTitle(heading[1])
+    const headingText = heading?.[1] ?? line
+    if ((heading || isSpreadTitle(line)) && (sections.length > 0 || positions.length > 0 || current || !title)) {
+      finishSection()
+      title = normalizeTitle(headingText)
       continue
     }
     if (!title && positions.length === 0 && !current && !numbered) {
@@ -57,9 +69,15 @@ export function parseSpread(input: string): TarotSpread | null {
     }
     if (current) current.question = [current.question, clean(line)].filter(Boolean).join(' ')
   }
-  finishCurrent()
-  if (!positions.length) return null
-  const normalized = positions.map((position, index) => ({ ...position, number: index + 1, question: position.question.trim() }))
+  finishSection()
+  if (!sections.length) return null
+  const multiple = sections.length > 1
+  const normalized = sections.flatMap((section) => section.positions.map((position, index) => ({
+    ...position,
+    number: index + 1,
+    ...(multiple && section.title ? { sectionTitle: section.title } : {}),
+    question: position.question.trim(),
+  })))
   if (normalized.some((position) => !position.question)) return null
-  return { ...(title ? { title } : {}), positions: normalized }
+  return { ...(!multiple && sections[0].title ? { title: sections[0].title } : {}), positions: normalized }
 }
