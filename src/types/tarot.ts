@@ -45,6 +45,8 @@ export interface TarotPosition {
   number: number
   title?: string
   question: string
+  /** Section heading when the prompt contains multiple spreads. */
+  sectionTitle?: string
 }
 
 export interface TarotSpread {

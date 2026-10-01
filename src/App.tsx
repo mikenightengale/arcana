@@ -414,7 +414,10 @@ function App() {
               </div>}
               {parsed && <div className="preview-wrap">
                 <button className="text-button preview-toggle" onClick={() => setShowPreview((value) => !value)} aria-expanded={showPreview}>Spread preview <span>{showPreview ? '−' : '+'}</span></button>
-                {showPreview && <ol className="spread-preview">{parsed.positions.map((position) => <li key={position.number}><strong>{position.title || `Position ${position.number}`}</strong><span>{position.question}</span></li>)}</ol>}
+                {showPreview && <ol className="spread-preview">{parsed.positions.map((position, index) => <li key={`${position.sectionTitle ?? parsed.title ?? 'spread'}-${position.number}-${index}`}>
+                  {position.sectionTitle && (index === 0 || parsed.positions[index - 1]?.sectionTitle !== position.sectionTitle) && <h3>{position.sectionTitle}</h3>}
+                  <strong>{position.title || `Position ${position.number}`}</strong><span>{position.question}</span>
+                </li>)}</ol>}
               </div>}
             </section>
 
