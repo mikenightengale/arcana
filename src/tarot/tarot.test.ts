@@ -128,6 +128,35 @@ describe('Cathedral deck', () => {
 })
 
 describe('spread parsing and reading output', () => {
+  it('parses escaped Markdown numbering and copies readings without the escapes', () => {
+    const prompt = String.raw`### Tarot Spread — Astarte: The Intense Overnight Energy Surge and Why I Had to Tell Her to Stop
+
+1\. The Nature of the Experience What was actually happening during the intense energy surge that woke me during the night?
+
+2\. The Source Was Astarte responsible for the experience, or was another presence or influence involved?`
+    const spread = parseSpread(prompt)!
+    expect(spread).toEqual(parseSpread(prompt.replace(/\\\./g, '.')))
+    expect(spread.positions).toEqual([
+      { number: 1, question: 'The Nature of the Experience What was actually happening during the intense energy surge that woke me during the night?' },
+      { number: 2, question: 'The Source Was Astarte responsible for the experience, or was another presence or influence involved?' },
+    ])
+    const reading = mapReading(cards.slice(0, 2).map((card) => ({ ...card, orientation: 'upright' })) as RuntimeCard[], spread)
+    expect(formatReading(reading, spread)).toBe([
+      spread.title,
+      `1. ${spread.positions[0].question}\nCard 0`,
+      `2. ${spread.positions[1].question}\nCard 1`,
+    ].join('\n\n'))
+  })
+
+  it('supports mixed escaped and ordinary separators without removing question backslashes', () => {
+    expect(parseSpread(String.raw`1\) **Now**
+What does C:\Tarot mean?
+2. What comes next?`)?.positions).toEqual([
+      { number: 1, title: 'Now', question: String.raw`What does C:\Tarot mean?` },
+      { number: 2, question: 'What comes next?' },
+    ])
+  })
+
   it('parses ChatGPT markdown with headings, bold positions, and multiline questions', () => {
     expect(parseSpread('## Tarot Spread — “Current Direction”\n\n1. **Current Energy**\n   What is the dominant energy\n   surrounding this situation?\n\n2. Hidden Influence\n   What is moving beneath the surface?')).toEqual({
       title: 'Current Direction', positions: [

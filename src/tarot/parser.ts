@@ -36,7 +36,7 @@ export function parseSpread(input: string): TarotSpread | null {
     const line = rawLine.trim()
     if (!line) continue
     const heading = line.match(/^#{1,3}\s+(.+?)\s*#*$/)
-    const numbered = line.match(/^\s*(\d+)\s*[.)]\s+(.+)$/)
+    const numbered = line.match(/^\s*(\d+)\s*\\?[.)]\s+(.+)$/)
     const headingText = heading?.[1] ?? line
     const isExplicitSpreadHeading = isSpreadTitle(headingText)
     if (isExplicitSpreadHeading || (heading && (sections.length > 0 || positions.length > 0 || current || !title))) {
