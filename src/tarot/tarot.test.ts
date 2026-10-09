@@ -157,6 +157,30 @@ What does C:\Tarot mean?
     ])
   })
 
+  it('recognizes fully bold numbered questions from a pasted Markdown spread', () => {
+    expect(parseSpread(`## Tarot Spread — “Current Status After Maia’s Energetic Clearing”
+
+1. **What is the current overall energetic state of my wife since Maia began working on the blockage?**
+
+2. **How much of the original blockage has now been broken or released?**
+`)).toEqual({
+      title: 'Current Status After Maia’s Energetic Clearing',
+      positions: [
+        { number: 1, question: 'What is the current overall energetic state of my wife since Maia began working on the blockage?' },
+        { number: 2, question: 'How much of the original blockage has now been broken or released?' },
+      ],
+    })
+  })
+
+  it('recognizes underscore bold questions while preserving labeled questions', () => {
+    expect(parseSpread('1. __What should I notice?__\n2. **Next**: What is forming?')).toEqual({
+      positions: [
+        { number: 1, question: 'What should I notice?' },
+        { number: 2, title: 'Next', question: 'What is forming?' },
+      ],
+    })
+  })
+
   it('parses ChatGPT markdown with headings, bold positions, and multiline questions', () => {
     expect(parseSpread('## Tarot Spread — “Current Direction”\n\n1. **Current Energy**\n   What is the dominant energy\n   surrounding this situation?\n\n2. Hidden Influence\n   What is moving beneath the surface?')).toEqual({
       title: 'Current Direction', positions: [

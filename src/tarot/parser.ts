@@ -55,7 +55,11 @@ export function parseSpread(input: string): TarotSpread | null {
       const boldPosition = content.match(/^\*\*(.+?)\*\*\s*(?:[:—–-]\s*)?(.*)$/) || content.match(/^__(.+?)__\s*(?:[:—–-]\s*)?(.*)$/)
       const plainTitle = content.match(/^([^:—–?]+?)\s*[:—–]\s*(.+)$/)
       if (boldPosition) {
-        current = { number, title: clean(boldPosition[1]), question: clean(boldPosition[2]) }
+        const label = clean(boldPosition[1])
+        const question = clean(boldPosition[2])
+        current = !question && label.endsWith('?')
+          ? { number, question: label }
+          : { number, title: label, question }
         barePosition = false
       } else if (plainTitle && !content.endsWith('?')) {
         current = { number, title: clean(plainTitle[1]), question: clean(plainTitle[2]) }
