@@ -247,3 +247,29 @@ What does C:\Tarot mean?
     expect(parseSpread('A quiet question for the cards.')).toBeNull()
   })
 })
+
+describe('yes/no and mixed questions', () => {
+  it('detects emoji headings and draws only tarot cards in source order', () => {
+    const spread = parseSpread('## 🔮 Tarot Spread — “Authority”\n1. Why?\n2. How?\n## 🔮 Yes/No Questions — “Boundary”\n25. Does it extend?\n26. Are there limits?\n## Tarot Spread — “Next”\n1. What next?')!
+    expect(spread.positions.map((p) => [p.number, p.type, p.sectionTitle])).toEqual([
+      [1, undefined, 'Authority'], [2, undefined, 'Authority'],
+      [25, 'yes-no', 'Boundary'], [26, 'yes-no', 'Boundary'], [1, undefined, 'Next'],
+    ])
+    const reading = mapReading(cards.slice(0, 3).map((card) => ({ ...card, orientation: 'upright' })) as RuntimeCard[], spread)
+    expect(reading.map((r) => r.position?.question)).toEqual(['Why?', 'How?', 'What next?'])
+    expect(formatReading(reading, spread, { 2: 'Yes', 3: 'Other' })).toBe('Authority\n\n1. Why?\nCard 0\n\n2. How?\nCard 1\n\nBoundary\n\n25. Does it extend?\nYes\n\n26. Are there limits?\nOther\n\nNext\n\n1. What next?\nCard 2')
+  })
+
+  it('supports a yes/no-only heading and explicitly marks unanswered questions', () => {
+    const spread = parseSpread('## Yes/No Questions — “Check”\n1. Is it ready?\n2. Is it complete?')!
+    expect(spread.title).toBe('Check')
+    expect(formatReading([], spread, { 0: 'No' })).toBe('Check\n\n1. Is it ready?\nNo\n\n2. Is it complete?\nUnanswered')
+  })
+
+  it('uses the selected default for an unheaded list and lets headings override it', () => {
+    const spread = parseSpread('1. First?\n## Tarot Spread — “Cards”\n1. Next?', 'yes-no')!
+    expect(spread.positions.map((p) => p.type)).toEqual(['yes-no', undefined])
+    expect(parseSpread('1. First?', 'yes-no')?.positions[0].type).toBe('yes-no')
+    expect(parseSpread('1. First?')?.positions[0].type).toBeUndefined()
+  })
+})

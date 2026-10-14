@@ -72,3 +72,9 @@ The Vite dev server serves the PWA directly. IndexedDB belongs to the browser in
 ## GitHub Pages deployment
 
 The production site is served at [mikenightengale.github.io/arcana](https://mikenightengale.github.io/arcana/). Pushes to `main` run the GitHub Actions Pages deployment workflow, which tests and builds the app before deploying; set the repository's Pages publishing source to **GitHub Actions**. The production build uses the `/arcana/` base path and includes a fallback for direct gallery links. Readings and deck state remain local in browser IndexedDB. For local development, run `npm run dev`. GitHub Pages allows one site per repository, so a separate live preview requires a separate Pages site.
+
+### Yes/no and mixed readings
+
+Paste a numbered list under `## Yes/No Questions — “Title”` to answer each question with Yes, No, or Other. Combine those sections with `## Tarot Spread — “Title”` sections in any order. Only tarot questions draw cards; a yes/no-only reading goes straight to answer selection. For lists without section headings, use the question-type selector above the input.
+
+Answers save automatically on this device and can be changed later. **Copy reading** includes section titles, questions, tarot results, and selected answers in order; unanswered yes/no questions are labeled Unanswered.

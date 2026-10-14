@@ -1,11 +1,13 @@
-import type { TarotPosition, TarotSpread } from '../types/tarot'
+import type { QuestionType, TarotPosition, TarotSpread } from '../types/tarot'
 
 const clean = (value: string) => value.trim().replace(/^\*\*(.*?)\*\*$/, '$1').replace(/^__(.*?)__$/, '$1').trim()
-const normalizeTitle = (value: string) => clean(value).replace(/^Tarot Spread\s*[—–:-]\s*/i, '').replace(/^['“](.*)['”]$/, '$1')
+const headingType = (value: string): QuestionType | undefined => /^[^\p{L}\p{N}]*yes\s*[/–—-]\s*no\s+questions\b/iu.test(clean(value)) ? 'yes-no' : /^[^\p{L}\p{N}]*Tarot Spread\b/iu.test(clean(value)) ? 'tarot' : undefined
+const normalizeTitle = (value: string) => clean(value).replace(/^(?:[^\p{L}\p{N}]*)(?:Tarot Spread|Yes\s*[/–—-]\s*No Questions)\s*[—–:-]?\s*/iu, '').replace(/^['“](.*)['”]$/, '$1')
 
-export function parseSpread(input: string): TarotSpread | null {
+export function parseSpread(input: string, defaultType: QuestionType = 'tarot'): TarotSpread | null {
   const lines = input.replace(/\r\n?/g, '\n').split('\n')
   const sections: { title?: string; positions: TarotPosition[] }[] = []
+  let type = defaultType
   let title: string | undefined
   let positions: TarotPosition[] = []
   let current: TarotPosition | undefined
@@ -19,6 +21,7 @@ export function parseSpread(input: string): TarotSpread | null {
       current.question = current.title
       delete current.title
     }
+    if (type === 'yes-no') current.type = type
     positions.push(current)
     current = undefined
   }
@@ -30,7 +33,7 @@ export function parseSpread(input: string): TarotSpread | null {
     positions = []
   }
 
-  const isSpreadTitle = (line: string) => /^Tarot Spread\s*[—–:-]\s*/i.test(line)
+  const isSpreadTitle = (line: string) => headingType(line) !== undefined
 
   for (const rawLine of lines) {
     const line = rawLine.trim()
@@ -41,10 +44,12 @@ export function parseSpread(input: string): TarotSpread | null {
     const isExplicitSpreadHeading = isSpreadTitle(headingText)
     if (isExplicitSpreadHeading || (heading && (sections.length > 0 || positions.length > 0 || current || !title))) {
       finishSection()
+      type = headingType(headingText) ?? type
       title = normalizeTitle(headingText)
       continue
     }
     if (!title && positions.length === 0 && !current && !numbered) {
+      type = headingType(line) ?? type
       title = normalizeTitle(line)
       continue
     }
@@ -79,7 +84,7 @@ export function parseSpread(input: string): TarotSpread | null {
   const multiple = sections.length > 1
   const normalized = sections.flatMap((section) => section.positions.map((position, index) => ({
     ...position,
-    number: index + 1,
+    number: position.type === 'yes-no' ? position.number : index + 1,
     ...(multiple && section.title ? { sectionTitle: section.title } : {}),
     question: position.question.trim(),
   })))

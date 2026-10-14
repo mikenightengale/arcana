@@ -1,9 +1,11 @@
-import { useLayoutEffect, useRef, type CSSProperties } from 'react'
+import { Fragment, useLayoutEffect, useRef, type CSSProperties } from 'react'
+import { readingEntries } from './tarot/mapping'
 import { CrystalCard } from './tarot/CrystalCard'
 import { getCardMeaning } from './tarot/meanings'
-import type { ReadingPosition, TarotSpread } from './types/tarot'
+import type { ReadingPosition, TarotSpread, YesNoAnswer, YesNoAnswers } from './types/tarot'
 
-export function ReadingView({ reading, spread, onCopy, onNew, onReset }: {
+export function ReadingView({ reading, spread, onCopy, onNew, onReset, answers = {}, onAnswer }: {
+  answers?: YesNoAnswers; onAnswer?: (index: number, answer: YesNoAnswer) => void
   reading: ReadingPosition[]; spread: TarotSpread | null; onCopy: () => void; onNew: () => void; onReset?: () => void
 }) {
   const gridRef = useRef<HTMLDivElement>(null)
@@ -52,11 +54,22 @@ export function ReadingView({ reading, spread, onCopy, onNew, onReset }: {
   }, [reading])
 
   return <section className="reading-view" aria-labelledby="screen-title">
-    <div className="eyebrow"><span /> THE CARDS HAVE SPOKEN <span /></div>
+    <div className="eyebrow"><span /> YOUR QUESTIONS AT THE TABLE <span /></div>
     <h1 id="screen-title">Your <em>reading</em></h1>
-    <p className="intro">{spread?.title ? `A quiet moment with “${spread.title}”` : 'A quiet moment with the cards.'}</p>
+    <p className="intro">{spread?.title ? `A quiet moment with “${spread.title}”` : 'A quiet moment with your questions.'}</p>
     <div className="reading-grid" ref={gridRef}>
-      {reading.map(({ position, card }, index) => <article
+      {readingEntries(reading, spread).map(({ position, card, index }, order, entries) => <Fragment key={index}>
+        {position?.sectionTitle && (order === 0 || entries[order - 1].position?.sectionTitle !== position.sectionTitle) && <h2 className="reading-section-title">{position.sectionTitle}</h2>}
+        {position?.type === 'yes-no' ? <fieldset className="question-entry yes-no-question">
+          <legend>{position.number}. {position.title && `${position.title}: `}{position.question}</legend>
+          <div className="answer-options">
+            {(['Yes', 'No', 'Other'] as const).map((answer) => <label className="answer-box" key={answer}>
+              <input type="radio" name={`answer-${index}`} value={answer} checked={answers[index] === answer} onChange={() => onAnswer?.(index, answer)} />
+              <span>{answer}</span>
+            </label>)}
+          </div>
+          <p className="answer-status" role="status">{answers[index] ? `Saved: ${answers[index]}` : 'Choose an answer'}</p>
+        </fieldset> : card && <article
         className="reading-card"
         key={`${index}-${card.id}`}
         style={{
@@ -68,7 +81,8 @@ export function ReadingView({ reading, spread, onCopy, onNew, onReset }: {
         <div className="card-copy"><span className="position-index">{String(position?.number ?? index + 1).padStart(2, '0')}</span><div className="position-text">{position?.title && <h2>{position.title}</h2>}{position?.question && <p>{position.question}</p>}</div></div>
         <div className="card-label"><strong className="card-name">{card.name}</strong>{card.orientation === 'reversed' && <span className="card-orientation">Reversed</span>}</div>
         <p className="card-meaning">{getCardMeaning(card.id, card.orientation) ?? 'A meaning guide is not available for this card.'}</p>
-      </article>)}
+      </article>}
+      </Fragment>)}
     </div>
     <div className="reading-actions">
       <button className="primary-button copy-button" onClick={onCopy}>

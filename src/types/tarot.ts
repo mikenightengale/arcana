@@ -41,7 +41,12 @@ export interface DeckState {
   resetAt: number
 }
 
+export type QuestionType = 'tarot' | 'yes-no'
+export type YesNoAnswer = 'Yes' | 'No' | 'Other'
+export type YesNoAnswers = Record<number, YesNoAnswer>
+
 export interface TarotPosition {
+  type?: QuestionType
   number: number
   title?: string
   question: string
@@ -69,5 +74,7 @@ export interface AppState {
   spread: TarotSpread | null
   reading: ReadingPosition[] | null
   drawCount: number
+  questionType?: QuestionType
+  yesNoAnswers?: YesNoAnswers
   sourceText: string
 }

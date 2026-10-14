@@ -1,25 +1,19 @@
-import type { ReadingPosition, TarotSpread } from '../types/tarot'
+import type { ReadingPosition, TarotSpread, YesNoAnswers } from '../types/tarot'
+import { readingEntries } from './mapping'
 
-export function formatReading(reading: ReadingPosition[], spread: TarotSpread | null): string {
-  if (spread) {
-    if (reading.some(({ position }) => position?.sectionTitle)) {
-      const sections: { title?: string; lines: string[] }[] = []
-      for (const { position, card } of reading) {
-        const title = position?.sectionTitle
-        let section = sections.at(-1)
-        if (!section || section.title !== title) {
-          section = { ...(title ? { title } : {}), lines: [] }
-          sections.push(section)
-        }
-        section.lines.push(`${position?.number ?? section.lines.length + 1}. ${position?.question ?? ''}\n${card.name}${card.orientation === 'reversed' ? ' — Reversed' : ''}`)
-      }
-      return sections.map(({ title, lines }) => [title, lines.join('\n\n')].filter(Boolean).join('\n\n')).join('\n\n')
+export function formatReading(reading: ReadingPosition[], spread: TarotSpread | null, answers: YesNoAnswers = {}): string {
+  if (!spread) return reading.map(({ card }, index) => `${index + 1}. ${card.name}${card.orientation === 'reversed' ? ' — Reversed' : ''}`).join('\n')
+  const sections: { title?: string; lines: string[] }[] = []
+  for (const { position, card, index } of readingEntries(reading, spread)) {
+    const title = position?.sectionTitle ?? spread.title
+    let section = sections.at(-1)
+    if (!section || section.title !== title) {
+      section = { title, lines: [] }
+      sections.push(section)
     }
-    const formattedReading = reading.map(({ position, card }, index) => [
-      `${position?.number ?? index + 1}. ${position?.question ?? ''}`,
-      `${card.name}${card.orientation === 'reversed' ? ' — Reversed' : ''}`,
-    ].join('\n')).join('\n\n')
-    return [spread.title, formattedReading].filter(Boolean).join('\n\n')
+    const result = position?.type === 'yes-no' ? (answers[index] ?? 'Unanswered')
+      : card ? `${card.name}${card.orientation === 'reversed' ? ' — Reversed' : ''}` : 'Undrawn'
+    section.lines.push(`${position?.number ?? index + 1}. ${position?.question ?? ''}\n${result}`)
   }
-  return reading.map(({ card }, index) => `${index + 1}. ${card.name}${card.orientation === 'reversed' ? ' — Reversed' : ''}`).join('\n')
+  return sections.map(({ title, lines }) => [title, lines.join('\n\n')].filter(Boolean).join('\n\n')).join('\n\n')
 }
