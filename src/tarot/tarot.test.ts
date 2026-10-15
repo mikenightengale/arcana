@@ -128,6 +128,49 @@ describe('Cathedral deck', () => {
 })
 
 describe('spread parsing and reading output', () => {
+  it('parses asterisk questions from a pasted spread and copies numbered results', () => {
+    const spread = parseSpread(`### Tarot Spread: Uncovering the Truth
+
+* Was Maia truthful when she described the nature of reality after physical death?
+
+* How much of her original description of the afterlife was accurate?`)!
+    expect(spread).toEqual({
+      title: 'Uncovering the Truth',
+      positions: [
+        { number: 1, question: 'Was Maia truthful when she described the nature of reality after physical death?' },
+        { number: 2, question: 'How much of her original description of the afterlife was accurate?' },
+      ],
+    })
+    const reading = mapReading(cards.slice(0, 2).map((card) => ({ ...card, orientation: 'upright' })) as RuntimeCard[], spread)
+    expect(formatReading(reading, spread)).toBe([
+      'Uncovering the Truth',
+      `1. ${spread.positions[0].question}\nCard 0`,
+      `2. ${spread.positions[1].question}\nCard 1`,
+    ].join('\n\n'))
+  })
+
+  it.each(['*', '-', '+', '•'])('parses unheaded %s bullets with labels and continuations', (bullet) => {
+    expect(parseSpread(`${bullet} **Present**
+What should I
+notice?
+${bullet} **What comes next?**
+${bullet} Reflect on the outcome`)?.positions).toEqual([
+      { number: 1, title: 'Present', question: 'What should I notice?' },
+      { number: 2, question: 'What comes next?' },
+      { number: 3, question: 'Reflect on the outcome' },
+    ])
+  })
+
+  it('supports mixed list markers and numbers bullets independently within sections', () => {
+    const spread = parseSpread('1. First?\n* Second?\n## Yes/No Questions — Check\n* Ready?\n* Complete?\n## Tarot Spread — Next\n* What next?')!
+    expect(spread.positions.map((p) => [p.number, p.type, p.question])).toEqual([
+      [1, undefined, 'First?'], [2, undefined, 'Second?'],
+      [1, 'yes-no', 'Ready?'], [2, 'yes-no', 'Complete?'],
+      [1, undefined, 'What next?'],
+    ])
+    expect(parseSpread('* Ready?\n* Complete?', 'yes-no')?.positions.map((p) => p.type)).toEqual(['yes-no', 'yes-no'])
+  })
+
   it('parses escaped Markdown numbering and copies readings without the escapes', () => {
     const prompt = String.raw`### Tarot Spread — Astarte: The Intense Overnight Energy Surge and Why I Had to Tell Her to Stop
 

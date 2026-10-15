@@ -221,7 +221,7 @@ function App() {
     const current = stateRef.current
     if (!current) return
     if (!parsed && current.sourceText.trim()) {
-      notify('warning', 'We couldn’t find numbered positions with questions. Check the spread format or clear it to draw without a spread.')
+      notify('warning', 'We couldn’t find numbered or bulleted questions. Check the spread format or clear it to draw without a spread.')
       return
     }
     if (parsed && count === 0) {
@@ -410,7 +410,7 @@ function App() {
           <div className="setup-grid">
             <section className="spread-panel panel">
               <label className="panel-label" htmlFor="spread-input"><span className="label-mark">✦</span> Your spread <small>OPTIONAL</small></label>
-              <p className="field-hint">Paste tarot spreads, yes/no questions, or both. Section headings set the question type. Leave empty for an open draw.</p>
+              <p className="field-hint">Paste numbered or bulleted tarot spreads, yes/no questions, or both. Section headings set the question type. Leave empty for an open draw.</p>
               <label className="question-type-control">Questions without section headings
                 <select aria-label="Questions without section headings" value={state.questionType ?? 'tarot'} onChange={(event) => update({ questionType: event.target.value as 'tarot' | 'yes-no' })}>
                   <option value="tarot">Tarot</option><option value="yes-no">Yes/No</option>
@@ -419,7 +419,7 @@ function App() {
               <textarea id="spread-input" value={state.sourceText} onChange={(event) => onSpreadChange(event.target.value)} placeholder={'## Tarot Spread — “Current Direction”\n\n1. **Current Energy**\n   What is the dominant energy surrounding this situation?\n\n2. **Hidden Influence**\n   What influence is operating beneath the surface?'} spellCheck={false} />
               {state.sourceText.trim() && <div className={`parse-status ${parsed ? 'valid' : 'invalid'}`} role="status">
                 <span aria-hidden="true">{parsed ? '✓' : '!'}</span>
-                {parsed ? `${parsed.positions.length} ${parsed.positions.length === 1 ? 'question' : 'questions'} detected` : 'No numbered questions detected yet'}
+                {parsed ? `${parsed.positions.length} ${parsed.positions.length === 1 ? 'question' : 'questions'} detected` : 'No numbered or bulleted questions detected yet'}
               </div>}
               {parsed && <div className="preview-wrap">
                 <button className="text-button preview-toggle" onClick={() => setShowPreview((value) => !value)} aria-expanded={showPreview}>Spread preview <span>{showPreview ? '−' : '+'}</span></button>
