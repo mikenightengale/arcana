@@ -75,6 +75,6 @@ The production site is served at [mikenightengale.github.io/arcana](https://mike
 
 ### Yes/no and mixed readings
 
-Paste a numbered list under `## Yes/No Questions — “Title”` to answer each question with Yes, No, or Other. Combine those sections with `## Tarot Spread — “Title”` sections in any order. Only tarot questions draw cards; a yes/no-only reading goes straight to answer selection. For lists without section headings, use the question-type selector above the input.
+Paste a numbered list under `## Yes/No Questions — “Title”` to answer each question with Yes, No, or Other. Combine those sections with `## Tarot Spread — “Title”` sections in any order. Only tarot questions draw cards; a yes/no-only reading goes straight to answer selection. Headings are detected automatically, including plain or bold headings such as `Part 2 — Yes/No Questions`. Questions without a type heading draw tarot cards. Pasted card results and previous yes/no answers are ignored; select fresh answers for the new reading. Selected answers show a green checkmark for Yes, a red X for No, or a yellow exclamation mark for Other.
 
 Answers save automatically on this device and can be changed later. **Copy reading** includes section titles, questions, tarot results, and selected answers in order; unanswered yes/no questions are labeled Unanswered.

@@ -292,6 +292,59 @@ What does C:\Tarot mean?
 })
 
 describe('yes/no and mixed questions', () => {
+  it('separates part headings, flattened subsections, and old results from questions', () => {
+    const spread = parseSpread(`Exploring a New Possibility
+
+1. What is changing?
+Knight of Swords
+
+2. What should I consider? Feasibility and Expectations
+Three of Wands — Reversed
+
+3. What comes next?
+The Fool
+
+Part 2 — Yes/No Questions
+
+1. Is it ready?
+Yes
+
+2. Is there more to learn? Knowledge and Honesty
+No
+
+3. Is it complete?
+Other`)!
+    expect(spread.positions.map((p) => [p.number, p.type, p.sectionTitle, p.question])).toEqual([
+      [1, undefined, 'Exploring a New Possibility', 'What is changing?'],
+      [2, undefined, 'Exploring a New Possibility', 'What should I consider?'],
+      [3, undefined, 'Feasibility and Expectations', 'What comes next?'],
+      [1, 'yes-no', 'Yes/No Questions', 'Is it ready?'],
+      [2, 'yes-no', 'Yes/No Questions', 'Is there more to learn?'],
+      [3, 'yes-no', 'Knowledge and Honesty', 'Is it complete?'],
+    ])
+    expect(formatReading([], spread)).not.toMatch(/Knight of Swords|Reversed/)
+  })
+
+  it('keeps explanatory prose and card names used as titles', () => {
+    const spread = parseSpread('The Fool\n1. What should I notice? Please explain\n2. What comes next?')!
+    expect(spread.title).toBe('The Fool')
+    expect(spread.positions[0].question).toBe('What should I notice? Please explain')
+  })
+
+  it.each(['Part 2 — Yes/No Questions', '**Yes/No Questions**', '###### Yes / No', 'Section II: Yes–No Questions'])('recognizes %s', (heading) => {
+    const spread = parseSpread(`Tarot Questions\n1. What now?\n\n${heading}\n1. Ready?`)!
+    expect(spread.positions.map((p) => p.type)).toEqual([undefined, 'yes-no'])
+    expect(spread.positions[0].question).toBe('What now?')
+  })
+
+  it('preserves multiline questions and detects plain subsections in yes/no lists', () => {
+    const spread = parseSpread('Yes/No Questions\n1. Is this\n   ready?\n\nTiming and Expectations\n2. Is it time?')!
+    expect(spread.positions.map((p) => [p.type, p.question, p.sectionTitle])).toEqual([
+      ['yes-no', 'Is this ready?', 'Yes/No Questions'],
+      ['yes-no', 'Is it time?', 'Timing and Expectations'],
+    ])
+  })
+
   it('detects emoji headings and draws only tarot cards in source order', () => {
     const spread = parseSpread('## 🔮 Tarot Spread — “Authority”\n1. Why?\n2. How?\n## 🔮 Yes/No Questions — “Boundary”\n25. Does it extend?\n26. Are there limits?\n## Tarot Spread — “Next”\n1. What next?')!
     expect(spread.positions.map((p) => [p.number, p.type, p.sectionTitle])).toEqual([

@@ -180,7 +180,7 @@ function App() {
     }
   }, [showShuffleHelp, state?.stage])
 
-  const parsed = useMemo(() => state?.sourceText.trim() ? parseSpread(state.sourceText, state.questionType) : null, [state?.sourceText, state?.questionType])
+  const parsed = useMemo(() => state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText])
   const count = parsed ? parsed.positions.filter((position) => position.type !== 'yes-no').length : (state?.drawCount ?? 20)
   const remaining = state ? remainingCards(state.deck) : 78
   const deckStatus = remaining <= 13 ? 'critical' : remaining <= 26 ? 'low' : 'normal'
@@ -210,7 +210,7 @@ function App() {
   function onSpreadChange(sourceText: string) {
     const current = stateRef.current
     if (!current) return
-    const spread = sourceText.trim() ? parseSpread(sourceText, current.questionType) : null
+    const spread = sourceText.trim() ? parseSpread(sourceText) : null
     const next = { ...current, sourceText, spread, drawCount: spread ? spread.positions.filter((position) => position.type !== 'yes-no').length : 20 }
     stateRef.current = next
     setState(next)
@@ -410,12 +410,7 @@ function App() {
           <div className="setup-grid">
             <section className="spread-panel panel">
               <label className="panel-label" htmlFor="spread-input"><span className="label-mark">✦</span> Your spread <small>OPTIONAL</small></label>
-              <p className="field-hint">Paste numbered or bulleted tarot spreads, yes/no questions, or both. Section headings set the question type. Leave empty for an open draw.</p>
-              <label className="question-type-control">Questions without section headings
-                <select aria-label="Questions without section headings" value={state.questionType ?? 'tarot'} onChange={(event) => update({ questionType: event.target.value as 'tarot' | 'yes-no' })}>
-                  <option value="tarot">Tarot</option><option value="yes-no">Yes/No</option>
-                </select>
-              </label>
+              <p className="field-hint">Paste numbered or bulleted tarot spreads, yes/no questions, or both. Tarot and yes/no section headings are detected automatically; unheaded questions draw tarot cards. Leave empty for an open draw.</p>
               <textarea id="spread-input" value={state.sourceText} onChange={(event) => onSpreadChange(event.target.value)} placeholder={'## Tarot Spread — “Current Direction”\n\n1. **Current Energy**\n   What is the dominant energy surrounding this situation?\n\n2. **Hidden Influence**\n   What influence is operating beneath the surface?'} spellCheck={false} />
               {state.sourceText.trim() && <div className={`parse-status ${parsed ? 'valid' : 'invalid'}`} role="status">
                 <span aria-hidden="true">{parsed ? '✓' : '!'}</span>

@@ -376,8 +376,13 @@ describe('manual yes/no readings', () => {
     const yes = await screen.findByRole('radio', { name: 'Yes' })
     fireEvent.click(yes)
     expect(yes).toBeChecked()
+    expect(yes.closest('label')).toHaveClass('answer-yes')
+    expect(yes.nextElementSibling?.querySelector('[aria-hidden]')).toHaveTextContent('✓')
     fireEvent.click(screen.getByRole('radio', { name: 'Other' }))
     expect(yes).not.toBeChecked()
+    const other = screen.getByRole('radio', { name: 'Other' })
+    expect(other.closest('label')).toHaveClass('answer-other')
+    expect(other.nextElementSibling?.querySelector('[aria-hidden]')).toHaveTextContent('!')
     await waitFor(() => expect(mocks.saveState).toHaveBeenLastCalledWith(expect.objectContaining({ stage: 'reading', reading: [], yesNoAnswers: { 0: 'Other' }, deck: expect.objectContaining({ nextCardIndex: 78 }) })))
     const saved = mocks.saveState.mock.calls.at(-1)![0]
     view.unmount()
@@ -398,7 +403,10 @@ describe('manual yes/no readings', () => {
     fireEvent.keyDown(hold, { key: ' ' })
     fireEvent.keyUp(hold, { key: ' ' })
     fireEvent.click(screen.getByRole('button', { name: 'Draw cards' }))
-    fireEvent.click(await screen.findByRole('radio', { name: 'No' }))
+    const no = await screen.findByRole('radio', { name: 'No' })
+    fireEvent.click(no)
+    expect(no.closest('label')).toHaveClass('answer-no')
+    expect(no.nextElementSibling?.querySelector('[aria-hidden]')).toHaveTextContent('✕')
     await waitFor(() => expect(mocks.saveState).toHaveBeenLastCalledWith(expect.objectContaining({ reading: expect.any(Array), yesNoAnswers: { 1: 'No' } })))
     const saved = mocks.saveState.mock.calls.at(-1)![0] as AppState
     expect(saved.reading).toHaveLength(1)
@@ -409,11 +417,11 @@ describe('manual yes/no readings', () => {
     expect(mocks.writeText.mock.calls.at(-1)?.[0]).toContain('Tarot\n\n1. What now?\nCard ')
   })
 
-  it('supports selecting yes/no for a list without headings', async () => {
+  it('automatically detects a plain part heading without a type dropdown', async () => {
     mocks.loadState.mockResolvedValue({ ...state, stage: 'setup', reading: null, sourceText: '' })
     render(<App />)
-    fireEvent.change(await screen.findByLabelText('Questions without section headings'), { target: { value: 'yes-no' } })
-    fireEvent.change(screen.getByLabelText('Your spread', { exact: false }), { target: { value: '1. Ready?' } })
+    fireEvent.change(await screen.findByLabelText('Your spread', { exact: false }), { target: { value: 'Part 2 — Yes/No Questions\n1. Ready?' } })
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Answer questions' }))
     expect(await screen.findByRole('radio', { name: 'Yes' })).toBeInTheDocument()
   })

@@ -63,9 +63,9 @@ export function ReadingView({ reading, spread, onCopy, onNew, onReset, answers =
         {position?.type === 'yes-no' ? <fieldset className="question-entry yes-no-question">
           <legend>{position.number}. {position.title && `${position.title}: `}{position.question}</legend>
           <div className="answer-options">
-            {(['Yes', 'No', 'Other'] as const).map((answer) => <label className="answer-box" key={answer}>
+            {(['Yes', 'No', 'Other'] as const).map((answer) => <label className={`answer-box answer-${answer.toLowerCase()}`} key={answer}>
               <input type="radio" name={`answer-${index}`} value={answer} checked={answers[index] === answer} onChange={() => onAnswer?.(index, answer)} />
-              <span>{answer}</span>
+              <span><i className="answer-icon" aria-hidden="true">{answer === 'Yes' ? '✓' : answer === 'No' ? '✕' : '!'}</i>{answer}</span>
             </label>)}
           </div>
           <p className="answer-status" role="status">{answers[index] ? `Saved: ${answers[index]}` : 'Choose an answer'}</p>

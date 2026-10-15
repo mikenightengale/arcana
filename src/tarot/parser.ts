@@ -1,8 +1,18 @@
+import manifest from '../../public/decks/cathedral/deck.json'
 import type { QuestionType, TarotPosition, TarotSpread } from '../types/tarot'
 
 const clean = (value: string) => value.trim().replace(/^\*\*(.*?)\*\*$/, '$1').replace(/^__(.*?)__$/, '$1').trim()
-const headingType = (value: string): QuestionType | undefined => /^[^\p{L}\p{N}]*yes\s*[/–—-]\s*no\s+questions\b/iu.test(clean(value)) ? 'yes-no' : /^[^\p{L}\p{N}]*Tarot Spread\b/iu.test(clean(value)) ? 'tarot' : undefined
-const normalizeTitle = (value: string) => clean(value).replace(/^(?:[^\p{L}\p{N}]*)(?:Tarot Spread|Yes\s*[/–—-]\s*No Questions)\s*[—–:-]?\s*/iu, '').replace(/^['“](.*)['”]$/, '$1')
+// Pasted documents often prefix section labels with a part number or emoji.
+const sectionLabel = (value: string) => clean(value).replace(/^[^\p{L}\p{N}]*/u, '').replace(/^(?:part|section)\s+(?:\d+|[ivx]+)\s*[—–:.)-]\s*/i, '')
+const headingType = (value: string): QuestionType | undefined => /^yes\s*[/–—-]\s*no(?:\s+(?:questions?|spread))?\b/i.test(sectionLabel(value)) ? 'yes-no' : /^Tarot(?:\s+(?:Spread|Questions?))?\b/i.test(sectionLabel(value)) ? 'tarot' : undefined
+const normalizeTitle = (value: string) => {
+  const label = sectionLabel(value)
+  const name = label.replace(/^(?:Tarot(?:\s+(?:Spread|Questions?))?|Yes\s*[/–—-]\s*No(?:\s+(?:Questions?|Spread))?)\s*[—–:-]?\s*/i, '')
+  return (name || label).replace(/^['“](.*)['”]$/, '$1')
+}
+const isSubheading = (value: string) => clean(value).split(/\s+/).every((word) => /^(?:[\p{Lu}][\p{L}\p{N}'’/-]*|and|or|the|a|an|of|for|to|in|on|with)$/u.test(word.replace(/[,;:]$/, '')))
+const cardNames = new Set(manifest.cards.map((card) => card.name.toLowerCase()))
+const isPreviousResult = (value: string) => /^(?:yes|no|other|unanswered)$/i.test(clean(value)) || cardNames.has(clean(value).replace(/\s*[—–-]\s*reversed$/i, '').toLowerCase())
 
 export function parseSpread(input: string, defaultType: QuestionType = 'tarot'): TarotSpread | null {
   const lines = input.replace(/\r\n?/g, '\n').split('\n')
@@ -12,6 +22,7 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
   let positions: TarotPosition[] = []
   let current: TarotPosition | undefined
   let barePosition = false
+  let followingTitle: string | undefined
 
   const finishCurrent = () => {
     if (!current) return
@@ -24,6 +35,12 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
     if (type === 'yes-no') current.type = type
     positions.push(current)
     current = undefined
+    if (followingTitle) {
+      sections.push({ ...(title ? { title } : {}), positions })
+      positions = []
+      title = followingTitle
+      followingTitle = undefined
+    }
   }
 
   const finishSection = () => {
@@ -35,15 +52,21 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
 
   const isSpreadTitle = (line: string) => headingType(line) !== undefined
 
-  for (const rawLine of lines) {
+  for (const [lineIndex, rawLine] of lines.entries()) {
     const line = rawLine.trim()
     if (!line) continue
-    const heading = line.match(/^#{1,3}\s+(.+?)\s*#*$/)
+    const heading = line.match(/^#{1,6}\s+(.+?)\s*#*$/)
     const numbered = line.match(/^\s*(\d+)\s*\\?[.)]\s+(.+)$/)
     const bulleted = line.match(/^[*+\-•]\s+(.+)$/)
     const headingText = heading?.[1] ?? line
+    if (current?.question.endsWith('?') && isPreviousResult(line)) continue
+    const nextLine = lines.slice(lineIndex + 1).find((value) => value.trim())?.trim() ?? ''
+    const isPlainHeading = !numbered && !bulleted && isSubheading(line)
+      && /^(?:\d+\s*\\?[.)]|[*+\-•])\s+/.test(nextLine)
+      && (rawLine === rawLine.trimStart())
+      && (lineIndex === 0 || !lines[lineIndex - 1].trim() || /^(?:\*\*|__)/.test(line))
     const isExplicitSpreadHeading = isSpreadTitle(headingText)
-    if (isExplicitSpreadHeading || (heading && (sections.length > 0 || positions.length > 0 || current || !title))) {
+    if (isExplicitSpreadHeading || isPlainHeading || (heading && (sections.length > 0 || positions.length > 0 || current || !title))) {
       finishSection()
       type = headingType(headingText) ?? type
       title = normalizeTitle(headingText)
@@ -57,7 +80,13 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
     if (numbered || bulleted) {
       finishCurrent()
       const number = numbered ? Number(numbered[1]) : positions.length + 1
-      const content = (numbered ? numbered[2] : bulleted![1]).trim()
+      let content = (numbered ? numbered[2] : bulleted![1]).trim()
+      // Some rich-text copies flatten the next subsection onto the question.
+      const inlineHeading = content.match(/^(.*\?)\s+([\p{Lu}][^?]*[\p{L}])$/u)
+      if (inlineHeading && isSubheading(inlineHeading[2])) {
+        content = inlineHeading[1]
+        followingTitle = normalizeTitle(inlineHeading[2])
+      }
       const boldPosition = content.match(/^\*\*(.+?)\*\*\s*(?:[:—–-]\s*)?(.*)$/) || content.match(/^__(.+?)__\s*(?:[:—–-]\s*)?(.*)$/)
       const plainTitle = content.match(/^([^:—–?]+?)\s*[:—–]\s*(.+)$/)
       if (boldPosition) {
@@ -78,14 +107,20 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
       }
       continue
     }
-    if (current) current.question = [current.question, clean(line)].filter(Boolean).join(' ')
+    if (current) {
+      if (barePosition && current.title && /^(?:is|are|was|were|do|does|did|can|could|will|would|should|has|have|had|what|why|how|when|where|which|who)\b/i.test(current.title)) {
+        current.question = current.title
+        delete current.title
+        barePosition = false
+      }
+      current.question = [current.question, clean(line)].filter(Boolean).join(' ')
+    }
   }
   finishSection()
   if (!sections.length) return null
   const multiple = sections.length > 1
-  const normalized = sections.flatMap((section) => section.positions.map((position, index) => ({
+  const normalized = sections.flatMap((section) => section.positions.map((position) => ({
     ...position,
-    number: position.type === 'yes-no' ? position.number : index + 1,
     ...(multiple && section.title ? { sectionTitle: section.title } : {}),
     question: position.question.trim(),
   })))
