@@ -15,7 +15,7 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
 
   const finishCurrent = () => {
     if (!current) return
-    // A plain numbered item with no continuation is itself a question, even
+    // A plain list item with no continuation is itself a question, even
     // when it has no question mark (for example, "1. test").
     if (barePosition && !current.question && current.title) {
       current.question = current.title
@@ -40,6 +40,7 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
     if (!line) continue
     const heading = line.match(/^#{1,3}\s+(.+?)\s*#*$/)
     const numbered = line.match(/^\s*(\d+)\s*\\?[.)]\s+(.+)$/)
+    const bulleted = line.match(/^[*+\-•]\s+(.+)$/)
     const headingText = heading?.[1] ?? line
     const isExplicitSpreadHeading = isSpreadTitle(headingText)
     if (isExplicitSpreadHeading || (heading && (sections.length > 0 || positions.length > 0 || current || !title))) {
@@ -48,15 +49,15 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
       title = normalizeTitle(headingText)
       continue
     }
-    if (!title && positions.length === 0 && !current && !numbered) {
+    if (!title && positions.length === 0 && !current && !numbered && !bulleted) {
       type = headingType(line) ?? type
       title = normalizeTitle(line)
       continue
     }
-    if (numbered) {
+    if (numbered || bulleted) {
       finishCurrent()
-      const number = Number(numbered[1])
-      const content = numbered[2].trim()
+      const number = numbered ? Number(numbered[1]) : positions.length + 1
+      const content = (numbered ? numbered[2] : bulleted![1]).trim()
       const boldPosition = content.match(/^\*\*(.+?)\*\*\s*(?:[:—–-]\s*)?(.*)$/) || content.match(/^__(.+?)__\s*(?:[:—–-]\s*)?(.*)$/)
       const plainTitle = content.match(/^([^:—–?]+?)\s*[:—–]\s*(.+)$/)
       if (boldPosition) {

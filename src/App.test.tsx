@@ -108,7 +108,7 @@ describe('reading copy notifications', () => {
     render(<App />)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Shuffle the deck' }))
-    const warning = await screen.findByText(/We couldn’t find numbered positions/)
+    const warning = await screen.findByText(/We couldn’t find numbered or bulleted questions/)
     expect(warning.closest('.notification-toast')).toHaveClass('notification-toast-warning')
   })
 })
