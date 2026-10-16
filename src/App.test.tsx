@@ -426,3 +426,24 @@ describe('manual yes/no readings', () => {
     expect(await screen.findByRole('radio', { name: 'Yes' })).toBeInTheDocument()
   })
 })
+
+describe('reading depth presets', () => {
+  beforeEach(() => mocks.loadState.mockResolvedValue(null))
+
+  it('defaults to 20, applies presets, supports custom counts, and respects pasted question counts', async () => {
+    render(<App />)
+    expect(await screen.findByRole('radio', { name: '20 cards — One subject with multiple dimensions' })).toBeChecked()
+    fireEvent.click(screen.getByRole('radio', { name: '40–50 cards — Comprehensive situation analysis' }))
+    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('45')
+    fireEvent.change(screen.getByRole('textbox', { name: 'Cards to draw' }), { target: { value: '50' } })
+    expect(screen.getByRole('radio', { name: '40–50 cards — Comprehensive situation analysis' })).toBeChecked()
+    fireEvent.change(screen.getByLabelText(/Your spread/), { target: { value: '1. What matters?' } })
+    expect(screen.getByText('1 card will be drawn')).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: '10 cards — One focused question' })).toBeDisabled()
+    fireEvent.change(screen.getByLabelText(/Your spread/), { target: { value: '' } })
+    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('20')
+    fireEvent.click(screen.getByRole('radio', { name: '70 cards — Full-spectrum exploration' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Shuffle the deck' }))
+    expect(await screen.findByText('70', { selector: '.draw-count-note strong' })).toBeInTheDocument()
+  })
+})

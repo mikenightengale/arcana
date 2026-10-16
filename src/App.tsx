@@ -6,6 +6,7 @@ import { formatReading } from './tarot/formatter'
 import { mapReading } from './tarot/mapping'
 import { DeckPicker } from './tarot/DeckPicker'
 import { DeckGallery } from './tarot/DeckGallery'
+import { ReadingDepth } from './tarot/ReadingDepth'
 import { parseSpread } from './tarot/parser'
 import { createReadyDeck, cycleTopCardToBottom, drawCards, remainingCards, shuffleDeck } from './tarot/shuffle'
 import type { AppState, DeckManifest, YesNoAnswer } from './types/tarot'
@@ -428,6 +429,7 @@ function App() {
             <DeckPicker manifests={manifests} selectedDeckId={manifest.id} onSelect={selectDeck} />
           </div>
 
+          <ReadingDepth count={count} locked={!!parsed} onChange={(drawCount) => update({ drawCount })} />
           <div className="draw-settings">
             <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed ? 'One card per tarot question; answer yes/no questions yourself' : 'Choose how many cards to bring to the table'}</small></span></div>
             {!parsed && <CardCountControl value={count} onChange={(drawCount) => update({ drawCount })} />}
