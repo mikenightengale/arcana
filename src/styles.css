@@ -148,3 +148,17 @@ textarea:focus { border-color: rgba(173,145,244,.55); box-shadow: 0 0 0 3px rgba
 .answer-box input:checked + span .answer-icon { visibility: visible; }
 .answer-box input:focus-visible + span { outline: 2px solid var(--ivory); outline-offset: 3px; }
 .answer-status { margin: 12px 0 0; color: var(--lavender); font-size: 12px; }
+
+.reading-depth { max-width: 620px; margin: 24px auto 0; padding: 22px; border: 1px solid rgba(173,145,244,.2); background: rgba(24,20,29,.7); text-align: left; }
+.reading-depth h2 { margin: 0 0 16px; color: var(--ivory); font: 21px var(--font-display); }
+.reading-depth fieldset { min-width: 0; margin: 0; padding: 0; border: 0; display: grid; gap: 8px; }
+.depth-option { display: flex; align-items: baseline; gap: 12px; padding: 10px 0; cursor: pointer; line-height: 1.6; }
+.depth-option input { flex-shrink: 0; accent-color: var(--lavender-bright); }
+.depth-option:has(input:checked) { color: var(--ivory); }
+.depth-option:has(input:focus-visible) { outline: 2px solid var(--lavender-bright); outline-offset: 3px; }
+.reading-depth fieldset:disabled .depth-option { cursor: default; opacity: .65; }
+.depth-structure { border-top: 1px solid rgba(173,145,244,.2); margin-top: 16px; padding-top: 18px; }
+.depth-structure small { font-size: 10px; letter-spacing: .12em; }
+.depth-structure h3 { font: 18px var(--font-display); color: var(--ivory); margin: 12px 0; }
+.depth-structure p { line-height: 1.7; font-size: 13px; }
+@media (max-width: 700px) { .reading-depth { order: 4; width: 100%; box-sizing: border-box; padding: 18px; } }
