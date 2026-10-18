@@ -411,7 +411,7 @@ function App() {
           <div className="setup-grid">
             <section className="spread-panel panel">
               <label className="panel-label" htmlFor="spread-input"><span className="label-mark">✦</span> Your spread <small>OPTIONAL</small></label>
-              <p className="field-hint">Paste numbered or bulleted tarot spreads, yes/no questions, or both. Tarot and yes/no section headings are detected automatically; unheaded questions draw tarot cards. Leave empty for an open draw.</p>
+              <p className="field-hint">Paste numbered or bulleted tarot spreads, yes/no questions, or both. Yes/no headings are detected anywhere in a title, and lists containing only yes/no questions go directly to answer selection. Other unheaded questions draw tarot cards. Leave empty for an open draw.</p>
               <textarea id="spread-input" value={state.sourceText} onChange={(event) => onSpreadChange(event.target.value)} placeholder={'## Tarot Spread — “Current Direction”\n\n1. **Current Energy**\n   What is the dominant energy surrounding this situation?\n\n2. **Hidden Influence**\n   What influence is operating beneath the surface?'} spellCheck={false} />
               {state.sourceText.trim() && <div className={`parse-status ${parsed ? 'valid' : 'invalid'}`} role="status">
                 <span aria-hidden="true">{parsed ? '✓' : '!'}</span>

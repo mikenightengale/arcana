@@ -15,5 +15,9 @@ export function formatReading(reading: ReadingPosition[], spread: TarotSpread | 
       : card ? `${card.name}${card.orientation === 'reversed' ? ' — Reversed' : ''}` : 'Undrawn'
     section.lines.push(`${position?.number ?? index + 1}. ${position?.question ?? ''}\n${result}`)
   }
-  return sections.map(({ title, lines }) => [title, lines.join('\n\n')].filter(Boolean).join('\n\n')).join('\n\n')
+  const content = sections.map(({ title, lines }) => [title, lines.join('\n\n')].filter(Boolean).join('\n\n')).join('\n\n')
+  // Keep the overall title when a reading contains named subsections.
+  return spread.title && sections.some(({ title }) => title && title !== spread.title)
+    ? `${spread.title}\n\n${content}`
+    : content
 }

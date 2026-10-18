@@ -292,6 +292,31 @@ What does C:\Tarot mean?
 })
 
 describe('yes/no and mixed questions', () => {
+  it('recognizes yes/no wording at the end of an investigation title and keeps its first subsection', () => {
+    const spread = parseSpread(`### Why Did the Dream Specifically Show Toxic Friend A Kissing Me? — Yes/No Investigation
+
+### I. Why a Kiss Instead of Another Form of Interaction?
+
+* Was the kiss chosen because Toxic Friend A specifically desires kissing me?
+* Was the kiss intended to communicate literal sexual desire rather than a general desire for approval?`)!
+    expect(spread.title).toBe('Why Did the Dream Specifically Show Toxic Friend A Kissing Me? — Yes/No Investigation')
+    expect(spread.positions).toEqual([
+      { number: 1, type: 'yes-no', sectionTitle: 'I. Why a Kiss Instead of Another Form of Interaction?', question: 'Was the kiss chosen because Toxic Friend A specifically desires kissing me?' },
+      { number: 2, type: 'yes-no', sectionTitle: 'I. Why a Kiss Instead of Another Form of Interaction?', question: 'Was the kiss intended to communicate literal sexual desire rather than a general desire for approval?' },
+    ])
+    expect(formatReading([], spread, { 0: 'Yes', 1: 'Other' })).toBe(
+      'Why Did the Dream Specifically Show Toxic Friend A Kissing Me? — Yes/No Investigation\n\nI. Why a Kiss Instead of Another Form of Interaction?\n\n1. Was the kiss chosen because Toxic Friend A specifically desires kissing me?\nYes\n\n2. Was the kiss intended to communicate literal sexual desire rather than a general desire for approval?\nOther',
+    )
+  })
+
+  it('infers manual yes/no for all-binary unheaded questions but not tarot or mixed lists', () => {
+    const questions = '1. Was the kiss intentional?\n2. Does the person want approval?'
+    expect(parseSpread(questions)?.positions.map((position) => position.type)).toEqual(['yes-no', 'yes-no'])
+    expect(parseSpread('A Few Questions\n' + questions)?.positions.map((position) => position.type)).toEqual(['yes-no', 'yes-no'])
+    expect(parseSpread('## Tarot Spread — Intentions\n' + questions)?.positions.map((position) => position.type)).toEqual([undefined, undefined])
+    expect(parseSpread('1. Was the kiss intentional?\n2. Why a kiss?')?.positions.map((position) => position.type)).toEqual([undefined, undefined])
+  })
+
   it('separates part headings, flattened subsections, and old results from questions', () => {
     const spread = parseSpread(`Exploring a New Possibility
 
