@@ -4,7 +4,12 @@ import type { QuestionType, TarotPosition, TarotSpread } from '../types/tarot'
 const clean = (value: string) => value.trim().replace(/^\*\*(.*?)\*\*$/, '$1').replace(/^__(.*?)__$/, '$1').trim()
 // Pasted documents often prefix section labels with a part number or emoji.
 const sectionLabel = (value: string) => clean(value).replace(/^[^\p{L}\p{N}]*/u, '').replace(/^(?:part|section)\s+(?:\d+|[ivx]+)\s*[—–:.)-]\s*/i, '')
-const headingType = (value: string): QuestionType | undefined => /^yes\s*[/–—-]\s*no(?:\s+(?:questions?|spread))?\b/i.test(sectionLabel(value)) ? 'yes-no' : /^Tarot(?:\s+(?:Spread|Questions?))?\b/i.test(sectionLabel(value)) ? 'tarot' : undefined
+const headingType = (value: string): QuestionType | undefined => {
+  const label = sectionLabel(value)
+  if (/^Tarot(?:\s+(?:Spread|Questions?))?\b/i.test(label)) return 'tarot'
+  // Yes/no also identifies the reading type at the end of descriptive titles.
+  return /\byes\s*[/–—-]\s*no\b/i.test(label) ? 'yes-no' : undefined
+}
 const normalizeTitle = (value: string) => {
   const label = sectionLabel(value)
   const name = label.replace(/^(?:Tarot(?:\s+(?:Spread|Questions?))?|Yes\s*[/–—-]\s*No(?:\s+(?:Questions?|Spread))?)\s*[—–:-]?\s*/i, '')
@@ -13,6 +18,7 @@ const normalizeTitle = (value: string) => {
 const isSubheading = (value: string) => clean(value).split(/\s+/).every((word) => /^(?:[\p{Lu}][\p{L}\p{N}'’/-]*|and|or|the|a|an|of|for|to|in|on|with)$/u.test(word.replace(/[,;:]$/, '')))
 const cardNames = new Set(manifest.cards.map((card) => card.name.toLowerCase()))
 const isPreviousResult = (value: string) => /^(?:yes|no|other|unanswered)$/i.test(clean(value)) || cardNames.has(clean(value).replace(/\s*[—–-]\s*reversed$/i, '').toLowerCase())
+const isYesNoQuestion = (question: string) => /^(?:am|are|can|could|did|do|does|had|has|have|is|may|might|must|shall|should|was|were|will|would)\b/i.test(question.trim()) && question.trim().endsWith('?')
 
 export function parseSpread(input: string, defaultType: QuestionType = 'tarot'): TarotSpread | null {
   const lines = input.replace(/\r\n?/g, '\n').split('\n')
@@ -23,6 +29,8 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
   let current: TarotPosition | undefined
   let barePosition = false
   let followingTitle: string | undefined
+  let parentTitle: string | undefined
+  let hasTypedHeading = false
 
   const finishCurrent = () => {
     if (!current) return
@@ -66,14 +74,24 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
       && (rawLine === rawLine.trimStart())
       && (lineIndex === 0 || !lines[lineIndex - 1].trim() || /^(?:\*\*|__)/.test(line))
     const isExplicitSpreadHeading = isSpreadTitle(headingText)
+    // Preserve an investigation title when the first group has its own heading.
+    if (heading && title && !sections.length && !positions.length && !current && !isExplicitSpreadHeading) {
+      parentTitle ??= title
+      title = normalizeTitle(headingText)
+      continue
+    }
     if (isExplicitSpreadHeading || isPlainHeading || (heading && (sections.length > 0 || positions.length > 0 || current || !title))) {
       finishSection()
-      type = headingType(headingText) ?? type
+      const declaredType = headingType(headingText)
+      if (declaredType) hasTypedHeading = true
+      type = declaredType ?? type
       title = normalizeTitle(headingText)
       continue
     }
     if (!title && positions.length === 0 && !current && !numbered && !bulleted) {
-      type = headingType(line) ?? type
+      const declaredType = headingType(line)
+      if (declaredType) hasTypedHeading = true
+      type = declaredType ?? type
       title = normalizeTitle(line)
       continue
     }
@@ -119,11 +137,16 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
   finishSection()
   if (!sections.length) return null
   const multiple = sections.length > 1
+  // Infer manual answers only when every untyped question has yes/no phrasing.
+  // An explicit Tarot heading always keeps the card-drawing workflow.
+  const inferredYesNo = defaultType === 'tarot' && !hasTypedHeading
+    && sections.every((section) => section.positions.every((position) => isYesNoQuestion(position.question)))
   const normalized = sections.flatMap((section) => section.positions.map((position) => ({
     ...position,
-    ...(multiple && section.title ? { sectionTitle: section.title } : {}),
+    ...(inferredYesNo ? { type: 'yes-no' as const } : {}),
+    ...((multiple || parentTitle) && section.title ? { sectionTitle: section.title } : {}),
     question: position.question.trim(),
   })))
   if (normalized.some((position) => !position.question)) return null
-  return { ...(!multiple && sections[0].title ? { title: sections[0].title } : {}), positions: normalized }
+  return { ...(parentTitle ? { title: parentTitle } : !multiple && sections[0].title ? { title: sections[0].title } : {}), positions: normalized }
 }
