@@ -367,6 +367,39 @@ describe('interactive shuffle', () => {
 })
 
 describe('manual yes/no readings', () => {
+  it('skips cards and shuffle for a yes/no investigation with a descriptive title and subsection', async () => {
+    const exhausted = { ...setupState(), deck: { ...setupState().deck, nextCardIndex: 78 } }
+    mocks.loadState.mockResolvedValue(exhausted)
+    render(<App />)
+    fireEvent.change(await screen.findByLabelText('Your spread', { exact: false }), { target: { value: `### Why Did the Dream Specifically Show Toxic Friend A Kissing Me? — Yes/No Investigation
+
+### I. Why a Kiss Instead of Another Form of Interaction?
+
+* Was the kiss chosen because Toxic Friend A specifically desires kissing me?
+* Was the kiss intended to communicate literal sexual desire rather than a general desire for approval?` } })
+    expect(screen.getByText('0 cards will be drawn')).toBeInTheDocument()
+    expect(screen.getAllByText('Yes / No / Other · ', { exact: false })).toHaveLength(2)
+    fireEvent.click(screen.getByRole('button', { name: 'Answer questions' }))
+    expect(await screen.findByRole('heading', { name: 'Your reading' })).toBeInTheDocument()
+    expect(screen.getAllByRole('radio', { name: 'Yes' })).toHaveLength(2)
+    expect(screen.queryByRole('button', { name: 'Draw cards' })).not.toBeInTheDocument()
+    const saved = lastSaved((value) => value.stage === 'reading')!
+    expect(saved.reading).toEqual([])
+    expect(saved.deck).toEqual(exhausted.deck)
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Other' })[1])
+    expect(screen.getAllByRole('radio', { name: 'Other' })[1]).toBeChecked()
+  })
+
+  it('routes an unheaded list of binary questions directly to answers', async () => {
+    mocks.loadState.mockResolvedValue(setupState())
+    render(<App />)
+    fireEvent.change(await screen.findByLabelText('Your spread', { exact: false }), { target: { value: '* Is it ready?\n* Would that be helpful?' } })
+    expect(screen.getByText('0 cards will be drawn')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Answer questions' }))
+    expect(await screen.findAllByRole('radio', { name: 'No' })).toHaveLength(2)
+    expect(lastSaved((value) => value.stage === 'reading')?.deck.nextCardIndex).toBe(0)
+  })
+
   it('starts without shuffling even with an exhausted deck, saves exclusive answers, and restores them', async () => {
     mocks.loadState.mockResolvedValue({ ...state, stage: 'setup', reading: null, spread: null, sourceText: '', deck: { ...state.deck, nextCardIndex: 78 } })
     const view = render(<App />)
