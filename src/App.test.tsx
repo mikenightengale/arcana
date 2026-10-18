@@ -395,7 +395,7 @@ describe('manual yes/no readings', () => {
 * Was the kiss chosen because Toxic Friend A specifically desires kissing me?
 * Was the kiss intended to communicate literal sexual desire rather than a general desire for approval?` } })
     expect(screen.getByText('0 cards will be drawn')).toBeInTheDocument()
-    expect(screen.getAllByText('Yes / No / Other · ', { exact: false })).toHaveLength(2)
+    expect(document.querySelectorAll('.question-type-badge')).toHaveLength(2)
     fireEvent.click(screen.getByRole('button', { name: 'Answer questions' }))
     expect(await screen.findByRole('heading', { name: 'Your reading' })).toBeInTheDocument()
     expect(screen.getAllByRole('radio', { name: 'Yes' })).toHaveLength(2)
