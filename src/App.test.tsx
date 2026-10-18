@@ -367,6 +367,23 @@ describe('interactive shuffle', () => {
 })
 
 describe('manual yes/no readings', () => {
+  function setupState(): AppState {
+    return {
+      ...state,
+      stage: 'setup',
+      spread: null,
+      reading: null,
+      sourceText: '',
+      drawCount: 20,
+      deck: { cards: cards.map((card) => ({ ...card, orientation: 'upright' })), nextCardIndex: 0, resetAt: 1 },
+      shuffleStatus: undefined,
+    }
+  }
+
+  function lastSaved(predicate: (saved: AppState) => boolean): AppState | undefined {
+    return mocks.saveState.mock.calls.map(([saved]) => saved as AppState).reverse().find(predicate)
+  }
+
   it('skips cards and shuffle for a yes/no investigation with a descriptive title and subsection', async () => {
     const exhausted = { ...setupState(), deck: { ...setupState().deck, nextCardIndex: 78 } }
     mocks.loadState.mockResolvedValue(exhausted)
