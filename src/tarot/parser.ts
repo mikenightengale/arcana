@@ -6,7 +6,8 @@ const clean = (value: string) => value.trim().replace(/^\*\*(.*?)\*\*$/, '$1').r
 const sectionLabel = (value: string) => clean(value).replace(/^[^\p{L}\p{N}]*/u, '').replace(/^(?:part|section)\s+(?:\d+|[ivx]+)\s*[—–:.)-]\s*/i, '')
 const headingType = (value: string): QuestionType | undefined => {
   const label = sectionLabel(value)
-  if (/^Tarot(?:\s+(?:Spread|Questions?))?\b/i.test(label)) return 'tarot'
+  if (/^Tarot(?:\s+(?:Spread|Questions?))?\b/i.test(label)
+    || /[—–:]\s*(?:\d+[-\s]+card\s+)?tarot\b/i.test(label)) return 'tarot'
   // Yes/no also identifies the reading type at the end of descriptive titles.
   return /\byes\s*[/–—-]\s*no\b/i.test(label) ? 'yes-no' : undefined
 }
@@ -19,6 +20,9 @@ const isSubheading = (value: string) => clean(value).split(/\s+/).every((word) =
 const cardNames = new Set(manifest.cards.map((card) => card.name.toLowerCase()))
 const isPreviousResult = (value: string) => /^(?:yes|no|other|unanswered)$/i.test(clean(value)) || cardNames.has(clean(value).replace(/\s*[—–-]\s*reversed$/i, '').toLowerCase())
 const isYesNoQuestion = (question: string) => /^(?:am|are|can|could|did|do|does|had|has|have|is|may|might|must|shall|should|was|were|will|would)\b/i.test(question.trim()) && question.trim().endsWith('?')
+// Accept escaped Markdown punctuation, slash separators, and stray slashes
+// after the separator without changing slashes inside the question itself.
+const numberedPattern = /^\s*(\d+)\s*\\*[.)/](?:\s*[\\/])*\s+(.+)$/
 
 export function parseSpread(input: string, defaultType: QuestionType = 'tarot'): TarotSpread | null {
   const lines = input.replace(/\r\n?/g, '\n').split('\n')
@@ -64,16 +68,16 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
     const line = rawLine.trim()
     if (!line) continue
     const heading = line.match(/^#{1,6}\s+(.+?)\s*#*$/)
-    const numbered = line.match(/^\s*(\d+)\s*\\?[.)]\s+(.+)$/)
+    const numbered = line.match(numberedPattern)
     const bulleted = line.match(/^[*+\-•]\s+(.+)$/)
     const headingText = heading?.[1] ?? line
     if (current?.question.endsWith('?') && isPreviousResult(line)) continue
     const nextLine = lines.slice(lineIndex + 1).find((value) => value.trim())?.trim() ?? ''
     const isPlainHeading = !numbered && !bulleted && isSubheading(line)
-      && /^(?:\d+\s*\\?[.)]|[*+\-•])\s+/.test(nextLine)
+      && (numberedPattern.test(nextLine) || /^[*+\-•]\s+/.test(nextLine))
       && (rawLine === rawLine.trimStart())
       && (lineIndex === 0 || !lines[lineIndex - 1].trim() || /^(?:\*\*|__)/.test(line))
-    const isExplicitSpreadHeading = isSpreadTitle(headingText)
+    const isExplicitSpreadHeading = !numbered && !bulleted && isSpreadTitle(headingText)
     // Preserve an investigation title when the first group has its own heading.
     if (heading && title && !sections.length && !positions.length && !current && !isExplicitSpreadHeading) {
       parentTitle ??= title
