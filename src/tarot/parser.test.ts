@@ -24,6 +24,15 @@ describe('pasted question regressions', () => {
     expect(parseSpread(`${marker} ${question}`)?.positions).toEqual([{ number: 1, question }])
   })
 
+  it('infers binary questions before an explicit Yes/No section', () => {
+    const spread = parseSpread('Questions to Verify\n1. Was it intentional?\n2. Does it matter?\n\n## Yes/No Questions — Confirmation\n1. Is it confirmed?')!
+    expect(spread.positions.map(({ question, type }) => [question, type])).toEqual([
+      ['Was it intentional?', 'yes-no'],
+      ['Does it matter?', 'yes-no'],
+      ['Is it confirmed?', 'yes-no'],
+    ])
+  })
+
   it('recognizes a plain subsection followed by slash numbering', () => {
     expect(parseSpread('Tarot Spread — Check\n1. What now?\n\nTiming and Expectations\n2/ What next?')?.positions).toEqual([
       { number: 1, question: 'What now?', sectionTitle: 'Check' },
