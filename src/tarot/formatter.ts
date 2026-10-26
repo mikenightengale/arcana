@@ -3,6 +3,9 @@ import { readingEntries } from './mapping'
 
 export function formatReading(reading: ReadingPosition[], spread: TarotSpread | null, answers: YesNoAnswers = {}): string {
   if (!spread) return reading.map(({ card }, index) => `${index + 1}. ${card.name}${card.orientation === 'reversed' ? ' — Reversed' : ''}`).join('\n')
+  if (spread.presetId) {
+    return [`## Tarot Spread — “${spread.title}”`, `Category: ${spread.category}`, ...readingEntries(reading, spread).map(({ position, card }) => `${position!.number}. **${position!.title}**\n   ${position!.question.replace(/\s*\n\s*/g, ' ')}\n${card ? `${card.name}${card.orientation === 'reversed' ? ' — Reversed' : ''}` : 'Undrawn'}`)].join('\n\n')
+  }
   const sections: { title?: string; lines: string[] }[] = []
   for (const { position, card, index } of readingEntries(reading, spread)) {
     const title = position?.sectionTitle ?? spread.title

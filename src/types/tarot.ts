@@ -45,7 +45,14 @@ export type QuestionType = 'tarot' | 'yes-no'
 export type YesNoAnswer = 'Yes' | 'No' | 'Other'
 export type YesNoAnswers = Record<number, YesNoAnswer>
 
+export interface PositionLayout { x: number; y: number; rotation?: number; layer?: number }
+
 export interface TarotPosition {
+  id?: string
+  meaning?: string
+  layout?: PositionLayout
+  drawOrder?: number
+  displayOrder?: number
   type?: QuestionType
   number: number
   title?: string
@@ -55,6 +62,11 @@ export interface TarotPosition {
 }
 
 export interface TarotSpread {
+  presetId?: string
+  category?: string
+  description?: string
+  useCases?: string[]
+  provenance?: 'Traditional' | 'Arcana preset'
   title?: string
   positions: TarotPosition[]
 }
@@ -65,6 +77,7 @@ export interface ReadingPosition {
 }
 
 export interface AppState {
+  preparationMode?: 'free' | 'custom' | 'library'
   stage: Stage
   /** Selected presentation deck; omitted on older saved states. */
   deckId?: string
