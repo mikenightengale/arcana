@@ -87,14 +87,14 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
     if (isExplicitSpreadHeading || isPlainHeading || (heading && (sections.length > 0 || positions.length > 0 || current || !title))) {
       finishSection()
       const declaredType = headingType(headingText)
-      explicitTarot = declaredType === 'tarot'
+      if (declaredType) explicitTarot = declaredType === 'tarot'
       type = declaredType ?? type
       title = normalizeTitle(headingText)
       continue
     }
     if (!title && positions.length === 0 && !current && !numbered && !bulleted) {
       const declaredType = headingType(line)
-      explicitTarot = declaredType === 'tarot'
+      if (declaredType) explicitTarot = declaredType === 'tarot'
       type = declaredType ?? type
       title = normalizeTitle(line)
       continue
