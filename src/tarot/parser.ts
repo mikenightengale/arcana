@@ -26,7 +26,7 @@ const numberedPattern = /^\s*(\d+)\s*\\*[.)/](?:\s*[\\/])*\s+(.+)$/
 
 export function parseSpread(input: string, defaultType: QuestionType = 'tarot'): TarotSpread | null {
   const lines = input.replace(/\r\n?/g, '\n').split('\n')
-  const sections: { title?: string; positions: TarotPosition[] }[] = []
+  const sections: { title?: string; positions: TarotPosition[]; explicitTarot: boolean }[] = []
   let type = defaultType
   let title: string | undefined
   let positions: TarotPosition[] = []
@@ -34,7 +34,7 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
   let barePosition = false
   let followingTitle: string | undefined
   let parentTitle: string | undefined
-  let hasTypedHeading = false
+  let explicitTarot = false
 
   const finishCurrent = () => {
     if (!current) return
@@ -48,7 +48,7 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
     positions.push(current)
     current = undefined
     if (followingTitle) {
-      sections.push({ ...(title ? { title } : {}), positions })
+      sections.push({ ...(title ? { title } : {}), positions, explicitTarot })
       positions = []
       title = followingTitle
       followingTitle = undefined
@@ -57,7 +57,7 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
 
   const finishSection = () => {
     finishCurrent()
-    if (positions.length) sections.push({ ...(title ? { title } : {}), positions })
+    if (positions.length) sections.push({ ...(title ? { title } : {}), positions, explicitTarot })
     title = undefined
     positions = []
   }
@@ -87,14 +87,14 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
     if (isExplicitSpreadHeading || isPlainHeading || (heading && (sections.length > 0 || positions.length > 0 || current || !title))) {
       finishSection()
       const declaredType = headingType(headingText)
-      if (declaredType) hasTypedHeading = true
+      explicitTarot = declaredType === 'tarot'
       type = declaredType ?? type
       title = normalizeTitle(headingText)
       continue
     }
     if (!title && positions.length === 0 && !current && !numbered && !bulleted) {
       const declaredType = headingType(line)
-      if (declaredType) hasTypedHeading = true
+      explicitTarot = declaredType === 'tarot'
       type = declaredType ?? type
       title = normalizeTitle(line)
       continue
@@ -143,11 +143,11 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
   const multiple = sections.length > 1
   // Infer manual answers only when every untyped question has yes/no phrasing.
   // An explicit Tarot heading always keeps the card-drawing workflow.
-  const inferredYesNo = defaultType === 'tarot' && !hasTypedHeading
+  const inferredYesNo = defaultType === 'tarot'
     && sections.every((section) => section.positions.every((position) => isYesNoQuestion(position.question)))
   const normalized = sections.flatMap((section) => section.positions.map((position) => ({
     ...position,
-    ...(inferredYesNo ? { type: 'yes-no' as const } : {}),
+    ...(inferredYesNo && !section.explicitTarot && !position.type ? { type: 'yes-no' as const } : {}),
     ...((multiple || parentTitle) && section.title ? { sectionTitle: section.title } : {}),
     question: position.question.trim(),
   })))
