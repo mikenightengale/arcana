@@ -10,6 +10,9 @@ import { ReadingDepth } from './tarot/ReadingDepth'
 import { parseSpread } from './tarot/parser'
 import { createReadyDeck, cycleTopCardToBottom, drawCards, remainingCards, shuffleDeck } from './tarot/shuffle'
 import type { AppState, DeckManifest, YesNoAnswer } from './types/tarot'
+import { SpreadLibrary } from './tarot/SpreadLibrary'
+import { SpreadLayout } from './tarot/SpreadLayout'
+import './spreads.css'
 import { ReadingView } from './ReadingView'
 import { appPath, assetPath, canonicalGalleryPath, galleryDeckId, isGalleryPath } from './paths'
 
@@ -181,7 +184,7 @@ function App() {
     }
   }, [showShuffleHelp, state?.stage])
 
-  const parsed = useMemo(() => state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText])
+  const parsed = useMemo(() => state?.spread?.presetId ? state.spread : state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText, state?.spread])
   const count = parsed ? parsed.positions.filter((position) => position.type !== 'yes-no').length : (state?.drawCount ?? 20)
   const remaining = state ? remainingCards(state.deck) : 78
   const deckStatus = remaining <= 13 ? 'critical' : remaining <= 26 ? 'low' : 'normal'
@@ -212,7 +215,7 @@ function App() {
     const current = stateRef.current
     if (!current) return
     const spread = sourceText.trim() ? parseSpread(sourceText) : null
-    const next = { ...current, sourceText, spread, drawCount: spread ? spread.positions.filter((position) => position.type !== 'yes-no').length : 20 }
+    const next = { ...current, sourceText, spread, preparationMode: 'custom' as const, drawCount: spread ? spread.positions.filter((position) => position.type !== 'yes-no').length : 20 }
     stateRef.current = next
     setState(next)
     setToast(null)
@@ -223,6 +226,10 @@ function App() {
     if (!current) return
     if (!parsed && current.sourceText.trim()) {
       notify('warning', 'We couldn’t find numbered or bulleted questions. Check the spread format or clear it to draw without a spread.')
+      return
+    }
+    if (parsed?.presetId && parsed.positions.some(p => !p.question.trim())) {
+      notify('warning', 'Enter a question for every position before beginning.')
       return
     }
     if (parsed && count === 0) {
@@ -349,13 +356,13 @@ function App() {
 
   function newReading() {
     if (!state) return
-    update({ stage: 'setup', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, sourceText: '', drawCount: 20 })
+    update({ stage: 'setup', preparationMode: 'free', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, sourceText: '', drawCount: 20 })
   }
 
   function resetDeck() {
     if (!state || !manifest) return
     releaseShuffle()
-    update({ deck: createReadyDeck(manifest.cards), stage: 'setup', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, drawCount: 20, sourceText: '' })
+    update({ deck: createReadyDeck(manifest.cards), stage: 'setup', preparationMode: 'free', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, drawCount: 20, sourceText: '' })
   }
 
   async function copyReading() {
@@ -408,7 +415,12 @@ function App() {
           <h1 id="screen-title">Prepare your <em>reading</em></h1>
           <p className="intro">Bring your questions. The cards will meet you there.</p>
 
-          <div className="setup-grid">
+          <div className="preparation-modes" role="group" aria-label="Choose a spread">
+            {([['free', 'Free Draw'], ['custom', 'Custom Spread'], ['library', 'Spread Library']] as const).map(([mode, label]) => <button type="button" key={mode} aria-pressed={(state.preparationMode ?? (state.sourceText ? 'custom' : 'free')) === mode} onClick={() => { if ((state.preparationMode ?? (state.sourceText ? 'custom' : 'free')) !== mode) update({ preparationMode: mode, spread: null, sourceText: '', drawCount: 20 }) }}>{label}</button>)}
+          </div>
+          {state.preparationMode === 'library' && <SpreadLibrary spread={state.spread} onSelect={spread => update({ spread, sourceText: '', drawCount: spread.positions.length })} onBegin={beginShuffle} cardBackUrl={cardBackUrl} />}
+          <div className={`setup-grid ${state.preparationMode === 'library' ? 'library-deck-grid' : ''}`}>
+            {state.preparationMode !== 'library' &&
             <section className="spread-panel panel">
               <label className="panel-label" htmlFor="spread-input"><span className="label-mark">✦</span> Your spread <small>OPTIONAL</small></label>
               <p className="field-hint">Paste numbered or bulleted tarot spreads, yes/no questions, or both. Yes/no headings are detected anywhere in a title, and lists containing only yes/no questions go directly to answer selection. Other unheaded questions draw tarot cards. Leave empty for an open draw.</p>
@@ -424,18 +436,18 @@ function App() {
                   <strong>{position.title || `Position ${position.number}`}</strong><span>{position.type === 'yes-no' && <small className="question-type-badge">Yes / No / Other · </small>}{position.question}</span>
                 </li>)}</ol>}
               </div>}
-            </section>
+            </section>}
 
             <DeckPicker manifests={manifests} selectedDeckId={manifest.id} onSelect={selectDeck} />
           </div>
 
-          <ReadingDepth count={count} locked={!!parsed} onChange={(drawCount) => update({ drawCount })} />
+          {state.preparationMode !== 'library' && <ReadingDepth count={count} locked={!!parsed} onChange={(drawCount) => update({ drawCount })} />}
           <div className="draw-settings">
-            <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed ? 'One card per tarot question; answer yes/no questions yourself' : 'Choose how many cards to bring to the table'}</small></span></div>
+            <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed?.presetId ? 'One card for each position in your selected spread' : parsed ? 'One card per tarot question; answer yes/no questions yourself' : 'Choose how many cards to bring to the table'}</small></span></div>
             {!parsed && <CardCountControl value={count} onChange={(drawCount) => update({ drawCount })} />}
           </div>
           <div className="setup-actions">
-            <button className="primary-button shuffle-start-button" onClick={beginShuffle}>
+            <button className="primary-button shuffle-start-button" onClick={beginShuffle} disabled={state.preparationMode === 'library' && (!state.spread?.presetId || state.spread.positions.some(p => !p.question.trim()))}>
               <span>{parsed && count === 0 ? 'Answer questions' : 'Shuffle the deck'}</span><svg className="shuffle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M2 6h2.5c2 0 3.2.9 4.3 2.5l6.4 9c1.1 1.6 2.4 2.5 4.3 2.5H22"/><path d="m18 14 4 4-4 4"/><path d="M2 18h2.5c2 0 3.2-.9 4.3-2.5l6.4-9C16.3 4.9 17.6 4 19.5 4H22"/><path d="m18 2 4 4-4 4"/></svg>
             </button>
             {remaining < 78 && <button className="text-button reset-setup" onClick={resetDeck}>Reset the Deck</button>}
@@ -488,6 +500,7 @@ function App() {
           <p className="draw-count-note">A reading of <strong>{count}</strong> {count === 1 ? 'card' : 'cards'}</p>
           <button className="primary-button draw-button" onClick={deal} disabled={state.shuffleStatus !== 'frozen' || holding.current}><span>Draw cards</span><svg className="draw-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="12" height="17" rx="1.5"/><path d="M7 7h4M18 8v12m-4-4 4 4 4-4"/></svg></button>
           {state.shuffleStatus === 'frozen' && <button className="text-button return-button" onClick={() => update({ shuffleStatus: 'ready' })}>Shuffle again</button>}
+          {state.spread?.presetId && <SpreadLayout spread={state.spread} cardBackUrl={cardBackUrl} />}
           <button className="text-button return-button" onClick={() => { releaseShuffle(); update({ stage: 'setup', shuffleStatus: undefined }) }}>Return to preparation</button>
         </section>}
 

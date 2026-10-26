@@ -71,7 +71,7 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
     const numbered = line.match(numberedPattern)
     const bulleted = line.match(/^[*+\-•]\s+(.+)$/)
     const headingText = heading?.[1] ?? line
-    if (current?.question.endsWith('?') && isPreviousResult(line)) continue
+    if (current?.question && isPreviousResult(line)) continue
     const nextLine = lines.slice(lineIndex + 1).find((value) => value.trim())?.trim() ?? ''
     const isPlainHeading = !numbered && !bulleted && isSubheading(line)
       && (numberedPattern.test(nextLine) || /^[*+\-•]\s+/.test(nextLine))

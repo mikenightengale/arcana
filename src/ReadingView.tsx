@@ -1,5 +1,6 @@
 import { Fragment, useLayoutEffect, useRef, type CSSProperties } from 'react'
 import { readingEntries } from './tarot/mapping'
+import { SpreadLayout } from './tarot/SpreadLayout'
 import { CrystalCard } from './tarot/CrystalCard'
 import { getCardMeaning } from './tarot/meanings'
 import type { ReadingPosition, TarotSpread, YesNoAnswer, YesNoAnswers } from './types/tarot'
@@ -57,7 +58,7 @@ export function ReadingView({ reading, spread, onCopy, onNew, onReset, answers =
     <div className="eyebrow"><span /> YOUR QUESTIONS AT THE TABLE <span /></div>
     <h1 id="screen-title">Your <em>reading</em></h1>
     <p className="intro">{spread?.title ? `A quiet moment with “${spread.title}”` : 'A quiet moment with your questions.'}</p>
-    <div className="reading-grid" ref={gridRef}>
+    {spread?.presetId ? <SpreadLayout spread={spread} reading={reading} /> : <div className="reading-grid" ref={gridRef}>
       {readingEntries(reading, spread).map(({ position, card, index }, order, entries) => <Fragment key={index}>
         {position?.sectionTitle && (order === 0 || entries[order - 1].position?.sectionTitle !== position.sectionTitle) && <h2 className="reading-section-title">{position.sectionTitle}</h2>}
         {position?.type === 'yes-no' ? <fieldset className="question-entry yes-no-question">
@@ -83,7 +84,7 @@ export function ReadingView({ reading, spread, onCopy, onNew, onReset, answers =
         <p className="card-meaning">{getCardMeaning(card.id, card.orientation) ?? 'A meaning guide is not available for this card.'}</p>
       </article>}
       </Fragment>)}
-    </div>
+    </div>}
     <div className="reading-actions">
       <button className="primary-button copy-button" onClick={onCopy}>
         <svg className="reading-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3" /></svg>
