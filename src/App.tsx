@@ -356,13 +356,13 @@ function App() {
 
   function newReading() {
     if (!state) return
-    update({ stage: 'setup', preparationMode: 'free', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, sourceText: '', drawCount: 20 })
+    update({ stage: 'setup', preparationMode: 'custom', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, sourceText: '', drawCount: 20 })
   }
 
   function resetDeck() {
     if (!state || !manifest) return
     releaseShuffle()
-    update({ deck: createReadyDeck(manifest.cards), stage: 'setup', preparationMode: 'free', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, drawCount: 20, sourceText: '' })
+    update({ deck: createReadyDeck(manifest.cards), stage: 'setup', preparationMode: 'custom', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, drawCount: 20, sourceText: '' })
   }
 
   async function copyReading() {
@@ -416,7 +416,7 @@ function App() {
           <p className="intro">Bring your questions. The cards will meet you there.</p>
 
           <div className="preparation-modes" role="group" aria-label="Choose a spread">
-            {([['free', 'Free Draw'], ['custom', 'Custom Spread'], ['library', 'Spread Library']] as const).map(([mode, label]) => <button type="button" key={mode} aria-pressed={(state.preparationMode ?? (state.sourceText ? 'custom' : 'free')) === mode} onClick={() => { if ((state.preparationMode ?? (state.sourceText ? 'custom' : 'free')) !== mode) update({ preparationMode: mode, spread: null, sourceText: '', drawCount: 20 }) }}>{label}</button>)}
+            {([['custom', 'Your Reading'], ['library', 'Spread Library']] as const).map(([mode, label]) => <button type="button" key={mode} aria-pressed={(state.preparationMode === 'library' ? 'library' : 'custom') === mode} onClick={() => { if ((state.preparationMode === 'library' ? 'library' : 'custom') !== mode) update({ preparationMode: mode, spread: null, sourceText: '', drawCount: 20 }) }}>{label}</button>)}
           </div>
           {state.preparationMode === 'library' && <SpreadLibrary spread={state.spread} onSelect={spread => update({ spread, sourceText: '', drawCount: spread.positions.length })} onBegin={beginShuffle} cardBackUrl={cardBackUrl} />}
           <div className={`setup-grid ${state.preparationMode === 'library' ? 'library-deck-grid' : ''}`}>

@@ -543,7 +543,7 @@ describe('preset spread readings', () => {
     expect(screen.getByText('What surrounds my project?', { selector: 'p' })).toBeInTheDocument()
     expect(screen.getByRole('status', { name: '68 cards remain' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Prepare another reading' }))
-    expect(screen.getByRole('button', { name: 'Free Draw' })).toHaveAttribute('aria-pressed','true')
+    expect(screen.getByRole('button', { name: 'Your Reading' })).toHaveAttribute('aria-pressed','true')
     expect(screen.getByRole('status', { name: '68 cards remain' })).toBeInTheDocument()
   })
 
