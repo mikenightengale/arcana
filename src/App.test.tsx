@@ -209,7 +209,7 @@ describe('interactive shuffle', () => {
     fireEvent.change(screen.getByLabelText(/Your spread/), { target: { value: '' } })
     expect(screen.getByLabelText(/Your spread/)).toHaveValue('')
     expect(screen.queryByText('1 question detected')).not.toBeInTheDocument()
-    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('20')
+    expect(screen.getByRole('combobox', { name: 'Cards to draw' })).toHaveValue('20')
   })
 
   it('clears invalid spread text and restores the open-draw count', async () => {
@@ -219,7 +219,7 @@ describe('interactive shuffle', () => {
     fireEvent.change(screen.getByLabelText(/Your spread/), { target: { value: '' } })
     expect(screen.getByLabelText(/Your spread/)).toHaveValue('')
     expect(screen.queryByText('No numbered or bulleted questions detected yet')).not.toBeInTheDocument()
-    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('20')
+    expect(screen.getByRole('combobox', { name: 'Cards to draw' })).toHaveValue('20')
   })
 
   it('uses the custom reading editor for unheaded questions and updates the draw action', async () => {
@@ -233,26 +233,14 @@ describe('interactive shuffle', () => {
     await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).sourceText.includes('What is the right time?'))).toBe(true))
   })
 
-  it.each([[10, '10 cards'], [20, '20 cards'], [45, '40–50 cards'], [70, '70 cards']] as const)('selects the %i-card reading depth', async (count, label) => {
+  it.each([10, 20, 40, 60])('selects the %i-card preset', async (count) => {
     mocks.loadState.mockResolvedValue(setupState())
     render(<App />)
-    fireEvent.click(await screen.findByRole('radio', { name: new RegExp(label) }))
-    expect(screen.getByRole('radio', { name: new RegExp(label) })).toBeChecked()
-    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue(String(count))
+    const select = await screen.findByRole('combobox', { name: 'Cards to draw' })
+    expect(Array.from((select as HTMLSelectElement).options, option => option.value)).toEqual(['10', '20', '40', '60'])
+    fireEvent.change(select, { target: { value: String(count) } })
+    expect(select).toHaveValue(String(count))
     await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).drawCount === count)).toBe(true))
-  })
-
-  it('keeps reading depth choices available on desktop and mobile', async () => {
-    mocks.loadState.mockResolvedValue(setupState())
-    const { unmount } = render(<App />)
-    expect(await screen.findByRole('heading', { name: 'Choose your reading depth' })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: /10 cards/ })).toBeInTheDocument()
-    unmount()
-
-    vi.mocked(window.matchMedia).mockImplementation((media: string) => ({ matches: media === '(max-width: 760px)', addEventListener: vi.fn(), removeEventListener: vi.fn() }) as unknown as MediaQueryList)
-    render(<App />)
-    expect(await screen.findByRole('heading', { name: 'Choose your reading depth' })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: /10 cards/ })).toBeInTheDocument()
   })
 
   it('explains the shuffle mechanics and dismisses the help with Escape or an outside press', async () => {
@@ -279,7 +267,7 @@ describe('interactive shuffle', () => {
   })
 
   it('changes the working deck during a hold, freezes immediately on release, and draws that order', async () => {
-    mocks.loadState.mockResolvedValue(setupState())
+    mocks.loadState.mockResolvedValue({ ...setupState(), sourceText: '1. What matters?' })
     render(<App />)
     fireEvent.click(await screen.findByRole('button', { name: /Shuffle the deck/ }))
     const hold = await screen.findByRole('button', { name: 'Hold to shuffle; release to stop' })
@@ -325,11 +313,11 @@ describe('interactive shuffle', () => {
     fireEvent.pointerUp(hold, { pointerId: 9 })
     fireEvent.click(screen.getByRole('button', { name: 'Draw cards' }))
     fireEvent.click(screen.getByRole('button', { name: 'Return to preparation' }))
-    expect(await screen.findByRole('heading', { name: /Prepare your reading/ })).toBeInTheDocument()
+    expect(await screen.findByRole('region', { name: 'Reading setup' })).toBeInTheDocument()
 
     await act(async () => { finishFrozenSave(); await frozenSave })
 
-    expect(screen.getByRole('heading', { name: /Prepare your reading/ })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Reading setup' })).toBeInTheDocument()
     expect(mocks.saveState.mock.calls.map(([saved]) => saved as AppState).some((saved) => saved.stage === 'reading')).toBe(false)
   })
 
@@ -363,7 +351,7 @@ describe('interactive shuffle', () => {
 
   it('makes the last remaining card drawable without starting a no-op shuffle', async () => {
     mocks.loadState.mockResolvedValue({
-      ...setupState(),
+      ...setupState(), sourceText: '1. What matters?',
       deck: { cards: cards.map((card) => ({ ...card, orientation: 'upright' })), nextCardIndex: 77, resetAt: 1 },
     })
     render(<App />)
@@ -508,21 +496,19 @@ describe('manual yes/no readings', () => {
 describe('reading depth presets', () => {
   beforeEach(() => mocks.loadState.mockResolvedValue(null))
 
-  it('defaults to 20, applies presets, supports custom counts, and respects pasted question counts', async () => {
+  it('defaults to 20 and respects pasted question counts', async () => {
     render(<App />)
-    expect(await screen.findByRole('radio', { name: '20 cards — One subject with multiple dimensions' })).toBeChecked()
-    fireEvent.click(screen.getByRole('radio', { name: '40–50 cards — Comprehensive situation analysis' }))
-    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('45')
-    fireEvent.change(screen.getByRole('textbox', { name: 'Cards to draw' }), { target: { value: '50' } })
-    expect(screen.getByRole('radio', { name: '40–50 cards — Comprehensive situation analysis' })).toBeChecked()
+    expect(await screen.findByRole('combobox', { name: 'Cards to draw' })).toHaveValue('20')
+    expect(screen.queryByText(/Prepare your reading/)).not.toBeInTheDocument()
+    fireEvent.change(screen.getByRole('combobox', { name: 'Cards to draw' }), { target: { value: '40' } })
     fireEvent.change(screen.getByLabelText(/Your spread/), { target: { value: '1. What matters?' } })
     expect(screen.getByText('1 card will be drawn')).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: '10 cards — One focused question' })).toBeDisabled()
+    expect(screen.queryByRole('combobox', { name: 'Cards to draw' })).not.toBeInTheDocument()
     fireEvent.change(screen.getByLabelText(/Your spread/), { target: { value: '' } })
-    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('20')
-    fireEvent.click(screen.getByRole('radio', { name: '70 cards — Full-spectrum exploration' }))
+    expect(screen.getByRole('combobox', { name: 'Cards to draw' })).toHaveValue('20')
+    fireEvent.change(screen.getByRole('combobox', { name: 'Cards to draw' }), { target: { value: '60' } })
     fireEvent.click(screen.getByRole('button', { name: 'Shuffle the deck' }))
-    expect(await screen.findByText('70', { selector: '.draw-count-note strong' })).toBeInTheDocument()
+    expect(await screen.findByText('60', { selector: '.draw-count-note strong' })).toBeInTheDocument()
   })
 })
 

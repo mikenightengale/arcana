@@ -5,7 +5,6 @@ import { loadState, saveState } from './persistence/db'
 import { formatReading } from './tarot/formatter'
 import { mapReading } from './tarot/mapping'
 import { DeckGallery } from './tarot/DeckGallery'
-import { ReadingDepth } from './tarot/ReadingDepth'
 import { parseSpread } from './tarot/parser'
 import { createReadyDeck, cycleTopCardToBottom, drawCards, remainingCards, shuffleDeck } from './tarot/shuffle'
 import type { AppState, DeckManifest, YesNoAnswer } from './types/tarot'
@@ -14,47 +13,6 @@ import { SpreadLayout } from './tarot/SpreadLayout'
 import './spreads.css'
 import { ReadingView } from './ReadingView'
 import { appPath, assetPath, canonicalGalleryPath, galleryPath, isGalleryPath } from './paths'
-
-function CardCountControl({ value, onChange }: { value: number; onChange: (count: number) => void }) {
-  const [draft, setDraft] = useState(String(value))
-
-  useEffect(() => setDraft(String(value)), [value])
-
-  function commitDraft() {
-    const parsed = Number(draft)
-    const next = Math.min(78, Math.max(1, Number.isInteger(parsed) ? parsed : 1))
-    setDraft(String(next))
-    if (next !== value) onChange(next)
-  }
-
-  function step(amount: number) {
-    const next = Math.min(78, Math.max(1, value + amount))
-    setDraft(String(next))
-    onChange(next)
-  }
-
-  return <label className="count-control">
-    <span className="visually-hidden">Cards to draw</span>
-    <button type="button" aria-label="Decrease card count" onClick={() => step(-1)} disabled={value <= 1}>−</button>
-    <input
-      type="text"
-      inputMode="numeric"
-      pattern="[0-9]*"
-      aria-label="Cards to draw"
-      value={draft}
-      onChange={(event) => {
-        const nextDraft = event.target.value
-        if (!/^\d*$/.test(nextDraft)) return
-        setDraft(nextDraft)
-        const next = Number(nextDraft)
-        if (nextDraft && Number.isInteger(next) && next >= 1 && next <= 78) onChange(next)
-      }}
-      onBlur={commitDraft}
-      onKeyDown={(event) => { if (event.key === 'Enter') event.currentTarget.blur() }}
-    />
-    <button type="button" aria-label="Increase card count" onClick={() => step(1)} disabled={value >= 78}>+</button>
-  </label>
-}
 
 function App() {
   const [state, setState] = useState<AppState | null>(null)
@@ -109,6 +67,7 @@ function App() {
       const hydrate = <T extends { id: string; orientation: 'upright' | 'reversed' }>(card: T) => ({ ...card, ...(canonicalCards.get(card.id) ?? {}), orientation: card.orientation })
       const migrated = saved ? {
         ...saved,
+        drawCount: saved.stage === 'setup' && !saved.spread && !saved.sourceText.trim() && ![10, 20, 40, 60].includes(saved.drawCount) ? 20 : saved.drawCount,
         deckId: 'cathedral',
         deck: { ...saved.deck, cards: saved.deck.cards.map(hydrate) },
         reading: saved.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
@@ -400,10 +359,8 @@ function App() {
       </header>
 
       <main id="top" className={`main-content stage-${state.stage}`}>
-        {state.stage === 'setup' && <section className="setup-view" aria-labelledby="screen-title">
+        {state.stage === 'setup' && <section className="setup-view" aria-label="Reading setup">
           <div className="eyebrow"><span /> A PRIVATE TABLE FOR YOUR QUESTIONS <span /></div>
-          <h1 id="screen-title">Prepare your <em>reading</em></h1>
-          <p className="intro">Bring your questions. The cards will meet you there.</p>
 
           <div className="preparation-modes" role="group" aria-label="Choose a spread">
             {([['custom', 'Your Reading'], ['library', 'Spread Library']] as const).map(([mode, label]) => <button type="button" key={mode} aria-pressed={(state.preparationMode === 'library' ? 'library' : 'custom') === mode} onClick={() => { if ((state.preparationMode === 'library' ? 'library' : 'custom') !== mode) update({ preparationMode: mode, questionType: 'tarot', spread: null, sourceText: '', drawCount: 20 }) }}>{label}</button>)}
@@ -439,10 +396,14 @@ function App() {
 
           </div>
 
-          {state.preparationMode !== 'library' && <ReadingDepth count={count} locked={!!parsed} onChange={(drawCount) => update({ drawCount })} />}
           <div className="draw-settings">
             <div className="draw-summary"><span className="summary-icon">✧</span><span><strong>{parsed ? `${count} card${count === 1 ? '' : 's'} will be drawn` : 'Cards to draw'}</strong><small>{parsed?.presetId ? 'One card for each position in your selected spread' : parsed ? 'One card per tarot question; answer yes/no questions yourself' : 'Choose how many cards to bring to the table'}</small></span></div>
-            {!parsed && <CardCountControl value={count} onChange={(drawCount) => update({ drawCount })} />}
+            {!parsed && <label className="draw-preset">
+              <span className="visually-hidden">Cards to draw</span>
+              <select aria-label="Cards to draw" value={[10, 20, 40, 60].includes(count) ? count : 20} onChange={(event) => update({ drawCount: Number(event.target.value) })}>
+                {[10, 20, 40, 60].map((preset) => <option key={preset} value={preset}>{preset}</option>)}
+              </select>
+            </label>}
           </div>
           <div className="setup-actions">
             <button className="primary-button shuffle-start-button" onClick={beginShuffle} disabled={state.preparationMode === 'library' && (!state.spread?.presetId || state.spread.positions.some(p => !p.question.trim()))}>
