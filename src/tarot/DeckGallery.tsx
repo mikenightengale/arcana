@@ -97,7 +97,7 @@ export function DeckGallery({ deckId, deckName, cards, cardBackUrl, onReturn }: 
     {enlarged && <div className="gallery-modal" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setEnlarged(null) }}>
       <section className="gallery-modal-panel" role="dialog" aria-modal="true" aria-label={`${enlarged.name} enlarged`}>
         <button ref={closeButtonRef} className="gallery-close" onClick={() => setEnlarged(null)} aria-label="Close enlarged card">×</button>
-        <div className="gallery-modal-art">{showBack ? <img src={cardBackUrl} alt="Card back" className="gallery-back"/> : <CrystalCard card={enlarged} reversed={reversed} animations={animations} reveal/>}</div>
+        <div className="gallery-modal-art">{showBack ? <img src={cardBackUrl} alt="Card back" className={`gallery-back ${reversed ? 'reversed-art' : ''}`}/> : <CrystalCard card={enlarged} reversed={reversed} animations={animations} reveal/>}</div>
         <div className="gallery-modal-copy"><span className="eyebrow"><span/> {enlarged.arcana === 'major' ? 'MAJOR ARCANA' : `${enlarged.suit?.toUpperCase()} · ${enlarged.rank?.toUpperCase()}`} <span/></span><h2>{enlarged.name}</h2><p>Click the controls above to compare its face, orientation, and living details.</p></div>
       </section>
     </div>}

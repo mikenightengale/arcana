@@ -142,3 +142,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 dev-dist/
+
+# Local browser verification artifacts
+.playwright-cli/
+output/playwright/

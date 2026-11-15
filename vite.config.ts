@@ -6,8 +6,8 @@ import { resolve } from 'node:path'
 
 const pagesBase = '/arcana/'
 
-export default defineConfig(({ command }) => {
-  const base = command === 'build' ? pagesBase : '/'
+export default defineConfig(({ command, isPreview }) => {
+  const base = command === 'build' || isPreview ? pagesBase : '/'
 
   return {
     base,
