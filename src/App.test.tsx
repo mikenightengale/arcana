@@ -206,7 +206,7 @@ describe('interactive shuffle', () => {
     render(<App />)
     fireEvent.change(await screen.findByLabelText(/Your spread/), { target: { value: '1. What should I notice?' } })
     expect(await screen.findByText('1 question detected')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    fireEvent.change(screen.getByLabelText(/Your spread/), { target: { value: '' } })
     expect(screen.getByLabelText(/Your spread/)).toHaveValue('')
     expect(screen.queryByText('1 question detected')).not.toBeInTheDocument()
     expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('20')
@@ -216,61 +216,43 @@ describe('interactive shuffle', () => {
     mocks.loadState.mockResolvedValue({ ...setupState(), sourceText: 'not a numbered spread' })
     render(<App />)
     expect(await screen.findByText('No numbered or bulleted questions detected yet')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    fireEvent.change(screen.getByLabelText(/Your spread/), { target: { value: '' } })
     expect(screen.getByLabelText(/Your spread/)).toHaveValue('')
     expect(screen.queryByText('No numbered or bulleted questions detected yet')).not.toBeInTheDocument()
     expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('20')
   })
 
-  it('uses the selected question mode for unheaded questions and updates the draw action', async () => {
+  it('uses the custom reading editor for unheaded questions and updates the draw action', async () => {
     mocks.loadState.mockResolvedValue(setupState())
     render(<App />)
-    const tarotMode = await screen.findByRole('radio', { name: 'Tarot spread' })
-    const yesNoMode = screen.getByRole('radio', { name: 'Yes / No questions' })
-    const spreadInput = screen.getByLabelText(/Your spread/)
-    expect(tarotMode).toBeChecked()
-
-    fireEvent.click(yesNoMode)
-    expect(screen.getByLabelText(/Your Yes \/ No questions/)).toBeInTheDocument()
-    fireEvent.change(spreadInput, { target: { value: '1. Is this the right time?\n2. Will this plan work?' } })
-    expect(screen.getByText('0 cards will be drawn')).toBeInTheDocument()
-    expect(document.querySelector('.question-type-badge')).toHaveTextContent('Yes / No / Other')
-    expect(screen.getByRole('button', { name: 'Answer questions' })).toBeInTheDocument()
-    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).questionType === 'yes-no')).toBe(true))
-
-    fireEvent.click(tarotMode)
+    const spreadInput = await screen.findByLabelText(/Your spread/)
+    expect(screen.getByRole('button', { name: 'Your Reading' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.change(spreadInput, { target: { value: '1. What is the right time?\n2. How will this plan work?' } })
     expect(screen.getByText('2 cards will be drawn')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Shuffle the deck' })).toBeInTheDocument()
+    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).sourceText.includes('What is the right time?'))).toBe(true))
   })
 
-  it.each([10, 20, 45, 70])('selects the %i-card preset from the collapsible preset menu', async (count) => {
+  it.each([[10, '10 cards'], [20, '20 cards'], [45, '40–50 cards'], [70, '70 cards']] as const)('selects the %i-card reading depth', async (count, label) => {
     mocks.loadState.mockResolvedValue(setupState())
     render(<App />)
-    const menuSummary = await screen.findByText('Presets')
-    const menu = menuSummary.closest('details')!
-    expect(menu).not.toHaveAttribute('open')
-    fireEvent.click(menuSummary)
-    expect(menu).toHaveAttribute('open')
-    fireEvent.click(screen.getByRole('button', { name: `${count} cards` }))
+    fireEvent.click(await screen.findByRole('radio', { name: new RegExp(label) }))
+    expect(screen.getByRole('radio', { name: new RegExp(label) })).toBeChecked()
     expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue(String(count))
-    expect(menu).not.toHaveAttribute('open')
-    expect(document.querySelector(`[aria-label="${count} cards"]`)).toHaveAttribute('aria-pressed', 'true')
     await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).drawCount === count)).toBe(true))
   })
 
-  it('keeps setup controls expanded on desktop and collapsed by default on mobile', async () => {
+  it('keeps reading depth choices available on desktop and mobile', async () => {
     mocks.loadState.mockResolvedValue(setupState())
     const { unmount } = render(<App />)
-    const settings = await screen.findByText('Spread and draw settings')
-    expect(settings.closest('details')).toHaveAttribute('open')
+    expect(await screen.findByRole('heading', { name: 'Choose your reading depth' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /10 cards/ })).toBeInTheDocument()
     unmount()
 
     vi.mocked(window.matchMedia).mockImplementation((media: string) => ({ matches: media === '(max-width: 760px)', addEventListener: vi.fn(), removeEventListener: vi.fn() }) as unknown as MediaQueryList)
     render(<App />)
-    const mobileSettings = await screen.findByText('Spread and draw settings')
-    expect(mobileSettings.closest('details')).not.toHaveAttribute('open')
-    fireEvent.click(mobileSettings)
-    expect(mobileSettings.closest('details')).toHaveAttribute('open')
+    expect(await screen.findByRole('heading', { name: 'Choose your reading depth' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /10 cards/ })).toBeInTheDocument()
   })
 
   it('explains the shuffle mechanics and dismisses the help with Escape or an outside press', async () => {
