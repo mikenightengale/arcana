@@ -16,6 +16,15 @@ export function SpreadLibrary({ spread, onSelect, onBegin, cardBackUrl }: {
   }, [selected?.presetId])
   return <section className="spread-library panel" aria-labelledby="library-title">
     <h2 id="library-title">Spread Library</h2><p className="field-hint">Choose a shape for your questions. Preview and personalize it before setting the deck.</p>
+    <label className="spread-preset-select-label" htmlFor="spread-preset-select">Choose a reading preset
+      <select id="spread-preset-select" className="spread-preset-select" value={selected?.presetId ?? ''} onChange={event => {
+        const definition = spreadLibrary.find(item => item.id === event.target.value)
+        if (definition) onSelect(createPresetSpread(definition))
+      }}>
+        <option value="">Select a preset…</option>
+        {spreadLibrary.map(item => <option key={item.id} value={item.id}>{item.title} · {item.cardCount} cards</option>)}
+      </select>
+    </label>
     <div className="spread-filters" role="group" aria-label="Filter spreads by category">
       {['All', ...spreadCategories].map(value => <button type="button" key={value} aria-pressed={category === value} onClick={() => setCategory(value)}>{value}</button>)}
     </div>

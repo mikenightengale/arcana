@@ -11,6 +11,9 @@
 .question-mode input:focus-visible + span { outline: 2px solid var(--lavender-bright); outline-offset: 3px; }
 .question-mode label:hover span { border-color: rgba(173,145,244,.58); color: var(--lavender-bright); }
 .spread-library { padding: clamp(1rem,3vw,2.5rem); margin: 2rem 0; text-align: left; }
+.spread-preset-select-label { display: none; }
+.spread-preset-select { width: 100%; min-height: 48px; padding: .7rem 2.5rem .7rem .9rem; border: 1px solid var(--border); border-radius: .35rem; color: var(--ivory); background: #17121a; font: inherit; }
+.spread-preset-select:focus-visible { outline: 2px solid var(--ice-blue); outline-offset: 3px; }
 .spread-library h2, .spread-position-detail h3 { font-family: var(--font-display); color: var(--ivory); }
 .spread-library-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr)); gap: 1rem; }
 .spread-choice { text-align: left; display: flex; flex-direction: column; gap: .65rem; padding: 1.4rem; color: var(--text-muted); background: linear-gradient(145deg,rgba(81,34,79,.25),var(--bg-panel)); border: 1px solid var(--border); border-radius: 1rem; font: inherit; cursor: pointer; transition: border-color .2s, background .2s; }
@@ -35,3 +38,7 @@
 .setup-grid.library-deck-grid { grid-template-columns: minmax(0,1fr); }
 .preset-preview h2 { scroll-margin-top: 2rem; }
 .drawn-position-number { position: absolute; top: -.6rem; left: -.6rem; display: grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--bg-deep); border: 1px solid var(--lavender); color: var(--ivory); font: bold .85rem var(--font-ui); }
+@media (max-width: 760px) {
+  .spread-preset-select-label { display: grid; gap: .55rem; margin: 1rem 0 1.2rem; color: var(--lavender-bright); font-size: .85rem; }
+  .spread-filters, .spread-library-grid { display: none; }
+}
