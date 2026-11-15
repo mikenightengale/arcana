@@ -2,6 +2,14 @@
 .preparation-modes { justify-content: center; }
 .preparation-modes button, .spread-filters button, .spread-position-list button { border: 1px solid var(--border); border-radius: 1rem; padding: .7rem 1rem; background: var(--bg-panel); color: var(--ivory); cursor: pointer; font: inherit; }
 .preparation-modes button[aria-pressed=true], .spread-filters button[aria-pressed=true], .spread-position-list button[aria-pressed=true] { background: var(--plum-deep); border-color: var(--lavender); color: var(--lavender-bright); }
+.question-mode { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 20px; padding: 0; border: 0; }
+.question-mode legend { width: 100%; margin-bottom: 8px; color: #938c97; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.question-mode label { position: relative; cursor: pointer; }
+.question-mode input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.question-mode label span { display: block; min-height: 38px; padding: 10px 13px; border: 1px solid rgba(173,145,244,.25); border-radius: 3px; color: #aaa1b1; background: rgba(11,9,17,.55); font-size: 11px; }
+.question-mode input:checked + span { border-color: rgba(173,145,244,.72); color: var(--ivory); background: rgba(80,58,128,.2); }
+.question-mode input:focus-visible + span { outline: 2px solid var(--lavender-bright); outline-offset: 3px; }
+.question-mode label:hover span { border-color: rgba(173,145,244,.58); color: var(--lavender-bright); }
 .spread-library { padding: clamp(1rem,3vw,2.5rem); margin: 2rem 0; text-align: left; }
 .spread-library h2, .spread-position-detail h3 { font-family: var(--font-display); color: var(--ivory); }
 .spread-library-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr)); gap: 1rem; }

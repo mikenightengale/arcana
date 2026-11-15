@@ -178,7 +178,7 @@ function App() {
     }
   }, [showShuffleHelp, state?.stage])
 
-  const parsed = useMemo(() => state?.spread?.presetId ? state.spread : state?.sourceText.trim() ? parseSpread(state.sourceText) : null, [state?.sourceText, state?.spread])
+  const parsed = useMemo(() => state?.spread?.presetId ? state.spread : state?.sourceText.trim() ? parseSpread(state.sourceText, state.questionType ?? 'tarot', state.questionType == null) : null, [state?.sourceText, state?.spread, state?.questionType])
   const count = parsed ? parsed.positions.filter((position) => position.type !== 'yes-no').length : (state?.drawCount ?? 20)
   const remaining = state ? remainingCards(state.deck) : 78
   const deckStatus = remaining <= 13 ? 'critical' : remaining <= 26 ? 'low' : 'normal'
@@ -195,8 +195,18 @@ function App() {
   function onSpreadChange(sourceText: string) {
     const current = stateRef.current
     if (!current) return
-    const spread = sourceText.trim() ? parseSpread(sourceText) : null
+    const spread = sourceText.trim() ? parseSpread(sourceText, current.questionType ?? 'tarot', current.questionType == null) : null
     const next = { ...current, sourceText, spread, preparationMode: 'custom' as const, drawCount: spread ? spread.positions.filter((position) => position.type !== 'yes-no').length : 20 }
+    stateRef.current = next
+    setState(next)
+    setToast(null)
+  }
+
+  function onQuestionTypeChange(questionType: 'tarot' | 'yes-no') {
+    const current = stateRef.current
+    if (!current || current.questionType === questionType) return
+    const spread = current.sourceText.trim() ? parseSpread(current.sourceText, questionType, false) : null
+    const next = { ...current, questionType, spread, drawCount: spread ? spread.positions.filter((position) => position.type !== 'yes-no').length : current.drawCount }
     stateRef.current = next
     setState(next)
     setToast(null)
@@ -337,13 +347,13 @@ function App() {
 
   function newReading() {
     if (!state) return
-    update({ stage: 'setup', preparationMode: 'custom', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, sourceText: '', drawCount: 20 })
+    update({ stage: 'setup', preparationMode: 'custom', questionType: 'tarot', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, sourceText: '', drawCount: 20 })
   }
 
   function resetDeck() {
     if (!state || !manifest) return
     releaseShuffle()
-    update({ deck: createReadyDeck(manifest.cards), stage: 'setup', preparationMode: 'custom', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, drawCount: 20, sourceText: '' })
+    update({ deck: createReadyDeck(manifest.cards), stage: 'setup', preparationMode: 'custom', questionType: 'tarot', shuffleStatus: undefined, spread: null, reading: null, yesNoAnswers: {}, drawCount: 20, sourceText: '' })
   }
 
   async function copyReading() {
@@ -396,16 +406,24 @@ function App() {
           <p className="intro">Bring your questions. The cards will meet you there.</p>
 
           <div className="preparation-modes" role="group" aria-label="Choose a spread">
-            {([['custom', 'Your Reading'], ['library', 'Spread Library']] as const).map(([mode, label]) => <button type="button" key={mode} aria-pressed={(state.preparationMode === 'library' ? 'library' : 'custom') === mode} onClick={() => { if ((state.preparationMode === 'library' ? 'library' : 'custom') !== mode) update({ preparationMode: mode, spread: null, sourceText: '', drawCount: 20 }) }}>{label}</button>)}
+            {([['custom', 'Your Reading'], ['library', 'Spread Library']] as const).map(([mode, label]) => <button type="button" key={mode} aria-pressed={(state.preparationMode === 'library' ? 'library' : 'custom') === mode} onClick={() => { if ((state.preparationMode === 'library' ? 'library' : 'custom') !== mode) update({ preparationMode: mode, questionType: 'tarot', spread: null, sourceText: '', drawCount: 20 }) }}>{label}</button>)}
           </div>
           {state.preparationMode === 'library' && <SpreadLibrary spread={state.spread} onSelect={spread => update({ spread, sourceText: '', drawCount: spread.positions.length })} onBegin={beginShuffle} cardBackUrl={cardBackUrl} />}
           <a className="crystal-gallery-link" href={galleryPath()}>Explore deck images</a>
           <div className={`setup-grid ${state.preparationMode === 'library' ? 'library-deck-grid' : ''}`}>
             {state.preparationMode !== 'library' &&
             <section className="spread-panel panel">
-              <label className="panel-label" htmlFor="spread-input"><span className="label-mark">✦</span> Your spread <small>OPTIONAL</small></label>
-              <p className="field-hint">Paste numbered or bulleted tarot spreads, yes/no questions, or both. Yes/no headings are detected anywhere in a title, and lists containing only yes/no questions go directly to answer selection. Other unheaded questions draw tarot cards. Leave empty for an open draw.</p>
-              <textarea id="spread-input" value={state.sourceText} onChange={(event) => onSpreadChange(event.target.value)} placeholder={'## Tarot Spread — “Current Direction”\n\n1. **Current Energy**\n   What is the dominant energy surrounding this situation?\n\n2. **Hidden Influence**\n   What influence is operating beneath the surface?'} spellCheck={false} />
+              <fieldset className="question-mode">
+                <legend>Question type</legend>
+                <label><input type="radio" name="question-mode" value="tarot" checked={(state.questionType ?? 'tarot') === 'tarot'} onChange={() => onQuestionTypeChange('tarot')} /><span>Tarot spread</span></label>
+                <label><input type="radio" name="question-mode" value="yes-no" checked={state.questionType === 'yes-no'} onChange={() => onQuestionTypeChange('yes-no')} /><span>Yes / No questions</span></label>
+              </fieldset>
+              <div className="spread-heading">
+                <label className="panel-label" htmlFor="spread-input"><span className="label-mark">✦</span> {state.questionType === 'yes-no' ? 'Your Yes / No questions' : 'Your spread'} <small>OPTIONAL</small></label>
+                {state.sourceText.length > 0 && <button type="button" className="text-button clear-spread" onClick={() => { onSpreadChange(''); document.getElementById('spread-input')?.focus() }}>Clear</button>}
+              </div>
+              <p className="field-hint">Paste numbered or bulleted questions. Unheaded questions use the selected type; Tarot Spread and Yes / No headings are detected automatically. Leave empty for an open draw.</p>
+              <textarea id="spread-input" value={state.sourceText} onChange={(event) => onSpreadChange(event.target.value)} placeholder={state.questionType === 'yes-no' ? '1. Is this the right time?\n2. Will this plan work?' : '## Tarot Spread — “Current Direction”\n\n1. **Current Energy**\n   What is the dominant energy surrounding this situation?\n\n2. **Hidden Influence**\n   What influence is operating beneath the surface?'} spellCheck={false} />
               {state.sourceText.trim() && <div className={`parse-status ${parsed ? 'valid' : 'invalid'}`} role="status">
                 <span aria-hidden="true">{parsed ? '✓' : '!'}</span>
                 {parsed ? `${parsed.positions.length} ${parsed.positions.length === 1 ? 'question' : 'questions'} detected` : 'No numbered or bulleted questions detected yet'}

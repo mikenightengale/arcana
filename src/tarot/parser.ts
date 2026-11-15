@@ -24,7 +24,7 @@ const isYesNoQuestion = (question: string) => /^(?:am|are|can|could|did|do|does|
 // after the separator without changing slashes inside the question itself.
 const numberedPattern = /^\s*(\d+)\s*\\*[.)/](?:\s*[\\/])*\s+(.+)$/
 
-export function parseSpread(input: string, defaultType: QuestionType = 'tarot'): TarotSpread | null {
+export function parseSpread(input: string, defaultType: QuestionType = 'tarot', inferBinary = true): TarotSpread | null {
   const lines = input.replace(/\r\n?/g, '\n').split('\n')
   const sections: { title?: string; positions: TarotPosition[]; explicitTarot: boolean }[] = []
   let type = defaultType
@@ -143,7 +143,7 @@ export function parseSpread(input: string, defaultType: QuestionType = 'tarot'):
   const multiple = sections.length > 1
   // Infer manual answers only when every untyped question has yes/no phrasing.
   // An explicit Tarot heading always keeps the card-drawing workflow.
-  const inferredYesNo = defaultType === 'tarot'
+  const inferredYesNo = inferBinary && defaultType === 'tarot'
     && sections.every((section) => section.positions.every((position) => isYesNoQuestion(position.question)))
   const normalized = sections.flatMap((section) => section.positions.map((position) => ({
     ...position,
