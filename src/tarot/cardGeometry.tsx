@@ -8,14 +8,6 @@ export const palettes: Record<Suit | 'major', { a: string; b: string; c: string 
   pentacles: { a: 'var(--cg-emerald)', b: 'var(--cg-teal)', c: 'var(--cg-silver-lilac)' },
 }
 
-export const nocturnePalettes: Record<Suit | 'major', { a: string; b: string; c: string }> = {
-  major: { a: '#897aa4', b: '#655c7b', c: '#e0dce9' },
-  wands: { a: '#9480a1', b: '#6b617e', c: '#e2ddea' },
-  cups: { a: '#8389ad', b: '#646a89', c: '#e0e2ef' },
-  swords: { a: '#9b9daf', b: '#6f7389', c: '#eeedf2' },
-  pentacles: { a: '#89929a', b: '#626b78', c: '#e0e3e6' },
-}
-
 export function Crystal({ x, y, size = 30, rotation = 0, colors, glow = false }: { x: number; y: number; size?: number; rotation?: number; colors: typeof palettes.major; glow?: boolean }) {
   return <g transform={`translate(${x} ${y}) rotate(${rotation}) scale(${size / 36})`}>
     <g className={glow ? 'crystal-glow' : undefined}>

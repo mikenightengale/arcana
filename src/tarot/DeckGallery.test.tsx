@@ -1,49 +1,49 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import veilDeck from '../../public/decks/veil/deck.json'
+import crystalDeck from '../../public/decks/cathedral/deck.json'
 import type { DeckCard } from '../types/tarot'
 import { DeckGallery } from './DeckGallery'
 
-describe('The Veil gallery', () => {
+describe('Crystal Geometry gallery', () => {
   afterEach(cleanup)
 
   it('shows the deck description, supports reversed faces, and displays its back', () => {
     const { container } = render(<DeckGallery
-      deckId="veil"
-      deckName="The Veil"
-      cards={veilDeck.cards.slice(0, 2) as DeckCard[]}
-      cardBackUrl="/decks/veil/backs/veil.svg"
+      deckId="cathedral"
+      deckName="Crystal Geometry"
+      cards={crystalDeck.cards.slice(0, 2) as DeckCard[]}
+      cardBackUrl="/decks/cathedral/backs/default.svg"
       onReturn={vi.fn()}
     />)
 
-    expect(screen.getByText('Seventy-eight thresholds between seen and unseen.')).toBeInTheDocument()
-    expect(screen.getByRole('region', { name: 'All 78 The Veil tarot cards' })).toBeInTheDocument()
+    expect(screen.getByText('All 78 cards, rendered in crystalline geometry.')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'All 78 Crystal Geometry tarot cards' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Orientation/ }))
-    expect(container.querySelector('svg.veil-card')).toHaveAttribute('aria-label', 'The Fool, reversed')
+    expect(container.querySelector('svg.crystal-card')).toHaveAttribute('aria-label', 'The Fool, reversed')
 
     fireEvent.click(screen.getByRole('button', { name: /Side/ }))
-    expect(container.querySelector('.gallery-back')).toHaveAttribute('src', '/decks/veil/backs/veil.svg')
+    expect(container.querySelector('.gallery-back')).toHaveAttribute('src', '/decks/cathedral/backs/default.svg')
   })
 
   it('groups every supplied card under sticky section navigation with matching anchor targets', () => {
     const cards = [
-      veilDeck.cards.find((card) => card.arcana === 'major'),
-      veilDeck.cards.find((card) => card.suit === 'wands'),
-      veilDeck.cards.find((card) => card.suit === 'cups'),
-      veilDeck.cards.find((card) => card.suit === 'swords'),
-      veilDeck.cards.find((card) => card.suit === 'pentacles'),
+      crystalDeck.cards.find((card) => card.arcana === 'major'),
+      crystalDeck.cards.find((card) => card.suit === 'wands'),
+      crystalDeck.cards.find((card) => card.suit === 'cups'),
+      crystalDeck.cards.find((card) => card.suit === 'swords'),
+      crystalDeck.cards.find((card) => card.suit === 'pentacles'),
     ] as DeckCard[]
     const { container } = render(<DeckGallery
-      deckId="veil"
-      deckName="The Veil"
+      deckId="cathedral"
+      deckName="Crystal Geometry"
       cards={cards}
-      cardBackUrl="/decks/veil/backs/veil.svg"
+      cardBackUrl="/decks/cathedral/backs/default.svg"
       onReturn={vi.fn()}
     />)
 
     const labels = ['Major', 'Wands', 'Cups', 'Swords', 'Pentacles']
     const navigation = within(container).getByRole('navigation', { name: 'Gallery sections' })
-    const collection = within(container).getByRole('region', { name: 'All 78 The Veil tarot cards' })
+    const collection = within(container).getByRole('region', { name: 'All 78 Crystal Geometry tarot cards' })
     expect(within(navigation).getAllByRole('link').map((link) => link.textContent)).toEqual(labels)
 
     labels.forEach((label, index) => {
@@ -61,10 +61,10 @@ describe('The Veil gallery', () => {
 
   it('updates the current navigation item as section headings pass the sticky bar', () => {
     const { container } = render(<DeckGallery
-      deckId="veil"
-      deckName="The Veil"
-      cards={veilDeck.cards.slice(0, 2) as DeckCard[]}
-      cardBackUrl="/decks/veil/backs/veil.svg"
+      deckId="cathedral"
+      deckName="Crystal Geometry"
+      cards={crystalDeck.cards.slice(0, 2) as DeckCard[]}
+      cardBackUrl="/decks/cathedral/backs/default.svg"
       onReturn={vi.fn()}
     />)
     container.querySelectorAll<HTMLElement>('.gallery-section-heading').forEach((heading) => {
@@ -80,10 +80,10 @@ describe('The Veil gallery', () => {
 
   it('moves focus into the enlarged-card dialog, contains Tab, and restores focus on close', () => {
     render(<DeckGallery
-      deckId="veil"
-      deckName="The Veil"
-      cards={veilDeck.cards.slice(0, 1) as DeckCard[]}
-      cardBackUrl="/decks/veil/backs/veil.svg"
+      deckId="cathedral"
+      deckName="Crystal Geometry"
+      cards={crystalDeck.cards.slice(0, 1) as DeckCard[]}
+      cardBackUrl="/decks/cathedral/backs/default.svg"
       onReturn={vi.fn()}
     />)
     const opener = screen.getByRole('button', { name: 'Enlarge The Fool' })
@@ -103,10 +103,10 @@ describe('The Veil gallery', () => {
 
   it('closes the enlarged-card dialog with Escape and restores focus', () => {
     render(<DeckGallery
-      deckId="veil"
-      deckName="The Veil"
-      cards={veilDeck.cards.slice(0, 1) as DeckCard[]}
-      cardBackUrl="/decks/veil/backs/veil.svg"
+      deckId="cathedral"
+      deckName="Crystal Geometry"
+      cards={crystalDeck.cards.slice(0, 1) as DeckCard[]}
+      cardBackUrl="/decks/cathedral/backs/default.svg"
       onReturn={vi.fn()}
     />)
     const opener = screen.getByRole('button', { name: 'Enlarge The Fool' })

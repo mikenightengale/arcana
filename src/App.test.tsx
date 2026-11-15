@@ -15,16 +15,9 @@ vi.mock('./tarot/CrystalCard', () => ({ CrystalCard: () => null }))
 
 const cards: DeckCard[] = Array.from({ length: 78 }, (_, number) => ({
   id: `card-${number}`, name: `Card ${number}`, arcana: number < 22 ? 'major' : 'minor', number,
+  visual: { renderer: number < 22 ? 'major' : 'pip', theme: 'crystal', layout: 'classic' },
 }))
 const manifest: DeckManifest = { id: 'cathedral', name: 'Cathedral', cardBack: 'back.svg', cards }
-const nocturneManifest: DeckManifest = {
-  id: 'nocturne', name: 'Nocturne', cardBack: 'backs/nocturne.svg',
-  cards: cards.map((card) => ({ ...card, visual: { renderer: card.arcana === 'major' ? 'major' : 'pip', theme: 'nocturne', layout: 'orbit' } })),
-}
-const veilManifest: DeckManifest = {
-  id: 'veil', name: 'The Veil', cardBack: 'backs/veil.svg',
-  cards: cards.map((card) => ({ ...card, visual: { renderer: card.arcana === 'major' ? 'major' : 'pip', theme: 'veil', layout: 'threshold' } })),
-}
 const position = { number: 1, title: 'Focus', question: 'What should I notice?' }
 const readingCard: RuntimeCard = { ...cards[0], id: 'the-fool', name: 'The Fool', orientation: 'reversed' }
 const originalMatchMediaDescriptor = Object.getOwnPropertyDescriptor(window, 'matchMedia')
@@ -41,11 +34,8 @@ beforeEach(() => {
   mocks.loadState.mockResolvedValue(state)
   mocks.saveState.mockResolvedValue(undefined)
   mocks.writeText.mockResolvedValue(undefined)
-  vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
-    const deck = url.includes('/nocturne/') ? nocturneManifest : url.includes('/veil/') ? veilManifest : manifest
-    return Promise.resolve({ ok: true, json: async () => deck })
-  }))
-  Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn().mockReturnValue({ matches: false, addListener: vi.fn(), removeListener: vi.fn() }) })
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => manifest }))
+  Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn().mockImplementation((media: string) => ({ matches: media === '(max-width: 760px)' ? false : true, addEventListener: vi.fn(), removeEventListener: vi.fn() })) })
   Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: mocks.writeText } })
 })
 
@@ -176,11 +166,111 @@ describe('interactive shuffle', () => {
     expect(reset.reading).toBeNull()
   })
 
-  it('defaults saved states without a deck choice to Crystal Geometry', async () => {
+  it('loads only Crystal Geometry and defaults saved states without a deck choice to it', async () => {
     mocks.loadState.mockResolvedValue(setupState())
     render(<App />)
-    expect(await screen.findByRole('button', { name: /Crystal Geometry/ })).toHaveAttribute('aria-pressed', 'true')
+    await screen.findByRole('button', { name: /Shuffle the deck/ })
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/decks/cathedral/deck.json'))
+    expect(screen.getByRole('link', { name: 'Explore deck images' })).toHaveAttribute('href', expect.stringContaining('/gallery/crystal'))
+    expect(screen.queryByText(/Nocturne|The Veil|Choose a deck/)).not.toBeInTheDocument()
     await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).deckId === 'cathedral')).toBe(true))
+  })
+
+  it.each(['nocturne', 'veil'])('migrates saved %s cards to Crystal Geometry while keeping progress', async (deckId) => {
+    const legacyState = setupState()
+    legacyState.deckId = deckId
+    legacyState.deck.cards = [...legacyState.deck.cards.slice(12), ...legacyState.deck.cards.slice(0, 12)]
+    legacyState.deck.nextCardIndex = 9
+    legacyState.deck.cards[0] = { ...legacyState.deck.cards[0], orientation: 'reversed', visual: { renderer: 'major', theme: 'crystal', layout: 'legacy' } }
+    legacyState.reading = [{ card: { ...legacyState.deck.cards[0] } }]
+    mocks.loadState.mockResolvedValue(legacyState)
+    render(<App />)
+
+    await screen.findByRole('button', { name: /Shuffle the deck/ })
+    const saved = await waitFor(() => {
+      const latest = mocks.saveState.mock.calls.map(([value]) => value as AppState).at(-1)
+      expect(latest?.deckId).toBe('cathedral')
+      return latest!
+    })
+    expect(saved.deck.nextCardIndex).toBe(9)
+    expect(saved.deck.cards.map(({ id }) => id)).toEqual(legacyState.deck.cards.map(({ id }) => id))
+    expect(saved.deck.cards[0]).toMatchObject({ id: legacyState.deck.cards[0].id, orientation: 'reversed', visual: cards.find((card) => card.id === legacyState.deck.cards[0].id)!.visual })
+    expect(saved.reading?.[0].card.visual).toEqual(cards.find((card) => card.id === legacyState.deck.cards[0].id)!.visual)
+  })
+
+  it('clears valid spread text and restores the open-draw count', async () => {
+    const starting = setupState()
+    starting.drawCount = 7
+    mocks.loadState.mockResolvedValue(starting)
+    render(<App />)
+    fireEvent.change(await screen.findByLabelText(/Your spread/), { target: { value: '1. What should I notice?' } })
+    expect(await screen.findByText('1 question detected')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    expect(screen.getByLabelText(/Your spread/)).toHaveValue('')
+    expect(screen.queryByText('1 question detected')).not.toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('20')
+  })
+
+  it('clears invalid spread text and restores the open-draw count', async () => {
+    mocks.loadState.mockResolvedValue({ ...setupState(), sourceText: 'not a numbered spread' })
+    render(<App />)
+    expect(await screen.findByText('No numbered or bulleted questions detected yet')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    expect(screen.getByLabelText(/Your spread/)).toHaveValue('')
+    expect(screen.queryByText('No numbered or bulleted questions detected yet')).not.toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue('20')
+  })
+
+  it('uses the selected question mode for unheaded questions and updates the draw action', async () => {
+    mocks.loadState.mockResolvedValue(setupState())
+    render(<App />)
+    const tarotMode = await screen.findByRole('radio', { name: 'Tarot spread' })
+    const yesNoMode = screen.getByRole('radio', { name: 'Yes / No questions' })
+    const spreadInput = screen.getByLabelText(/Your spread/)
+    expect(tarotMode).toBeChecked()
+
+    fireEvent.click(yesNoMode)
+    expect(screen.getByLabelText(/Your Yes \/ No questions/)).toBeInTheDocument()
+    fireEvent.change(spreadInput, { target: { value: '1. Is this the right time?\n2. Will this plan work?' } })
+    expect(screen.getByText('0 cards will be drawn')).toBeInTheDocument()
+    expect(document.querySelector('.question-type-badge')).toHaveTextContent('Yes / No / Other')
+    expect(screen.getByRole('button', { name: 'Answer questions' })).toBeInTheDocument()
+    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).questionType === 'yes-no')).toBe(true))
+
+    fireEvent.click(tarotMode)
+    expect(screen.getByText('2 cards will be drawn')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Shuffle the deck' })).toBeInTheDocument()
+  })
+
+  it.each([10, 20, 45, 70])('selects the %i-card preset from the collapsible preset menu', async (count) => {
+    mocks.loadState.mockResolvedValue(setupState())
+    render(<App />)
+    const menuSummary = await screen.findByText('Presets')
+    const menu = menuSummary.closest('details')!
+    expect(menu).not.toHaveAttribute('open')
+    fireEvent.click(menuSummary)
+    expect(menu).toHaveAttribute('open')
+    fireEvent.click(screen.getByRole('button', { name: `${count} cards` }))
+    expect(screen.getByRole('textbox', { name: 'Cards to draw' })).toHaveValue(String(count))
+    expect(menu).not.toHaveAttribute('open')
+    expect(document.querySelector(`[aria-label="${count} cards"]`)).toHaveAttribute('aria-pressed', 'true')
+    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).drawCount === count)).toBe(true))
+  })
+
+  it('keeps setup controls expanded on desktop and collapsed by default on mobile', async () => {
+    mocks.loadState.mockResolvedValue(setupState())
+    const { unmount } = render(<App />)
+    const settings = await screen.findByText('Spread and draw settings')
+    expect(settings.closest('details')).toHaveAttribute('open')
+    unmount()
+
+    vi.mocked(window.matchMedia).mockImplementation((media: string) => ({ matches: media === '(max-width: 760px)', addEventListener: vi.fn(), removeEventListener: vi.fn() }) as unknown as MediaQueryList)
+    render(<App />)
+    const mobileSettings = await screen.findByText('Spread and draw settings')
+    expect(mobileSettings.closest('details')).not.toHaveAttribute('open')
+    fireEvent.click(mobileSettings)
+    expect(mobileSettings.closest('details')).toHaveAttribute('open')
   })
 
   it('explains the shuffle mechanics and dismisses the help with Escape or an outside press', async () => {
@@ -204,50 +294,6 @@ describe('interactive shuffle', () => {
     fireEvent.pointerDown(screen.getByText('Ready when you are.'))
     expect(help).toHaveAttribute('aria-expanded', 'false')
     expect(screen.queryByRole('region', { name: 'How shuffling works' })).not.toBeInTheDocument()
-  })
-
-  it('switches Nocturne artwork while retaining progress and persists the selected deck', async () => {
-    const starting = setupState()
-    starting.deck.cards = [...starting.deck.cards.slice(12), ...starting.deck.cards.slice(0, 12)]
-    starting.deck.nextCardIndex = 9
-    starting.deck.cards[0].orientation = 'reversed'
-    const logicalCards = starting.deck.cards.map(({ id, orientation }) => ({ id, orientation }))
-    mocks.loadState.mockResolvedValue(starting)
-    const { unmount } = render(<App />)
-
-    fireEvent.click(await screen.findByRole('button', { name: /Nocturne/ }))
-    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).deckId === 'nocturne')).toBe(true))
-    const saved = mocks.saveState.mock.calls.map(([value]) => value as AppState).reverse().find((value) => value.deckId === 'nocturne')!
-    expect(saved.deck.nextCardIndex).toBe(9)
-    expect(saved.deck.cards.map(({ id, orientation }) => ({ id, orientation }))).toEqual(logicalCards)
-    expect(saved.deck.cards[0]).toMatchObject({ id: logicalCards[0].id, orientation: 'reversed', visual: { theme: 'nocturne' } })
-    expect(await screen.findByRole('button', { name: /Nocturne/ })).toHaveAttribute('aria-pressed', 'true')
-
-    unmount()
-    mocks.loadState.mockResolvedValue(saved)
-    render(<App />)
-    expect(await screen.findByRole('button', { name: /Nocturne/ })).toHaveAttribute('aria-pressed', 'true')
-  })
-
-  it('switches to The Veil, renders its deck option, retains progress, and restores it from saved state', async () => {
-    const starting = setupState()
-    starting.deck.nextCardIndex = 4
-    starting.deck.cards[0].orientation = 'reversed'
-    mocks.loadState.mockResolvedValue(starting)
-    const { unmount } = render(<App />)
-
-    expect(await screen.findByRole('button', { name: /The Veil/ })).toHaveAttribute('aria-pressed', 'false')
-    fireEvent.click(screen.getByRole('button', { name: /The Veil/ }))
-    await waitFor(() => expect(mocks.saveState.mock.calls.some(([saved]) => (saved as AppState).deckId === 'veil')).toBe(true))
-    const saved = mocks.saveState.mock.calls.map(([value]) => value as AppState).reverse().find((value) => value.deckId === 'veil')!
-    expect(saved.deck.nextCardIndex).toBe(4)
-    expect(saved.deck.cards[0]).toMatchObject({ id: cards[0].id, orientation: 'reversed', visual: { theme: 'veil', layout: 'threshold' } })
-    expect(await screen.findByRole('button', { name: /The Veil/ })).toHaveAttribute('aria-pressed', 'true')
-
-    unmount()
-    mocks.loadState.mockResolvedValue(saved)
-    render(<App />)
-    expect(await screen.findByRole('button', { name: /The Veil/ })).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('changes the working deck during a hold, freezes immediately on release, and draws that order', async () => {

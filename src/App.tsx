@@ -4,7 +4,6 @@ import { NotificationToast, type ToastMessage, type ToastVariant } from './Notif
 import { loadState, saveState } from './persistence/db'
 import { formatReading } from './tarot/formatter'
 import { mapReading } from './tarot/mapping'
-import { DeckPicker } from './tarot/DeckPicker'
 import { DeckGallery } from './tarot/DeckGallery'
 import { ReadingDepth } from './tarot/ReadingDepth'
 import { parseSpread } from './tarot/parser'
@@ -14,9 +13,7 @@ import { SpreadLibrary } from './tarot/SpreadLibrary'
 import { SpreadLayout } from './tarot/SpreadLayout'
 import './spreads.css'
 import { ReadingView } from './ReadingView'
-import { appPath, assetPath, canonicalGalleryPath, galleryDeckId, isGalleryPath } from './paths'
-
-const deckIds = ['cathedral', 'nocturne', 'veil'] as const
+import { appPath, assetPath, canonicalGalleryPath, galleryPath, isGalleryPath } from './paths'
 
 function CardCountControl({ value, onChange }: { value: number; onChange: (count: number) => void }) {
   const [draft, setDraft] = useState(String(value))
@@ -96,26 +93,23 @@ function App() {
 
   useEffect(() => {
     let alive = true
-    const manifestLoads = deckIds.map((id) => fetch(appPath(`decks/${id}/deck.json`)).then((response) => {
-      if (!response.ok) throw new Error(`The ${id === 'nocturne' ? 'Nocturne' : id === 'veil' ? 'The Veil' : 'Crystal Geometry'} deck manifest could not be loaded.`)
-      return response.json() as Promise<DeckManifest>
-    }))
-    Promise.all([Promise.all(manifestLoads), loadState()]).then(([loadedManifests, saved]) => {
+    Promise.all([
+      fetch(appPath('decks/cathedral/deck.json')).then((response) => {
+        if (!response.ok) throw new Error('The Crystal Geometry deck manifest could not be loaded.')
+        return response.json() as Promise<DeckManifest>
+      }),
+      loadState(),
+    ]).then(([cathedral, saved]) => {
       if (!alive) return
-      const cathedral = loadedManifests.find((deck) => deck.id === 'cathedral')
-      if (!cathedral || loadedManifests.some((deck) => deck.cards.length !== 78)) throw new Error('Each deck must contain exactly 78 cards.')
-      const cathedralIds = cathedral.cards.map((card) => card.id)
-      if (loadedManifests.some((deck) => deck.cards.map((card) => card.id).join('\u0000') !== cathedralIds.join('\u0000'))) {
-        throw new Error('Every deck must contain the same 78 cards in the same order.')
+      if (cathedral.id !== 'cathedral' || cathedral.cards.length !== 78 || new Set(cathedral.cards.map((card) => card.id)).size !== 78) {
+        throw new Error('The Crystal Geometry deck must contain exactly 78 unique cards.')
       }
-      setManifests(loadedManifests)
-      const selectedDeckId = loadedManifests.some((deck) => deck.id === saved?.deckId) ? saved?.deckId ?? 'cathedral' : 'cathedral'
-      const selectedManifest = loadedManifests.find((deck) => deck.id === selectedDeckId)!
-      const canonicalCards = new Map(selectedManifest.cards.map((card) => [card.id, card]))
+      setManifests([cathedral])
+      const canonicalCards = new Map(cathedral.cards.map((card) => [card.id, card]))
       const hydrate = <T extends { id: string; orientation: 'upright' | 'reversed' }>(card: T) => ({ ...card, ...(canonicalCards.get(card.id) ?? {}), orientation: card.orientation })
       const migrated = saved ? {
         ...saved,
-        deckId: selectedDeckId,
+        deckId: 'cathedral',
         deck: { ...saved.deck, cards: saved.deck.cards.map(hydrate) },
         reading: saved.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
         // A hold cannot resume after reload. Preserve the last mutation and
@@ -196,19 +190,6 @@ function App() {
     stateRef.current = next
     setState(next)
     setToast(null)
-  }
-
-  function selectDeck(deckId: string) {
-    const current = stateRef.current
-    const selected = manifests.find((deck) => deck.id === deckId)
-    if (!current || !selected || current.deckId === deckId) return
-    const cardsById = new Map(selected.cards.map((card) => [card.id, card]))
-    const hydrate = <T extends { id: string; orientation: 'upright' | 'reversed' }>(card: T) => ({ ...card, ...(cardsById.get(card.id) ?? {}), orientation: card.orientation })
-    update({
-      deckId,
-      deck: { ...current.deck, cards: current.deck.cards.map(hydrate) },
-      reading: current.reading?.map((entry) => ({ ...entry, card: hydrate(entry.card) })) ?? null,
-    })
   }
 
   function onSpreadChange(sourceText: string) {
@@ -381,10 +362,9 @@ function App() {
   const cardBackUrl = assetPath(`decks/${manifest.id}/${manifest.cardBack}`)
 
   if (isGalleryPath(window.location.pathname)) {
-    const galleryId = galleryDeckId(window.location.pathname)
-    const galleryManifest = manifests.find((deck) => deck.id === galleryId) ?? manifest
+    const galleryManifest = manifest
     const galleryBackUrl = assetPath(`decks/${galleryManifest.id}/${galleryManifest.cardBack}`)
-    return <DeckGallery deckId={galleryManifest.id} deckName={galleryManifest.id === 'cathedral' ? 'Crystal Geometry' : galleryManifest.name} cards={galleryManifest.cards} cardBackUrl={galleryBackUrl} onReturn={() => { window.location.href = appPath() }} />
+    return <DeckGallery deckId={galleryManifest.id} deckName="Crystal Geometry" cards={galleryManifest.cards} cardBackUrl={galleryBackUrl} onReturn={() => { window.location.href = appPath() }} />
   }
 
   return (
@@ -419,6 +399,7 @@ function App() {
             {([['custom', 'Your Reading'], ['library', 'Spread Library']] as const).map(([mode, label]) => <button type="button" key={mode} aria-pressed={(state.preparationMode === 'library' ? 'library' : 'custom') === mode} onClick={() => { if ((state.preparationMode === 'library' ? 'library' : 'custom') !== mode) update({ preparationMode: mode, spread: null, sourceText: '', drawCount: 20 }) }}>{label}</button>)}
           </div>
           {state.preparationMode === 'library' && <SpreadLibrary spread={state.spread} onSelect={spread => update({ spread, sourceText: '', drawCount: spread.positions.length })} onBegin={beginShuffle} cardBackUrl={cardBackUrl} />}
+          <a className="crystal-gallery-link" href={galleryPath()}>Explore deck images</a>
           <div className={`setup-grid ${state.preparationMode === 'library' ? 'library-deck-grid' : ''}`}>
             {state.preparationMode !== 'library' &&
             <section className="spread-panel panel">
@@ -438,7 +419,6 @@ function App() {
               </div>}
             </section>}
 
-            <DeckPicker manifests={manifests} selectedDeckId={manifest.id} onSelect={selectDeck} />
           </div>
 
           {state.preparationMode !== 'library' && <ReadingDepth count={count} locked={!!parsed} onChange={(drawCount) => update({ drawCount })} />}

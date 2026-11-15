@@ -6,7 +6,7 @@ export type Arcana = 'major' | 'minor'
 
 export interface CardVisual {
   renderer: 'major' | 'pip' | 'court'
-  theme?: 'crystal' | 'nocturne' | 'veil'
+  theme?: 'crystal'
   composition?: string
   primarySymbol?: string
   layout: string
@@ -79,7 +79,7 @@ export interface ReadingPosition {
 export interface AppState {
   preparationMode?: 'free' | 'custom' | 'library'
   stage: Stage
-  /** Selected presentation deck; omitted on older saved states. */
+  /** Legacy saved deck ID; current versions normalize every save to Cathedral. */
   deckId?: string
   /** Optional for compatibility with browser states saved before hold-to-shuffle. */
   shuffleStatus?: ShuffleStatus
